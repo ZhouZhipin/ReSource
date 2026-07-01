@@ -1,0 +1,2479 @@
+int UI_add_info_string(UI *ui, const char *text)
+{
+    UI_STRING *s;
+    int ret = -1;
+    STACK_OF(UI_STRING) *sk;
+
+    if (text == NULL) {
+        ERR_put_error(40, 109, 67, "ui_lib.c", 147);
+        return -1;
+    }
+    s = (UI_STRING *)CRYPTO_malloc(sizeof(UI_STRING), "ui_lib.c", 0x9Au);
+    if (s == NULL)
+        return -1;
+    s->type = 4;
+    s->string = (char *)text;
+    s->flags = 0;
+    s->index = 0;
+    s->ref = 0;
+    memset(&s->data, 0, sizeof(s->data));
+    sk = (STACK_OF(UI_STRING) *)(ui->strings);
+    if (sk == NULL) {
+        sk = sk_new_null();
+        if (sk != NULL) {
+            ui->strings = sk;
+        } else {
+            if (s->flags & 1) {
+                CRYPTO_free(s->string);
+                if (s->type == 3) {
+                    CRYPTO_free(s->data.p1);
+                    CRYPTO_free(s->data.p2);
+                    CRYPTO_free(s->data.p3);
+                }
+            }
+            CRYPTO_free(s);
+            return -1;
+        }
+    }
+    if (sk_push(sk, s) <= 0)
+        return -1;
+    return 1;
+}
+/////
+int vdbePmaReaderIncrMergeInit(PmaReader *pReader, int a2){
+    IncrMerge *pIncr = (IncrMerge *)pReader->pIncr;
+    MergeEngine *pMerge = pIncr->pMerge;
+    SorterFile *pSorter = pMerge->pFile;
+    int rc;
+    rc = vdbeMergeEngineInit(pMerge, pIncr->iStart, a2);
+    if( !rc && pIncr->bUseThread ){
+        rc = vdbeSorterOpenTempFile(pSorter, pIncr->nTask, &pIncr->aTask[0]);
+        if( !rc ){
+            rc = vdbeSorterOpenTempFile(pSorter, pIncr->nTask, &pIncr->aTask[1]);
+        }
+    }else if( !rc && !pIncr->bUseThread ){
+        if( pMerge->pFile2 == 0 ){
+            rc = vdbeSorterOpenTempFile(pSorter, (int)pMerge->nCapacity, &pMerge->pFile2);
+            pMerge->nCapacity = 0;
+        }
+        if( !rc ){
+            pIncr->aTask[1] = pMerge->pFile2;
+            pIncr->nCapacity = pMerge->nCapacity;
+            pMerge->nCapacity += pIncr->nTask;
+        }
+    }else{
+        /* rc != 0, do nothing */
+    }
+    if( !rc && pIncr->bUseThread ){
+        rc = vdbeIncrPopulate(pIncr);
+    }
+    if( !rc && a2 != 1 ){
+        rc = vdbePmaReaderNext(pReader);
+    }
+    return rc;
+}
+/////
+curl_off_t Curl_mime_size(struct Curl_mimepart *part)
+{
+  curl_off_t size;
+  curl_off_t extra;
+  if (part->state == 4)
+    part->datasize = multipart_size(part->data);
+  size = part->datasize;
+  if (part->readfunc)
+    size = part->readfunc(part);
+  if (size >= 0 && (part->flags & 2) == 0) {
+    extra = slist_size(part->headers, 2, NULL) + size;
+    size = extra + slist_size(part->contenttype, 2, "Content-Type") + 2;
+  }
+  return size;
+}
+/////
+struct MHD_Response *MHD_create_response_from_fd(uint64_t size, int fd)
+{
+    return MHD_create_response_from_fd_at_offset64(size, fd, 0);
+}
+/////
+size_t lf_copy(struct lf *lf, size_t lines, void *out) {
+    char *start = lf->cur;
+    for (; lines > 0; ) {
+        lf->cur = rawmemchr(lf->cur, '\n');
+        if (lf->cur == lf->end) {
+            ck_fwrite(start, lf->end - start, out);
+            size_t ret = lf_refill(lf);
+            if (!ret) return ret;
+            start = lf->cur;
+        } else {
+            lines--;
+            lf->cur++;
+        }
+    }
+    return ck_fwrite(start, lf->cur - start, out);
+}
+/////
+int sprintc(unsigned char *buf, unsigned char c) {
+    unsigned char *p = buf;
+    unsigned char ch = c;
+    if (((*__ctype_b_loc())[c] & 0x4000) == 0) {
+        if (c >= 0x80) {
+            *p++ = 'M';
+            *p++ = '-';
+            ch = c - 0x80;
+        }
+        if (ch < 0x20) {
+            *p++ = '^';
+            ch += 0x40;
+        } else if (ch == 0x7F) {
+            *p++ = '^';
+            ch = '?';
+        }
+    }
+    *p++ = ch;
+    *p = '\0';
+    return p - buf;
+}
+/////
+int gmp_snprintf_reps(void *state, int c, int count)
+{
+    char **buf = (char **)state;
+    size_t *size = (size_t *)((char *)state + 8);
+    size_t n;
+    if (*size > 1) {
+        size_t avail = *size - 1;
+        if (avail >= (size_t)count) {
+            n = count;
+        } else {
+            n = avail;
+        }
+        memset(*buf, (unsigned char)c, n);
+        *buf += n;
+        *size -= n;
+        return n;
+    }
+    return 0;
+}
+/////
+const bfd_arch_info_type *
+bfd_arch_get_compatible (const bfd *abfd, const bfd *bbfd, int verbose)
+{
+  const bfd_arch_info_type *ap, *bp;
+  const bfd *first, *second;
+
+  ap = abfd->arch_info;
+  bp = bbfd->arch_info;
+
+  if (ap->arch == 0)
+    {
+      first = abfd;
+      second = bbfd;
+    }
+  else if (bp->arch == 0)
+    {
+      first = bbfd;
+      second = abfd;
+    }
+  else
+    {
+      if (ap->compatible)
+        return ap->compatible (ap, bp);
+      else
+        {
+          first = bbfd;
+          second = abfd;
+        }
+    }
+
+  if (!verbose)
+    {
+      unsigned short mach = first->mach;
+      if (((mach >> 12) & 3) != 1)
+        {
+          const char *target = bfd_get_target (first);
+          if (strcmp (target, "binary") != 0)
+            return NULL;
+        }
+    }
+
+  return second->arch_info;
+}
+/////
+bool process_dir(const char *path, int mode, const struct dir_options *opts)
+{
+    bool failed = !(make_dir_parents(path, mode, (unsigned int)make_ancestor, opts, dir_mode, (unsigned int)announce_mkdir, dir_mode_bits, owner_id, group_id, 0) & 1);
+    if (M_check_autoarg(opts) == 0) {
+        failed = true;
+    }
+    if (!failed && (opts->flags & 1)) {
+        const char *last = last_component(path);
+        if (!restorecon(last, NULL, 0)) {
+            int err = errno;
+            if (!ignorable_ctx_err(err)) {
+                error(0, err, gettext("failed to restore context for %s"),
+                      quotearg_style(4, path));
+            }
+        }
+    }
+    return failed;
+}
+/////
+int MHD_post_process(struct MHD_PostProcessor *pp, const char *post_data, size_t post_data_len)
+{
+    int ret;
+    if (post_data_len == 0)
+        return 1;
+    if (pp == 0)
+        return 0;
+    const char *content_type = *(const char **)((char *)pp + 24);
+    if (MHD_str_equal_caseless_n_("application/x-www-form-urlencoded", content_type, 33))
+        ret = post_process_urlencoded(pp, post_data, post_data_len);
+    else if (MHD_str_equal_caseless_n_("multipart/form-data", content_type, 19))
+        ret = post_process_multipart(pp, post_data, post_data_len);
+    else
+        ret = 0;
+    return ret;
+}
+/////
+int gz_decomp(gz_state *state)
+{
+    int ret;
+    z_streamp strm = &state->strm;
+    while (1) {
+        if (strm->avail_in == 0) {
+            if (gz_avail(state) == -1)
+                return -1;
+            if (strm->avail_in == 0) {
+                gz_error(state, Z_BUF_ERROR, "unexpected end of file");
+                return -1;
+            }
+        }
+        ret = inflate(strm, Z_NO_FLUSH);
+        if (ret == Z_STREAM_ERROR || ret == Z_NEED_DICT) {
+            gz_error(state, Z_STREAM_ERROR, "internal error: inflate stream corrupt");
+            return -1;
+        } else if (ret == Z_MEM_ERROR) {
+            gz_error(state, Z_MEM_ERROR, "out of memory");
+            return -1;
+        } else if (ret == Z_DATA_ERROR) {
+            gz_error(state, Z_DATA_ERROR, strm->msg ? strm->msg : "compressed data error");
+            return -1;
+        } else {
+            if (state->have && ret != Z_STREAM_END)
+                continue;
+            break;
+        }
+    }
+    state->total_out = state->total_out - strm->total_out;
+    state->total_in = strm->total_in - state->total_out;
+    if (ret == Z_STREAM_END)
+        state->done = 0;
+    return 0;
+}
+/////
+int EVP_PKEY_assign(EVP_PKEY *pkey, int type, void *key)
+{
+    if (!pkey_set_type(pkey, type, NULL, -1))
+        return 0;
+    pkey->pkey.ptr = key;
+    return key != 0;
+}
+/////
+char *quotearg_alloc(const char *a1, size_t a2, const struct quoting_options *a3)
+{
+    return quotearg_alloc_mem(a1, a2, NULL, a3);
+}
+/////
+int Curl_resolv(struct Curl_easy *data, const char *hostname, int port, int allowDOH, struct Curl_addrinfo **addr)
+{
+    struct Curl_share *share = data->share;
+    struct Curl_addrinfo *result = NULL;
+    int rc = -1;
+    *addr = NULL;
+    data->flags &= ~0x20000000;
+    if (share[26])
+        Curl_share_lock(share, 3, 2);
+    result = fetch_addr(data, hostname, port);
+    if (result)
+    {
+        Curl_infof(share, "Hostname %s was found in DNS cache\n", hostname);
+        result->refcount++;
+        rc = 0;
+        if (share[26])
+            Curl_share_unlock(share, 3);
+        *addr = result;
+        return rc;
+    }
+    else
+    {
+        if (share[26])
+            Curl_share_unlock(share, 3);
+        int async = 0;
+        struct Curl_addrinfo *ai = NULL;
+        if (!share[496] || (Curl_set_in_callback(share, 1),
+             int cbret = ((int (*)(void *, void *, void *))share[496])(share[618], NULL, share[497]),
+             Curl_set_in_callback(share, 0), !cbret))
+        {
+            struct in_addr in4;
+            struct in6_addr in6;
+            if (inet_pton(AF_INET, hostname, &in4) > 0)
+            {
+                ai = Curl_ip2addr(AF_INET, &in4, hostname, port);
+            }
+            else if (inet_pton(AF_INET6, hostname, &in6) > 0)
+            {
+                ai = Curl_ip2addr(AF_INET6, &in6, hostname, port);
+            }
+            else if (!Curl_ipvalid(data))
+            {
+                return -1;
+            }
+            else if (allowDOH && (share[504] & 0x80000000000000LL))
+            {
+                ai = Curl_doh(data, hostname, port, &async);
+            }
+            else
+            {
+                ai = Curl_getaddrinfo(data, hostname, port, &async);
+            }
+            if (ai)
+            {
+                if (share[26])
+                    Curl_share_lock(share, 3, 2);
+                result = Curl_cache_addr(share, ai, hostname, port);
+                if (share[26])
+                    Curl_share_unlock(share, 3);
+                if (result)
+                    rc = 0;
+                else
+                    Curl_freeaddrinfo(ai);
+            }
+            else if (async)
+            {
+                if (Curl_resolv_check(data, &result))
+                    return -1;
+                rc = (result == NULL) ? 1 : 0;
+            }
+        }
+        *addr = result;
+        return rc;
+    }
+}
+/////
+void get_sesslist(void *list, int startup)
+{
+    struct sesslist {
+        int count;
+        char **sessions;
+        char *buffer;
+    } *s = (struct sesslist *)list;
+    int n;
+    int idx;
+    char *p;
+    char *q;
+    DIR *dir;
+    strbuf *buf;
+
+    if (startup & 1) {
+        buf = strbuf_new();
+        dir = (DIR *)enum_settings_start();
+        if (!dir) {
+            strbuf_free(buf);
+            return;
+        }
+        while (enum_settings_next(dir, buf))
+            BinarySink_put_byte(buf, 0);
+        enum_settings_finish(dir);
+        BinarySink_put_byte(buf, 0);
+        s->buffer = strbuf_to_str(buf);
+        p = s->buffer;
+        s->count = 1;
+        while (*p) {
+            if (strcmp(p, "Default Settings") != 0)
+                s->count++;
+            while (*p)
+                p++;
+            p++;
+        }
+        s->sessions = safemalloc(s->count + 1, sizeof(char *));
+        s->sessions[0] = "Default Settings";
+        q = s->buffer;
+        n = 1;
+        while (*q) {
+            if (strcmp(q, "Default Settings") != 0) {
+                idx = n++;
+                s->sessions[idx] = q;
+            }
+            while (*q)
+                q++;
+            q++;
+        }
+        qsort(s->sessions, n, sizeof(char *), sessioncmp);
+    } else {
+        safefree(s->buffer);
+        safefree(s->sessions);
+        s->buffer = NULL;
+        s->sessions = NULL;
+    }
+}
+/////
+int tftp_connect(struct Curl_easy *data, unsigned char *connected)
+{
+    struct tftp_state *state;
+    int blksize = 512;
+    int alloc_blksize;
+
+    state = (struct tftp_state *)Curl_ccalloc(1, 368);
+    data->tftp_state = state;
+    if (!state)
+        return 27;
+
+    if (data->conn->blksize_override) {
+        blksize = (int)data->conn->blksize_override;
+        if (blksize > 65464 || blksize < 8)
+            return 71;
+    }
+
+    alloc_blksize = blksize < 512 ? 512 : blksize;
+
+    state->recv_buffer = (char *)Curl_ccalloc(1, alloc_blksize + 4);
+    if (!state->recv_buffer)
+        return 27;
+
+    state->send_buffer = (char *)Curl_ccalloc(1, alloc_blksize + 4);
+    if (!state->send_buffer) {
+        Curl_cfree(state->recv_buffer);
+        return 27;
+    }
+
+    Curl_conncontrol(data, 1);
+    state->data = data;
+    state->sockfd = *(int *)((char *)state->data + 1240);
+    state->state = 0;
+    state->error = -100;
+    state->blksize = 512;
+    state->requested_blksize = blksize;
+    *((unsigned short *)&state->remote_addr) = *(int *)((char *)data->addr_info + 4);
+    tftp_set_timeouts(state);
+
+    if (!(data->conn->flags & 0x800000)) {
+        if (bind(state->sockfd, (struct sockaddr *)&state->remote_addr, sizeof(state->remote_addr))) {
+            char buffer[256];
+            const char *errstr = Curl_strerror(errno, buffer, 256);
+            Curl_failf(data->conn, "bind() failed;%s", errstr);
+            Curl_cfree(state->recv_buffer);
+            Curl_cfree(state->send_buffer);
+            Curl_cfree(state);
+            data->tftp_state = NULL;
+            return 7;
+        } else {
+            data->conn->flags |= 0x800000;
+        }
+    }
+
+    Curl_pgrsStartNow(data);
+    *connected = 1;
+    return 0;
+}
+/////
+// FUNCTION MHD_response_execute_upgrade_ NOT AVAILABLE
+/////
+struct callback {
+    struct callback *next;
+    void (*func)(void *);
+    void *context;
+};
+
+extern struct callback *cbhead, *cbtail;
+extern void safefree(void *);
+extern void (*run_idempotent_callback)(void *);
+
+struct id_struct {
+    void *unused;
+    void *id;
+};
+
+void delete_callbacks_for_context(void *context) {
+    struct callback *node = cbhead;
+    struct callback *head = NULL;
+    struct callback **tail = &head;
+
+    while (node) {
+        struct callback *next = node->next;
+        if (node->context != context) {
+            if (node->func == run_idempotent_callback &&
+                ((struct id_struct *)node->context)->id == context) {
+                safefree(node);
+            } else {
+                *tail = node;
+                tail = &node->next;
+            }
+        } else {
+            safefree(node);
+        }
+        node = next;
+    }
+
+    *tail = NULL;
+    cbhead = head;
+    if (head) {
+        cbtail = (struct callback *)((char *)tail - __builtin_offsetof(struct callback, next));
+    } else {
+        cbtail = NULL;
+    }
+}
+/////
+int BN_mul_word(BIGNUM *a, BN_ULONG w)
+{
+    int top = a->top;
+    if (top == 0)
+        return 1;
+    if (w == 0)
+    {
+        BN_set_word(a, 0);
+        return 1;
+    }
+    BN_ULONG carry = bn_mul_words(a->d, a->d, top, w);
+    if (carry)
+    {
+        if (top >= a->dmax)
+        {
+            if (!bn_expand2(a, top + 1))
+                return 0;
+        }
+        a->d[top] = carry;
+        a->top = top + 1;
+    }
+    return 1;
+}
+/////
+int vdbeRecordCompareString(int nKey, const void *pKey, UnpackedRecord *pRec)
+{
+    const unsigned char *zKey = (const unsigned char *)pKey;
+    int headerSize;
+    int serialType;
+    int nStrLen;
+    int nField;
+    int minLen;
+    int cmp;
+    int diff;
+    Mem *pMem;
+    int rc;
+
+    headerSize = zKey[0];
+    serialType = zKey[1];
+    if (serialType >= 128) {
+        unsigned char *p = (unsigned char *)zKey + 1;
+        if (sqlite3GetVarint32(p, &serialType) == 0) {
+            pRec->errCode = 1;
+            return 0;
+        }
+    }
+
+    if (serialType < 12) {
+        return pRec->field20;
+    } else if ((serialType & 1) == 0) {
+        return pRec->field21;
+    }
+
+    nStrLen = (serialType - 12) / 2;
+    if (headerSize + nStrLen > nKey) {
+        sqlite3CorruptError(0x14275);
+        pRec->errCode = 1;
+        return 0;
+    }
+
+    pMem = (Mem *)(*(char **)((char *)pRec + 8));
+    nField = pMem->n;
+    minLen = (nField < nStrLen) ? nField : nStrLen;
+    cmp = memcmp(zKey + headerSize, pMem->z, minLen);
+    if (cmp != 0) {
+        return (cmp > 0) ? pRec->field20 : pRec->field21;
+    }
+
+    diff = nStrLen - nField;
+    if (diff != 0) {
+        return (diff > 0) ? pRec->field20 : pRec->field21;
+    }
+
+    if (pRec->flags <= 1) {
+        rc = pRec->field18;
+        pRec->field22 = 1;
+        return rc;
+    } else {
+        return sqlite3VdbeRecordCompareWithSkip(nKey, pKey, pRec, 1);
+    }
+}
+/////
+int engine_unlocked_init(void *ctx)
+{
+    int state = *(int *)((char *)ctx + 176);
+    int ret = 0;
+    int (*init_func)(void *) = *(int (**)(void *))((char *)ctx + 112);
+    if (state == 0 && init_func != NULL) {
+        ret = init_func(ctx);
+    }
+    if (state != 0 || init_func == NULL || ret != 0) {
+    } else {
+        return 0;
+    }
+    (*(int *)((char *)ctx + 172))++;
+    *(int *)((char *)ctx + 176) = *(int *)((char *)ctx + 176) + 1;
+    if (ret != 0) {
+        return ret;
+    } else {
+        return 1;
+    }
+}
+/////
+MagickBooleanType CloneImageProfiles(Image *image, const Image *clone_image)
+{
+  if (!image)
+    _assert_fail("image != (Image *) NULL", "MagickCore/profile.c", 0x9Bu, "MagickBooleanType CloneImageProfiles(Image *, const Image *)");
+  if (image->signature != MagickCoreSignature)
+    _assert_fail("image->signature == MagickCoreSignature", "MagickCore/profile.c", 0x9Cu, "MagickBooleanType CloneImageProfiles(Image *, const Image *)");
+  if (image->debug)
+    LogMagickEvent(DebugEvent, "MagickCore/profile.c", "CloneImageProfiles", 158LL, "%s", image->filename);
+  if (!clone_image)
+    _assert_fail("clone_image != (const Image *) NULL", "MagickCore/profile.c", 0x9Fu, "MagickBooleanType CloneImageProfiles(Image *, const Image *)");
+  if (clone_image->signature != MagickCoreSignature)
+    _assert_fail("clone_image->signature == MagickCoreSignature", "MagickCore/profile.c", 0xA0u, "MagickBooleanType CloneImageProfiles(Image *, const Image *)");
+  if (clone_image->profiles)
+  {
+    if (image->profiles)
+      DestroyImageProfiles(image);
+    image->profiles = CloneSplayTree(clone_image->profiles, ConstantString, CloneStringInfo);
+  }
+  return MagickTrue;
+}
+/////
+bool print_normal_script(void *a1)
+{
+    return print_script(a1, find_change, (void (*)(void *))print_normal_hunk);
+}
+/////
+MagickBooleanType SetImageExtent(Image *image,size_t columns,size_t rows,ExceptionInfo *exception)
+{
+  if ((columns == 0) || (rows == 0))
+  {
+    ThrowMagickException(exception,"MagickCore/image.c","SetImageExtent",2641,465,"NegativeOrZeroImageSize","`%s'",image->filename);
+    return(MagickFail);
+  }
+  image->columns=columns;
+  image->rows=rows;
+  if (image->depth == 0)
+  {
+    image->depth=8;
+    ThrowMagickException(exception,"MagickCore/image.c","SetImageExtent",2647,465,"ImageDepthNotSupported","`%s'",image->filename);
+  }
+  if (image->depth > 64)
+  {
+    image->depth=64;
+    ThrowMagickException(exception,"MagickCore/image.c","SetImageExtent",2653,465,"ImageDepthNotSupported","`%s'",image->filename);
+  }
+  return(SyncImagePixelCache(image,exception));
+}
+/////
+int vdbeSorterFlushThread(void *pSorter)
+{
+    int rc;
+    rc = vdbeSorterListToPMA(pSorter, (char *)pSorter + 32);
+    *((int *)((char *)pSorter + 8)) = 1;
+    return rc;
+}
+/////
+int sqlite3GenerateIndexKey(Parse *pParse, Index *pIdx, int regBase, int sortOrder, int partial, int nCol, int *piLabel) {
+  Vdbe *v = pParse->pVdbe;
+  int i;
+  int nColumn;
+  int tempStart;
+  int label = 0;
+  KeyCache *pKey = 0;
+
+  if (!piLabel) {
+  } else if (pIdx->pPartIdxExpr) {
+    label = sqlite3VdbeMakeLabel(v);
+    *piLabel = label;
+    pParse->nMem = regBase + 1;
+    sqlite3ExprIfFalseDup(pParse, pIdx->pPartIdxExpr, label, 1);
+    pParse->nMem = 0;
+    pKey = 0;
+  } else {
+    *piLabel = 0;
+  }
+
+  if (partial && ((*(unsigned short *)((char *)pIdx + 99) >> 3) & 1)) {
+    nColumn = *(unsigned short *)((char *)pIdx + 94);
+  } else {
+    nColumn = *(unsigned short *)((char *)pIdx + 96);
+  }
+
+  tempStart = sqlite3GetTempRange(pParse, nColumn);
+
+  if (pKey) {
+    if (tempStart != nCol || pKey->next) {
+      pKey = 0;
+    }
+  }
+
+  for (i = 0; i < nColumn; i++) {
+    if (!pKey || (*(short *)(pKey->aCol + 2*i) != *(short *)(pIdx->aSortOrder + 2*i)) || *(short *)(pKey->aCol + 2*i) == -2) {
+      sqlite3ExprCodeLoadIndexColumn(pParse, pIdx, regBase, i, tempStart + i);
+      sqlite3VdbeDeletePriorOpcode(v, OP_Column);
+    }
+  }
+
+  if (sortOrder) {
+    sqlite3VdbeAddOp3(v, OP_MakeRecord, tempStart, nColumn, sortOrder);
+    if (pIdx->pTable->zName) {
+      char *zAff = sqlite3IndexAffinityStr(pParse->db, pIdx);
+      sqlite3VdbeChangeP4(v, -1, zAff, 0);
+    }
+  }
+
+  sqlite3ReleaseTempRange(pParse, tempStart, nColumn);
+  return tempStart;
+}
+/////
+CollSeq *sqlite3BinaryCompareCollSeq(Parse *pParse, Expr *pLeft, Expr *pRight){
+  CollSeq *pColl;
+  if( pLeft->flags & EP_FixedCol ){
+    return sqlite3ExprCollSeq(pParse, pLeft);
+  }
+  if( pRight && (pRight->flags & EP_FixedCol) ){
+    return sqlite3ExprCollSeq(pParse, pRight);
+  }
+  pColl = sqlite3ExprCollSeq(pParse, pLeft);
+  if( !pColl ){
+    pColl = sqlite3ExprCollSeq(pParse, pRight);
+  }
+  return pColl;
+}
+/////
+Image *CharcoalImage(const Image *image, const double radius, const double sigma, ExceptionInfo *exception)
+{
+    Image *edge;
+    Image *blur;
+    MagickBooleanType status;
+
+    if (image == (const Image *) NULL)
+        return (Image *) NULL;
+    if (exception == (ExceptionInfo *) NULL)
+        return (Image *) NULL;
+    if (image->signature != MagickCoreSignature)
+        return (Image *) NULL;
+    if (exception->signature != MagickCoreSignature)
+        return (Image *) NULL;
+    if (image->debug != MagickFalse)
+        LogMagickEvent(TraceEvent, "MagickCore/visual-effects.c", "CharcoalImage", 477, "%s", image->filename);
+    edge = EdgeImage(image, radius, exception);
+    if (edge == (Image *) NULL)
+        return (Image *) NULL;
+    edge->colorspace = UndefinedColorspace;
+    status = MagickFalse;
+    if (ClampImage(edge, exception) != MagickFalse)
+        blur = BlurImage(edge, radius, sigma, exception);
+    else
+        blur = (Image *) NULL;
+    DestroyImage(edge);
+    if (blur == (Image *) NULL)
+        return (Image *) NULL;
+    status = NormalizeImage(blur, exception);
+    if (status != MagickFalse)
+        status = NegateImage(blur, MagickFalse, exception);
+    if (status != MagickFalse)
+        status = GrayscaleImage(blur, image->type, exception);
+    if (status == MagickFalse)
+    {
+        DestroyImage(blur);
+        return (Image *) NULL;
+    }
+    return blur;
+}
+/////
+void *PKCS12_pbe_crypt(__int64 *algo, const char *pass, unsigned int passlen, char *in, int inlen, _QWORD *data, _DWORD *datalen, int enc)
+{
+    int update_len, final_len;
+    __int128 ctx[27];
+    int block_size;
+    void *buf;
+    int err_code, err_line;
+
+    EVP_CIPHER_CTX_init(ctx);
+    if (!EVP_PBE_CipherInit(*algo, pass, passlen, algo[1], ctx, enc))
+    {
+        ERR_put_error(35, 119, 115, "p12_decr.c", 83);
+        return 0;
+    }
+    block_size = EVP_CIPHER_CTX_block_size(ctx);
+    buf = CRYPTO_malloc(block_size + inlen, "p12_decr.c", 0x57u);
+    if (!buf)
+    {
+        err_code = 65;
+        err_line = 88;
+        ERR_put_error(35, 119, err_code, "p12_decr.c", err_line);
+        EVP_CIPHER_CTX_cleanup(ctx);
+        return 0;
+    }
+    if (!EVP_CipherUpdate(ctx, buf, &update_len, in, inlen))
+    {
+        CRYPTO_free(buf);
+        err_code = 6;
+        err_line = 96;
+        ERR_put_error(35, 119, err_code, "p12_decr.c", err_line);
+        EVP_CIPHER_CTX_cleanup(ctx);
+        return 0;
+    }
+    final_len = update_len;
+    if (!EVP_CipherFinal_ex(ctx, (char *)buf + update_len, &final_len))
+    {
+        CRYPTO_free(buf);
+        err_code = 116;
+        err_line = 104;
+        ERR_put_error(35, 119, err_code, "p12_decr.c", err_line);
+        EVP_CIPHER_CTX_cleanup(ctx);
+        return 0;
+    }
+    if (datalen)
+        *datalen = final_len + update_len;
+    if (data)
+        *data = buf;
+    EVP_CIPHER_CTX_cleanup(ctx);
+    return buf;
+}
+/////
+_BOOL8 __fastcall fxp_close_recv(void **a1, void *a2)
+{
+    safefree(a2);
+    fxp_got_status((long long)a1);
+    sftp_pkt_free(a1);
+    return fxp_errtype == 0;
+}
+/////
+CURLMcode curl_multi_socket_all(CURLM *multi, int *running_handles) {
+    int result;
+    if (!((*(unsigned char *)multi + 390) & 1)) {
+        result = multi_socket(multi, 1, -1, 0, running_handles);
+        if (result <= 0)
+            Curl_update_timer(multi);
+        return result;
+    } else {
+        return 8;
+    }
+}
+/////
+int curl_mfprintf(FILE *stream, const char *format, ...)
+{
+    va_list args;
+    va_start(args, format);
+    return dprintf_formatf(stream, fputc, format, args);
+}
+/////
+int curl_easy_send(CURL *curl, const void *buffer, size_t buflen, size_t *sent)
+{
+    int result;
+    int sockfd;
+    void *conn;
+    size_t nwritten;
+
+    if(Curl_is_in_callback(curl))
+        return 93;
+
+    result = easy_connection(curl, &sockfd, &conn);
+    if(result)
+        return result;
+
+    *sent = 0;
+
+    result = Curl_write(conn, sockfd, buffer, buflen, &nwritten);
+    if(nwritten == (size_t)-1)
+        return 55;
+    else
+    {
+        if(result || nwritten)
+        {
+            *sent = nwritten;
+            return result;
+        }
+        else
+            return 81;
+    }
+}
+/////
+int ndef_prefix_free(void *ctx, long long *counter1, int *counter2, void **pprefix)
+{
+    void *prefix;
+    void *data;
+    if (!pprefix)
+        return 0;
+    prefix = *pprefix;
+    data = *(void **)((char *)prefix + 40);
+    if (data)
+        CRYPTO_free(data);
+    *(void **)((char *)prefix + 40) = 0;
+    *counter1 = 0;
+    *counter2 = 0;
+    return 1;
+}
+/////
+MagickBooleanType ListConfigureInfo(FILE *stream, const char *pattern)
+{
+  size_t count;
+  ConfigureInfo **list;
+  size_t i;
+  const char *previous_name;
+  const char *name;
+  const char *value;
+  size_t len;
+  ConfigureInfo *info;
+
+  if (stream == NULL)
+    stream = stdout;
+
+  list = (ConfigureInfo **) GetConfigureInfoList(pattern, &count);
+  if (list == NULL)
+    return(MagickFalse);
+
+  previous_name = NULL;
+  for (i = 0; i < count; i++)
+  {
+    info = list[i];
+    if (info->stealth == MagickFalse)
+    {
+      if ((previous_name == NULL) || (LocaleCompare(previous_name, info->name) != 0))
+      {
+        FormatLocaleFile(stream, "\nPath: %s\n\n", info->path);
+        FormatLocaleFile(stream, "Name Value\n");
+        FormatLocaleFile(stream, "-------------------------------------------------------------------------------\n");
+      }
+      previous_name = info->name;
+      name = "unknown";
+      if (info->name != (const char *) NULL)
+        name = info->name;
+      FormatLocaleFile(stream, "%s", name);
+      len = strlen(name);
+      while (len <= 20)
+      {
+        FormatLocaleFile(stream, " ");
+        len++;
+      }
+      FormatLocaleFile(stream, " ");
+      value = "unknown";
+      if (info->value != (const char *) NULL)
+        value = info->value;
+      FormatLocaleFile(stream, "%s", value);
+      FormatLocaleFile(stream, "\n");
+    }
+  }
+  (void) fflush(stream);
+  RelinquishMagickMemory(list);
+  return(MagickTrue);
+}
+/////
+int ASN1_BIT_STRING_set_bit(ASN1_BIT_STRING *a, int n, int value)
+{
+    int w, v, len, old_len;
+    unsigned char *p;
+
+    if (a == NULL)
+        return 0;
+
+    w = n / 8;
+    v = 1 << (7 - (n & 7));
+    if (!value)
+        v = 0;
+
+    a->flags &= ~0x0F;
+
+    if (a->length > w && a->data != NULL)
+    {
+        p = a->data;
+        p[w] = (unsigned char)(v | (~(1 << (7 - (n & 7))) & p[w]));
+        len = a->length;
+        if (len > 0)
+        {
+            while (a->length > 0 && a->data[a->length - 1] == 0)
+                a->length--;
+        }
+        return 1;
+    }
+    else if (!value)
+    {
+        return 1;
+    }
+    else
+    {
+        old_len = a->length;
+        len = w + 1;
+        if (a->data != NULL)
+        {
+            p = CRYPTO_realloc_clean(a->data, old_len, len, "a_bitstr.c", 199);
+            if (p == NULL)
+            {
+                ERR_put_error(13, 183, 65, "a_bitstr.c", 202);
+                return 0;
+            }
+        }
+        else
+        {
+            p = CRYPTO_malloc(len, "a_bitstr.c", 195);
+            if (p == NULL)
+            {
+                ERR_put_error(13, 183, 65, "a_bitstr.c", 202);
+                return 0;
+            }
+        }
+        if (len > old_len)
+            memset(p + old_len, 0, len - old_len);
+        a->data = p;
+        a->length = len;
+        p[w] = (unsigned char)(v | (~(1 << (7 - (n & 7))) & p[w]));
+        while (a->length > 0 && a->data[a->length - 1] == 0)
+            a->length--;
+        return 1;
+    }
+}
+/////
+int read_rangelist(struct debug_ctx *ctx, struct arange *ranges, size_t index) {
+    unsigned char entry_size;
+    size_t pos, end;
+    uint64_t base;
+
+    if (!ctx || !ranges)
+        return 0;
+
+    struct ranges_info *info = *(struct ranges_info **)((char *)ctx + 168);
+    entry_size = *(unsigned char *)((char *)ctx + 180);
+    base = *(uint64_t *)((char *)ctx + 184);
+
+    if (info->offset == 0) {
+        if (read_debug_ranges(ctx) == 0)
+            return 0;
+    }
+
+    pos = index + info->offset;
+    end = info->offset + info->size;
+
+    if (pos < index)
+        return 0;
+
+    while (1) {
+        uint64_t start, length;
+
+        while (1) {
+            if (2 * entry_size + pos > end)
+                return 0;
+
+            start = read_address(ctx, pos, end);
+            pos += entry_size;
+            length = read_address(ctx, pos, end);
+            pos += entry_size;
+
+            if (start == 0 && length == 0)
+                return 1;
+
+            if (start != -1)
+                break;
+
+            if (length == -1)
+                break;
+
+            base = length;
+        }
+
+        if (arange_add(ctx, ranges, start + base, length + base) == 0)
+            break;
+    }
+
+    return 0;
+}
+/////
+struct bfd_link_hash_entry *
+unwrap_hash_lookup(struct bfd_link_info *info, struct bfd *abfd, struct bfd_link_hash_entry *entry)
+{
+    char saved_char;
+    const char *name_ptr;
+    char *symbol_name;
+    struct bfd_link_hash_entry *result;
+
+    result = entry;
+    name_ptr = *(const char **)((char *)entry + 8);
+    if (*name_ptr == (char)bfd_get_symbol_leading_char_6(abfd) || *name_ptr == *(char *)((char *)info + 8))
+        name_ptr++;
+    if (!strncmp(name_ptr, "__wrap_", 7))
+    {
+        symbol_name = (char *)(name_ptr + 7);
+        if (bfd_hash_lookup(*(struct bfd_hash_table *)((char *)info + 64), symbol_name, 0, 0))
+        {
+            saved_char = 0;
+            if (symbol_name - 7 != *(char **)((char *)entry + 8))
+            {
+                saved_char = *--symbol_name;
+                *symbol_name = **(char **)((char *)entry + 8);
+            }
+            else
+            {
+            }
+            result = (struct bfd_link_hash_entry *)bfd_link_hash_lookup(
+                *(struct bfd_link_hash_table *)((char *)info + 40), symbol_name, 0, 0, 0);
+        }
+    }
+    return result;
+}
+/////
+long DSO_ctrl(DSO *dso, int cmd, long larg, void *parg)
+{
+    long result;
+    long (*ctrl_func)(DSO *, int, long, void *);
+
+    if (dso) {
+        switch (cmd) {
+        case 3:
+            dso->flags |= larg;
+            result = 0;
+            break;
+        case 2:
+            dso->flags = larg;
+            result = 0;
+            break;
+        case 1:
+            result = dso->flags;
+            break;
+        default:
+            if (dso->meth && (ctrl_func = dso->meth->ctrl) != NULL) {
+                result = ctrl_func(dso, cmd, larg, parg);
+            } else {
+                ERR_put_error(37, 110, 108, "dso_lib.c", 334);
+                result = -1;
+            }
+            break;
+        }
+    } else {
+        ERR_put_error(37, 110, 67, "dso_lib.c", 313);
+        result = -1;
+    }
+    return result;
+}
+/////
+__int64 bfd_get_mtime(struct bfd *abfd)
+{
+    struct stat st;
+    if ((abfd->flags & (1 << 3)) != 0)
+        return abfd->mtime;
+    else
+    {
+        if (bfd_stat(abfd, &st) == 0)
+        {
+        }
+        else
+        {
+            return 0;
+        }
+        abfd->mtime = st.st_mtime;
+        return st.st_mtime;
+    }
+}
+/////
+QuantumInfo *GetQuantumInfo(const ImageInfo *image_info, QuantumInfo *quantum_info)
+{
+  if (!quantum_info)
+    _assert_fail("quantum_info != (QuantumInfo *) NULL", "MagickCore/quantum.c", 0x1A8u, "void GetQuantumInfo(const ImageInfo *, QuantumInfo *)");
+  memset(quantum_info, 0, 0x98uLL);
+  quantum_info->depth = 8;
+  quantum_info->maximum = 65535.0;
+  quantum_info->scale = 0.0;
+  quantum_info->something = 1;
+  quantum_info->semaphore = AcquireSemaphoreInfo();
+  quantum_info->magic = 2880220587LL;
+  if (image_info)
+  {
+    const char *option = GetImageOption(image_info, "quantum:format");
+    if (option)
+      quantum_info->format = ParseCommandOption(64, 0, option);
+    option = GetImageOption(image_info, "quantum:minimum");
+    if (option)
+    {
+      StringToDouble(option, 0);
+      quantum_info->minimum = 0.0;
+    }
+    option = GetImageOption(image_info, "quantum:maximum");
+    if (option)
+    {
+      StringToDouble(option, 0);
+      quantum_info->maximum = 0.0;
+    }
+    if (quantum_info->minimum == 0.0 && quantum_info->maximum == 0.0)
+    {
+      quantum_info->scale = 0.0;
+    }
+    else if (quantum_info->minimum == quantum_info->maximum)
+    {
+      quantum_info->scale = 65535.0 / quantum_info->minimum;
+      quantum_info->minimum = 0.0;
+    }
+    else
+    {
+      quantum_info->scale = 65535.0 / (quantum_info->maximum - quantum_info->minimum);
+    }
+    option = GetImageOption(image_info, "quantum:scale");
+    if (option)
+    {
+      StringToDouble(option, 0);
+      quantum_info->scale = quantum_info->scale;
+    }
+    option = GetImageOption(image_info, "quantum:polarity");
+    if (option)
+      quantum_info->polarity = LocaleCompare(option, "min-is-white") == 0;
+    quantum_info->depth = *(int *)((char *)image_info + 84);
+    ResetQuantumState(quantum_info);
+  }
+  return quantum_info;
+}
+/////
+long long priv_print_gost01(long long a1, int *a2, int a3)
+{
+    return print_gost_01(a1, a2, a3, 2);
+}
+/////
+int sqlite3_prepare(sqlite3 *db, const char *zSql, int nByte, sqlite3_stmt **ppStmt, const char **pzTail)
+{
+    return sqlite3LockAndPrepare(db, zSql, nByte, 0, ppStmt, pzTail);
+}
+/////
+bfd_boolean bfd_elf_get_bfd_needed_list(bfd *abfd, struct bfd_needed_list **list)
+{
+    asection *sec;
+    void *contents;
+    Elf_Internal_Shdr *shdr;
+    unsigned int strtab_idx;
+    size_t entry_size;
+    size_t size;
+    int idx;
+    void (*swap_dyn_in)(bfd *, const void *, Elf_Internal_Dyn *);
+    const char *name;
+    struct bfd_needed_list *p;
+
+    *list = NULL;
+
+    if (bfd_get_flavour(abfd) != bfd_target_elf_flavour || bfd_get_format(abfd) != bfd_object)
+        return FALSE;
+
+    sec = bfd_get_section_by_name(abfd, ".dynamic");
+    if (sec == NULL)
+        return FALSE;
+
+    size = sec->size;
+    if (size == 0)
+        return FALSE;
+
+    if (!bfd_malloc_and_get_section(abfd, sec, &contents))
+        return FALSE;
+
+    idx = bfd_elf_section_from_bfd_section(abfd, sec);
+    if (idx < 0)
+    {
+        free(contents);
+        return FALSE;
+    }
+
+    shdr = elf_section_headers(abfd) + idx;
+    strtab_idx = shdr->sh_link;
+    entry_size = shdr->sh_entsize;
+    swap_dyn_in = elf_backend_data(abfd)->s->swap_dyn_in;
+
+    void *ptr = contents;
+    void *end = ptr + size;
+
+    while (ptr < end)
+    {
+        Elf_Internal_Dyn dyn;
+        swap_dyn_in(abfd, ptr, &dyn);
+
+        if (dyn.d_tag == DT_NULL)
+            break;
+
+        if (dyn.d_tag == DT_NEEDED)
+        {
+            name = bfd_elf_string_from_elf_section(abfd, strtab_idx, dyn.d_val);
+            if (name == NULL)
+            {
+                free(contents);
+                return FALSE;
+            }
+
+            p = bfd_alloc(abfd, sizeof(struct bfd_needed_list));
+            if (p == NULL)
+            {
+                free(contents);
+                return FALSE;
+            }
+
+            p->next = *list;
+            p->abfd = abfd;
+            p->name = name;
+            *list = p;
+        }
+
+        ptr = (char *)ptr + entry_size;
+    }
+
+    free(contents);
+    return TRUE;
+}
+/////
+size_t doh_write_cb(void *contents, size_t size, size_t nmemb, void *userp)
+{
+    size_t n = size * nmemb;
+    if (Curl_dyn_addn(userp, contents, n))
+        return 0;
+    return n;
+}
+/////
+CURLcode Curl_pretransfer(struct Curl_easy *data)
+{
+    CURLcode result = CURLE_OK;
+
+    if (!(data->change.url || data->set.url)) {
+        Curl_failf(data, "No URL set!");
+        return CURLE_URL_MALFORMAT;
+    }
+
+    if (data->change.url_alloc) {
+        Curl_cfree(data->change.url);
+        data->change.url = NULL;
+        data->change.url_alloc = FALSE;
+    }
+
+    if (!data->change.url) {
+        result = curl_url_get(data->set.url, CURLUPART_URL, &data->change.url, 0);
+        if (result != CURLE_OK) {
+            Curl_failf(data, "No URL set!");
+            return CURLE_URL_MALFORMAT;
+        }
+    }
+
+    data->info.httpreq = data->set.httpreq;
+    data->state.url = data->change.url;
+    data->state.internalflags = (data->state.sslflags & CURL_SSL_VERIFYPEER ? 0x80 : 0) |
+                                (data->state.internalflags & 0xFF7F);
+    data->state.internalflags &= ~(0x2 | 0x8 | 0x20);
+    data->state.internalflags &= ~0x40;
+    data->state.upload = 0;
+    data->state.httpversion = 0;
+    data->state.connecttime = data->set.connecttime;
+    data->state.timeout = data->set.timeout;
+    Curl_cfree(data->state.resolver_buffer);
+    data->state.resolver_buffer = NULL;
+
+    if (data->info.httpreq == 5)
+        data->state.range = data->set.rangestart2;
+    else if (data->info.httpreq == 1 || data->info.httpreq == 6)
+        data->state.range = 0;
+    else {
+        data->state.range = data->set.rangestart;
+        if (data->set.range && data->state.range == (off_t)-1)
+            data->state.range = strlen(data->set.range);
+    }
+
+    if (data->state.cookies)
+        Curl_cookie_loadfiles(data);
+
+    if (data->state.hosts) {
+        result = Curl_loadhostpairs(data);
+        if (result)
+            return result;
+    }
+
+    data->state.internalflags |= 0x10;
+    Curl_initinfo(data);
+    Curl_pgrsResetTransferSizes(data);
+    Curl_pgrsStartNow(data);
+    data->state.timeout_remaining &= data->state.connecttime;
+    data->state.timeout_total &= data->state.timeout;
+
+    if (!(data->state.internalflags & 0x80) || !data->state.wildcard || !Curl_wildcard_init(data->state.wildcard)) {
+        /* continue with current result */
+    } else {
+        result = CURLE_WILDCARD_NOT_INITIALIZED;
+    }
+
+    return result;
+}
+/////
+void sqlite3_str_appendall(sqlite3_str *p, const char *z)
+{
+    sqlite3_str_append(p, z, sqlite3Strlen30(z));
+}
+/////
+int TS_ACCURACY_set_millis(TS_ACCURACY *a, ASN1_INTEGER *millis)
+{
+    ASN1_INTEGER *old = a->millis;
+    int ret = 1;
+    if (old != millis)
+    {
+        if (millis != NULL)
+        {
+            ASN1_INTEGER *new_millis = ASN1_INTEGER_dup(millis);
+            if (new_millis == NULL)
+            {
+                ERR_put_error(47, 116, 65, "ts_rsp_utils.c", 264);
+                return 0;
+            }
+            old = a->millis;
+            ASN1_INTEGER_free(old);
+            a->millis = new_millis;
+        }
+        else
+        {
+            ASN1_INTEGER_free(old);
+            a->millis = NULL;
+        }
+    }
+    return ret;
+}
+/////
+asection *
+bfd_make_section_old_way (bfd *abfd, const char *name)
+{
+  asection *newsect;
+  struct bfd_hash_entry *entry;
+  unsigned int (*make_section) (bfd *, asection *);
+  int cmp;
+
+  if ((abfd->flags & 0x20) != 0)
+    {
+      bfd_set_error (bfd_error_no_section);
+      return NULL;
+    }
+
+  cmp = strcmp (name, "*ABS*");
+  if (cmp == 0)
+    newsect = &bfd_std_section[70];
+  else if ((cmp = strcmp (name, "*COM*")) == 0)
+    newsect = &bfd_std_section[0];
+  else if ((cmp = strcmp (name, "*UND*")) == 0)
+    newsect = &bfd_std_section[35];
+  else if ((cmp = strcmp (name, "*IND*")) == 0)
+    newsect = &bfd_std_section[105];
+  else
+    {
+      entry = bfd_hash_lookup (abfd->section_htab, name, 1, 0);
+      if (entry == NULL)
+        return NULL;
+      newsect = (asection *) (entry + 1);
+      if (newsect->name == NULL)
+        newsect->name = name;
+      return bfd_section_init (abfd, newsect);
+    }
+
+  make_section = abfd->xvec->_bfd_make_section_from_name;
+  if (!(*make_section) (abfd, newsect))
+    return NULL;
+  return newsect;
+}
+/////
+int MHD_queue_auth_fail_response(struct MHD_Connection *connection, const char *realm, const char *opaque, struct MHD_Response *response, int signal_strength)
+{
+    if ((connection == ((void *)0)) || (realm == ((void *)0)))
+        return 0;
+    return (int)MHD_queue_auth_fail_response2(connection, realm, opaque, response, signal_strength, 1, 0L, 0L);
+}
+/////
+void curl_global_cleanup(void)
+{
+    if (initialized)
+    {
+        initialized--;
+        if (initialized == 0)
+        {
+            Curl_resolver_global_cleanup();
+            init_flags = 0;
+        }
+    }
+}
+/////
+unsigned long long bfd_get_elf_phdr_upper_bound(void *abfd) {
+    if (*(int *)(*(void **)((char *)abfd + 8) + 8) != 5) {
+        bfd_set_error(3);
+        return (unsigned long long)-1;
+    }
+    return (unsigned long long)*(unsigned int *)(*(void **)((char *)abfd + 248) + 68) << 6;
+}
+/////
+char *ReadBlobString(Image *image, char *string)
+{
+    int c;
+    size_t i = 0;
+    if (!image)
+        _assert_fail("image != (Image *) NULL", "MagickCore/blob.c", 0x12E7u, "char *ReadBlobString(Image *, char *)");
+    if (image->signature != MagickCoreSignature)
+        _assert_fail("image->signature == MagickCoreSignature", "MagickCore/blob.c", 0x12E8u, "char *ReadBlobString(Image *, char *)");
+    for (i = 0; i < 4095; i++)
+    {
+        c = ReadBlobByte(image);
+        if (c == EOF)
+        {
+            if (i == 0)
+                return (char *)0;
+            break;
+        }
+        string[i] = (char)c;
+        if (c == '\n')
+        {
+            if (i > 0 && string[i - 1] == '\r')
+                i--;
+            break;
+        }
+    }
+    string[i] = '\0';
+    return string;
+}
+/////
+int whereScanInitIndexExpr(WhereScan *pScan) {
+    *(unsigned char *)((char *)pScan + 32) = sqlite3ExprAffinity(*(Expr **)((char *)pScan + 24));
+    return whereScanNext(pScan);
+}
+/////
+bfd *bfd_openw(const char *filename, const char *target)
+{
+  bfd *abfd;
+  bfd *ret;
+
+  abfd = bfd_new_bfd();
+  if (abfd == NULL)
+    return NULL;
+
+  if (abfd != NULL)
+  {
+    if (!bfd_find_target(target, abfd) || (abfd->filename = bfd_strdup(filename)) == NULL)
+    {
+      bfd_delete(abfd);
+      ret = NULL;
+    }
+    else
+    {
+      abfd->flags = (abfd->flags & 0xE7) | 0x10;
+      if (!bfd_open_file(abfd))
+      {
+        bfd_set_error(1);
+        bfd_delete(abfd);
+        ret = NULL;
+      }
+      else
+      {
+        ret = abfd;
+      }
+    }
+  }
+  else
+  {
+    ret = NULL;
+  }
+
+  return ret;
+}
+/////
+int ec_GFp_mont_group_set_curve(EC_GROUP *group, const BIGNUM *p, BIGNUM *a, BIGNUM *b, BN_CTX *ctx)
+{
+    BN_CTX *new_ctx = NULL;
+    BN_MONT_CTX *mont = NULL;
+    BIGNUM *R = NULL;
+    int ret = 0;
+    if (*(BN_MONT_CTX **)((char *)group + 208) != NULL)
+    {
+        BN_MONT_CTX_free(*(BN_MONT_CTX **)((char *)group + 208));
+        *(BN_MONT_CTX **)((char *)group + 208) = NULL;
+    }
+    if (*(BIGNUM **)((char *)group + 216) != NULL)
+    {
+        BN_free(*(BIGNUM **)((char *)group + 216));
+        *(BIGNUM **)((char *)group + 216) = NULL;
+    }
+    if (ctx == NULL)
+    {
+        new_ctx = BN_CTX_new();
+        if (new_ctx == NULL)
+            return 0;
+    }
+    else
+    {
+        new_ctx = ctx;
+    }
+    mont = BN_MONT_CTX_new();
+    if (mont == NULL)
+    {
+        if (new_ctx && ctx == NULL)
+            BN_CTX_free(new_ctx);
+        return 0;
+    }
+    if (!BN_MONT_CTX_set(mont, p, new_ctx))
+    {
+        ERR_put_error(16, 189, 3, "ecp_mont.c", 233);
+        BN_MONT_CTX_free(mont);
+        if (new_ctx && ctx == NULL)
+            BN_CTX_free(new_ctx);
+        return 0;
+    }
+    R = BN_new();
+    if (R == NULL)
+    {
+        BN_MONT_CTX_free(mont);
+        if (new_ctx && ctx == NULL)
+            BN_CTX_free(new_ctx);
+        return 0;
+    }
+    if (!BN_mod_mul_montgomery(R, BN_value_one(), ((BIGNUM *)mont) + 1, mont, new_ctx))
+    {
+        BN_free(R);
+        BN_MONT_CTX_free(mont);
+        if (new_ctx && ctx == NULL)
+            BN_CTX_free(new_ctx);
+        return 0;
+    }
+    *(BN_MONT_CTX **)((char *)group + 208) = mont;
+    *(BIGNUM **)((char *)group + 216) = R;
+    mont = NULL;
+    R = NULL;
+    if (!ec_GFp_simple_group_set_curve(group, p, a, b, new_ctx))
+    {
+        BN_MONT_CTX_free(*(BN_MONT_CTX **)((char *)group + 208));
+        *(BN_MONT_CTX **)((char *)group + 208) = NULL;
+        BN_free(*(BIGNUM **)((char *)group + 216));
+        *(BIGNUM **)((char *)group + 216) = NULL;
+        if (new_ctx && ctx == NULL)
+            BN_CTX_free(new_ctx);
+        return 0;
+    }
+    ret = 1;
+    if (new_ctx && ctx == NULL)
+        BN_CTX_free(new_ctx);
+    return ret;
+}
+/////
+EC_KEY *d2i_ECParameters(EC_KEY **a, const unsigned char **pp, long length)
+{
+    EC_KEY *key;
+    if (!pp || !*pp) {
+        ERR_put_error(16, 144, 67, "ec_asn1.c", 1352);
+        return NULL;
+    }
+    if (!a || (key = *a) == NULL) {
+        key = EC_KEY_new();
+        if (!key) {
+            ERR_put_error(16, 144, 65, "ec_asn1.c", 1360);
+            return NULL;
+        }
+        if (a)
+            *a = key;
+    }
+    if (!d2i_ECPKParameters(&key->group, pp, length)) {
+        ERR_put_error(16, 144, 16, "ec_asn1.c", 1371);
+        return NULL;
+    }
+    return key;
+}
+/////
+void io_error() {
+    clearerr(stdout);
+    int errnum = errno;
+    char *msg = gettext("write error");
+    error(1, errnum, msg);
+}
+/////
+void *GetImageRegistry(int a1, const char *a2, long long a3)
+{
+    int v4;
+    void *v5;
+    void *v6;
+    if (IsEventLogging())
+        LogMagickEvent(0x8000LL, "MagickCore/registry.c", "GetImageRegistry", 197LL, "%s", a2);
+    if (!registry)
+        return 0;
+    v5 = GetValueFromSplayTree(registry, a2);
+    if (!v5)
+        return 0;
+    v6 = 0;
+    switch (a1)
+    {
+        case 1:
+            if (*(int *)v5 == 1)
+                v6 = CloneImageList(*(void **)((char *)v5 + 8), a3);
+            break;
+        case 2:
+            if (*(int *)v5 == 2)
+                v6 = CloneImageInfo(*(void **)((char *)v5 + 8));
+            break;
+        case 3:
+            v4 = *(int *)v5;
+            switch (v4)
+            {
+                case 1:
+                    v6 = ConstantString((char *)(*(void **)((char *)v5 + 8)) + 1016);
+                    break;
+                case 2:
+                    v6 = ConstantString((char *)(*(void **)((char *)v5 + 8)) + 8816);
+                    break;
+                case 3:
+                    v6 = ConstantString(*(void **)((char *)v5 + 8));
+                    break;
+            }
+            break;
+    }
+    return v6;
+}
+/////
+MagickBooleanType DestroyImagePixelCache(Image *image)
+{
+  if (image != (Image *) NULL)
+  {
+    if (image->signature == MagickCoreSignature)
+    {
+      if (image->debug)
+        LogMagickEvent(0x8000LL,"MagickCore/cache.c","DestroyImagePixelCache",875,"%s",image->filename);
+      if (image->cache != (PixelCache *) NULL)
+      {
+        image->cache = DestroyPixelCache(image->cache);
+        return(MagickTrue);
+      }
+      return(MagickFalse);
+    }
+    else
+      return(MagickFalse);
+  }
+  else
+    return(MagickFalse);
+}
+/////
+unsigned __int64 *monty_pow(unsigned __int64 *ctx, unsigned __int64 *base, unsigned __int64 *exponent)
+{
+    unsigned __int64 *result;
+    unsigned __int64 *temp;
+    unsigned __int64 *base_sq;
+    unsigned __int64 bit_index;
+    int bit;
+
+    base_sq = mp_copy(base);
+    result = mp_copy(ctx[5]);
+    temp = mp_make_sized(2 * ctx[2]);
+
+    for (bit_index = 0; bit_index < (exponent[0] << 6); bit_index++)
+    {
+        mp_mul_into(temp, result, base_sq);
+        monty_reduce(ctx, temp);
+
+        bit = mp_get_bit(exponent, bit_index);
+        mp_select_into(result, result, temp, bit);
+
+        if (bit_index != (exponent[0] << 6) - 1)
+        {
+            mp_mul_into(temp, base_sq, base_sq);
+            monty_reduce(ctx, temp);
+            mp_copy_into(base_sq, temp);
+        }
+    }
+
+    if (base_sq)
+        mp_free(base_sq);
+    if (temp)
+        mp_free(temp);
+    mp_clear(ctx[8]);
+
+    return result;
+}
+/////
+int find_hash_any(const char *name, int min_digest_size) {
+    unsigned int idx;
+    int best_digest = 129;
+    int best_idx = -1;
+    int i;
+
+    if (name == NULL)
+        return -1;
+
+    idx = find_hash(name);
+    if (idx != -1)
+        return idx;
+
+    for (i = 0; i < 32; i++) {
+        if (hash_descriptor[i].name) {
+            int d = hash_descriptor[i].digest_size;
+            if (d >= min_digest_size && d < best_digest) {
+                best_digest = d;
+                best_idx = i;
+            }
+        }
+    }
+    return best_idx;
+}
+/////
+char *sqlite3_mprintf(const char *zFormat, ...)
+{
+    va_list ap;
+    char *z;
+    int rc;
+    rc = sqlite3_initialize();
+    if( rc ) return 0;
+    va_start(ap, zFormat);
+    z = sqlite3_vmprintf(zFormat, ap);
+    va_end(ap);
+    return z;
+}
+/////
+int SetStringInfoName(StringInfo *string_info, const char *name)
+{
+    char *name_copy;
+    if (string_info == (StringInfo *)NULL)
+        return 0;
+    if (string_info->signature != 2880220587LL)
+        return 0;
+    if (name == (const char *)NULL)
+        return 0;
+    name_copy = ConstantString(name);
+    string_info->name = name_copy;
+    return 1;
+}
+/////
+int console_print_error_msg(const char *prefix, const char *msg)
+{
+    struct termios v3;
+    premsg(&v3);
+    fputs(prefix, stderr);
+    fputs(": ", stderr);
+    fputs(msg, stderr);
+    fputc(10, stderr);
+    fflush(stderr);
+    return postmsg(&v3);
+}
+/////
+int print_xfer_stats(int64_t timestamp)
+{
+    int64_t now;
+    char buf1[64];
+    char buf2[64];
+    char time_buf[24];
+    char rate_buf[64];
+    char *p1;
+    char *p2;
+    double elapsed;
+    int ret;
+
+    if (timestamp)
+    {
+        now = timestamp;
+        fputc_unlocked(13, stderr);
+    }
+    else
+        now = gethrxtime();
+
+    p1 = human_readable(w_bytes, buf1, sizeof buf1, 1, 1);
+    p2 = human_readable(w_bytes, buf2, sizeof buf2, 1, 1);
+
+    if (start_time >= now)
+    {
+        elapsed = 0.0;
+        snprintf(rate_buf, sizeof rate_buf, "%s B/s", gettext("Infinity"));
+    }
+    else
+    {
+        elapsed = (double)(now - start_time) / 1000000000.0;
+        char *rate = human_readable(w_bytes, rate_buf, sizeof rate_buf, 1, 1);
+        strcat(rate_buf, "/s");
+    }
+
+    const char *fmt_time = timestamp ? "%.0f s" : "%g s";
+    snprintf(time_buf, sizeof time_buf, fmt_time, elapsed);
+
+    if (abbreviation_lacks_prefix(p1))
+    {
+        size_t n = select_plural(w_bytes);
+        ret = fprintf(stderr, ngettext("%lu byte copied, %s, %s",
+                                      "%lu bytes copied, %s, %s", n),
+                     w_bytes, time_buf, rate_buf);
+    }
+    else if (abbreviation_lacks_prefix(p2))
+    {
+        ret = fprintf(stderr, gettext("%lu bytes (%s) copied, %s, %s"),
+                     w_bytes, p1, time_buf, rate_buf);
+    }
+    else
+    {
+        ret = fprintf(stderr, gettext("%lu bytes (%s, %s) copied, %s, %s"),
+                     w_bytes, p1, p2, time_buf, rate_buf);
+    }
+
+    if (timestamp)
+    {
+        if (ret >= 0 && ret < progress_len)
+            fprintf(stderr, "%*s", progress_len - ret, "");
+        progress_len = ret;
+    }
+    else
+        fputc_unlocked(10, stderr);
+
+    return ret;
+}
+/////
+int ENGINE_register_pkey_asn1_meths(void *e)
+{
+    int (*fn)(void *, int, void **, int);
+    unsigned int ret = 1;
+    int num;
+    void *v6[3];
+    if (e == NULL)
+        return 0;
+    fn = (int (*)(void *, int, void **, int))*(void **)((char *)e + 96);
+    if (fn != NULL) {
+        num = fn(e, 0, v6, 0);
+        if (num > 0)
+            ret = engine_table_register(&pkey_asn1_meth_table, (void (*)(void))engine_unregister_all_pkey_asn1_meths, e, v6[0], num, 0);
+    }
+    return ret;
+}
+/////
+int ssl3_send_server_done(SSL *s)
+{
+    if (s == NULL)
+        return -1;
+    if (s->state == SSL3_ST_SW_SERVER_DONE)
+    {
+        *(unsigned int *)((unsigned char *)s->init_buf->data + 8) = SSL3_MT_SERVER_DONE;
+        s->state = SSL3_ST_SW_SERVER_DONE_B;
+        s->init_num = 4;
+    }
+    return ssl3_do_write(s, SSL3_RT_HANDSHAKE);
+}
+/////
+bool des3_cbc3_setiv(void *ctx, unsigned int *iv)
+{
+    uint64_t v;
+    int i;
+    uint64_t *iv_arr = (uint64_t *)((unsigned char *)ctx - 24);
+    v = des_load_lr(iv);
+    v = des_IP(v);
+    for (i = 0; i < 3; i++)
+        iv_arr[i] = v;
+    return true;
+}
+/////
+char *OP_ST()
+{
+    return oappend_maybe_intel((__int64)&off_7E6F16);
+}
+/////
+int sqlite3PagerWrite(PgHdr *pPg)
+{
+    Pager *pPager = pPg->pPager;
+    int rc;
+    if ((pPg->flags & 4) && pPager->someField >= pPg->pgno)
+    {
+        if (pPager->subjournal)
+            rc = subjournalPageIfRequired(pPg);
+        else
+            rc = 0;
+    }
+    else if (pPager->errCode)
+    {
+        rc = pPager->errCode;
+    }
+    else if (pPager->pageSize <= pPager->sectorSize)
+    {
+        rc = pager_write(pPg);
+    }
+    else
+    {
+        rc = pagerWriteLargeSector(pPg);
+    }
+    return rc;
+}
+/////
+int BIO_free(BIO *a) {
+    if (a == NULL)
+        return 0;
+    if (CRYPTO_add_lock(&a->references, -1, 0x15, "bio_lib.c", 0x75) > 0)
+        return 1;
+    if (a->destroy != NULL)
+        a->destroy(a);
+    CRYPTO_free_ex_data(0, a, &a->ex_data);
+    if (a->method != NULL) {
+        if (a->method->destroy != NULL)
+            a->method->destroy(a);
+    }
+    CRYPTO_free(a);
+    return 1;
+}
+/////
+int EVP_PKEY_CTX_ctrl_str(EVP_PKEY_CTX **ctx, const char *type, const char *value)
+{
+    int (*ctrl_str)(EVP_PKEY_CTX *, const char *, const char *);
+    int ret;
+    const EVP_MD *md;
+    if (!ctx || !*ctx || (ctrl_str = (*(int (**)(EVP_PKEY_CTX *, const char *, const char *))(*ctx + 200)) == 0))
+    {
+        ERR_put_error(6, 150, 147, "pmeth_lib.c", 423);
+        return -2;
+    }
+    if (strcmp(type, "digest") != 0)
+    {
+        ret = ctrl_str(*ctx, type, value);
+    }
+    else if (!value || (md = EVP_get_digestbyname(value)) == 0)
+    {
+        ERR_put_error(6, 150, 152, "pmeth_lib.c", 432);
+        ret = 0;
+    }
+    else
+    {
+        ret = EVP_PKEY_CTX_ctrl(*ctx, -1, 248, 1, 0, (void *)md);
+    }
+    return ret;
+}
+/////
+int compare_timers(Timer *a, Timer *b) {
+    if (a->start < b->start) return -1;
+    if (a->start > b->start) return 1;
+    if (a->id < b->id) return -1;
+    if (a->id > b->id) return 1;
+    if (a->sequence < b->sequence) return -1;
+    if (a->sequence > b->sequence) return 1;
+    return 0;
+}
+/////
+int compare(_QWORD *a1, _QWORD *a2)
+{
+    unsigned int v10;
+    size_t v9, v8;
+    int v2, v11;
+    int result;
+
+    if (keylist && ((v10 = keycompare(a1, a2)) != 0 || (unique & 1) || (stable & 1)))
+    {
+        result = v10;
+    }
+    else
+    {
+        v9 = a1[1] - 1;
+        v8 = a2[1] - 1;
+        if (a1[1] == 1)
+        {
+            result = -(a2[1] != 1);
+        }
+        else if (a2[1] == 1)
+        {
+            result = 1;
+        }
+        else if ((hard_LC_COLLATE & 1) != 0)
+        {
+            result = xmemcoll0(*a1, a1[1], *a2, a2[1]);
+        }
+        else
+        {
+            v2 = memcmp((void *)*a1, (void *)*a2, v9 < v8 ? v9 : v8);
+            if (v2 == 0)
+            {
+                v11 = (v9 >= v8) ? (v9 != v8) : -1;
+            }
+            else
+            {
+                v11 = v2;
+            }
+            if ((reverse & 1) != 0)
+            {
+                result = -v11;
+            }
+            else
+            {
+                result = v11;
+            }
+        }
+    }
+    return result;
+}
+/////
+int xtea_setup(unsigned int *key, int keylen, int rounds, unsigned long long *skey)
+{
+    unsigned int v5[4];
+    unsigned int sum;
+    unsigned int i;
+    if (!key)
+        return 1;
+    if (!skey)
+        return 2;
+    if (keylen != 16)
+        return 3;
+    if (rounds && rounds != 32)
+        return 4;
+    v5[0] = _byteswap_ulong(key[0]);
+    v5[1] = _byteswap_ulong(key[1]);
+    v5[2] = _byteswap_ulong(key[2]);
+    v5[3] = _byteswap_ulong(key[3]);
+    sum = 0;
+    for (i = 0; i < 32; ++i)
+    {
+        skey[i] = v5[sum & 3] + sum;
+        sum -= 1640531527;
+        skey[i + 32] = v5[(sum >> 11) & 3] + sum;
+    }
+    return 0;
+}
+/////
+int khazad_setup(unsigned char *key, int keylen, int rounds, unsigned long long *skey)
+{
+    int i;
+    unsigned long long K0, K1;
+
+    if (key == 0)
+        return -1;
+    if (skey == 0)
+        return -1;
+    if (keylen != 16)
+        return 3;
+    if (rounds != 8)
+        return 4;
+
+    K0 = ((unsigned long long)key[0] << 56) ^ ((unsigned long long)key[1] << 48) ^
+         ((unsigned long long)key[2] << 40) ^ ((unsigned long long)key[3] << 32) ^
+         ((unsigned long long)key[4] << 24) ^ ((unsigned long long)key[5] << 16) ^
+         ((unsigned long long)key[6] << 8) ^ (unsigned long long)key[7];
+    K1 = ((unsigned long long)key[8] << 56) ^ ((unsigned long long)key[9] << 48) ^
+         ((unsigned long long)key[10] << 40) ^ ((unsigned long long)key[11] << 32) ^
+         ((unsigned long long)key[12] << 24) ^ ((unsigned long long)key[13] << 16) ^
+         ((unsigned long long)key[14] << 8) ^ (unsigned long long)key[15];
+
+    for (i = 0; i <= 8; ++i)
+    {
+        unsigned long long temp;
+        temp = T6[(unsigned char)(K1 >> 8)] ^ T5[(unsigned char)(K1 >> 16)] ^
+               T4[(unsigned char)(K1 >> 24)] ^ T3[(unsigned char)(K1 >> 32)] ^
+               T2[(unsigned char)(K1 >> 40)] ^ T1[(unsigned char)(K1 >> 48)] ^
+               T0[(unsigned char)(K1 >> 56)];
+        skey[i] = K0 ^ c[i] ^ T7[(unsigned char)K1] ^ temp;
+        K0 = K1;
+        K1 = skey[i];
+    }
+
+    skey[9] = skey[8];
+
+    for (i = 1; i < 8; ++i)
+    {
+        unsigned long long t = T7[(unsigned char)(K1 >> 8)];
+        unsigned long long u = T5[(unsigned char)T7[(unsigned char)(K1 >> 16)]] ^
+                               T4[(unsigned char)T7[(unsigned char)(K1 >> 24)]] ^
+                               T3[(unsigned char)T7[(unsigned char)(K1 >> 32)]] ^
+                               T2[(unsigned char)T7[(unsigned char)(K1 >> 40)]] ^
+                               T1[(unsigned char)T7[(unsigned char)(K1 >> 48)]] ^
+                               T0[(unsigned char)T7[(unsigned char)(K1 >> 56)]];
+        unsigned long long v = T6[(unsigned char)t] ^ u;
+        unsigned char b = (unsigned char)K1;
+        skey[i + 9] = T7[(unsigned char)T7[b]] ^ v;
+    }
+
+    skey[17] = skey[0];
+    return 0;
+}
+/////
+bool ssh1_connection_need_antispoof_prompt(void *conn)
+{
+    return (seat_set_trust_status_1(*(void **)((char *)conn + 304), 0) & 1) == 0;
+}
+/////
+__int64 __fastcall GetMagickResourceLimit(int a1)
+{
+    if (a1 == 1)
+        return qword_4D10;
+    if (a1 == 4)
+        return qword_4D00;
+    if (a1 == 7)
+        return qword_4D38;
+    if (a1 == 8)
+        return qword_4D40;
+    if (a1 == 10)
+        return qword_4CF8;
+    if (a1 == 11)
+        return qword_4D08;
+    if (!resource_semaphore[a1])
+        ActivateSemaphoreInfo(&resource_semaphore[a1]);
+    LockSemaphoreInfo(resource_semaphore[a1]);
+    __int64 result = 0LL;
+    if (a1 == 2)
+        result = qword_4D28;
+    else if (a1 == 3)
+        result = qword_4D30;
+    else if (a1 == 5)
+        result = qword_4D20;
+    else if (a1 == 6)
+        result = qword_4D18;
+    else if (a1 == 9)
+        result = qword_4D48;
+    UnlockSemaphoreInfo(resource_semaphore[a1]);
+    return result;
+}
+/////
+int MimeComponentTerminus() {
+    if (!mime_semaphore)
+        ActivateSemaphoreInfo(&mime_semaphore);
+    LockSemaphoreInfo(mime_semaphore);
+    if (mime_cache)
+        mime_cache = DestroyLinkedList(mime_cache, DestroyMimeElement);
+    UnlockSemaphoreInfo(mime_semaphore);
+    return RelinquishSemaphoreInfo(&mime_semaphore);
+}
+/////
+int mem_free(void *ptr) {
+    if (ptr == 0) {
+        return 0;
+    } else {
+        if (*(int *)((char *)ptr + 28) && *(int *)((char *)ptr + 24)) {
+            void *buf = *(void **)((char *)ptr + 48);
+            if (buf) {
+                if ((*(unsigned char *)((char *)ptr + 33) & 2) != 0) {
+                    *(unsigned long long *)((char *)buf + 8) = 0;
+                }
+                BUF_MEM_free(buf);
+                *(void **)((char *)ptr + 48) = 0;
+            }
+        }
+        return 1;
+    }
+}
+/////
+pid_t pipe_fork(int pipefd[2], int retries)
+{
+    pid_t pid;
+    double delay = 0.25;
+    int saved_errno;
+    char cs_ctx[256];
+
+    if (rpl_pipe2(pipefd, O_CLOEXEC) < 0)
+        return -1;
+
+    if (nmerge + 1 < (unsigned int)nprocs)
+        reap_some();
+
+    for (; retries > 0; retries--)
+    {
+        __int64 saved_temphead = temphead;
+        temphead = 0;
+        pid = fork();
+        saved_errno = errno;
+        if (pid == 0)
+            temphead = 0;
+        else
+            temphead = saved_temphead;
+        errno = saved_errno;
+        if (pid >= 0 || errno != EAGAIN)
+            break;
+        xnanosleep(delay);
+        delay *= 2.0;
+        reap_exited();
+    }
+
+    if (pid >= 0)
+    {
+        if (pid == 0)
+        {
+            close(0);
+            close(1);
+        }
+        else
+        {
+            nprocs++;
+        }
+    }
+    else
+    {
+        saved_errno = errno;
+        close(pipefd[0]);
+        close(pipefd[1]);
+        errno = saved_errno;
+    }
+    return pid;
+}
+/////
+bfd * ihex_object_p(bfd *abfd)
+{
+    char buf[9];
+    int i;
+    int count;
+    struct ihex_data *saved_data;
+    bfd *result;
+
+    ihex_init();
+    if (bfd_seek(abfd, (file_ptr) 0, SEEK_SET) != 0)
+        return NULL;
+
+    if (bfd_bread(buf, (bfd_size_type) 9, abfd) != 9)
+    {
+        if (bfd_get_error() == bfd_error_file_truncated)
+            bfd_set_error(bfd_error_wrong_format);
+        return NULL;
+    }
+
+    if (buf[0] != ':')
+    {
+        bfd_set_error(bfd_error_wrong_format);
+        return NULL;
+    }
+
+    for (i = 1; i < 9; i++)
+    {
+        if (hex_value[(unsigned char) buf[i]] == 99)
+        {
+            bfd_set_error(bfd_error_wrong_format);
+            return NULL;
+        }
+    }
+
+    count = (hex_value[(unsigned char) buf[7]] * 16) + hex_value[(unsigned char) buf[8]];
+    if (count > 5)
+    {
+        bfd_set_error(bfd_error_wrong_format);
+        return NULL;
+    }
+
+    saved_data = abfd->tdata.ihex_data;
+    if (ihex_mkobject(abfd) && ihex_scan(abfd))
+    {
+        result = abfd;
+    }
+    else
+    {
+        if (abfd->tdata.ihex_data != saved_data)
+        {
+            if (abfd->tdata.ihex_data)
+                bfd_release(abfd, abfd->tdata.ihex_data);
+            abfd->tdata.ihex_data = saved_data;
+        }
+        result = NULL;
+    }
+
+    return result;
+}
+/////
+struct user_node *getuidbyname(const char *name)
+{
+    struct user_node **pp;
+    struct user_node *p;
+
+    for (pp = &user_alist; (p = *pp) != NULL; pp = &p->next)
+    {
+        if (p->name[0] == name[0] && strcmp(p->name, name) == 0)
+            return p;
+    }
+
+    for (pp = &nouser_alist; (p = *pp) != NULL; pp = &p->next)
+    {
+        if (p->name[0] == name[0] && strcmp(p->name, name) == 0)
+            return NULL;
+    }
+
+    struct passwd *pw = getpwnam(name);
+    size_t len = strlen(name);
+    struct user_node *node = xmalloc((len + 24) & ~7ULL);
+    strcpy(node->name, name);
+
+    if (pw)
+    {
+        node->uid = pw->pw_uid;
+        node->next = user_alist;
+        user_alist = node;
+        return node;
+    }
+    else
+    {
+        node->next = nouser_alist;
+        nouser_alist = node;
+        return NULL;
+    }
+}
+/////
+MagickBooleanType DeleteImageProperty(Image *image, const char *property)
+{
+  MagickBooleanType status;
+  if (image != (Image *) NULL)
+  {
+    if (image->signature == MagickCoreSignature)
+    {
+      if (image->debug)
+        LogMagickEvent(0x8000LL,"MagickCore/property.c","DeleteImageProperty",285LL,"%s",image->filename);
+      if (image->properties)
+        status=DeleteNodeFromSplayTree(image->properties,property);
+      else
+        status=MagickFalse;
+    }
+    else
+      status=MagickFalse;
+  }
+  else
+    status=MagickFalse;
+  return(status);
+}
+/////
+void *bfd_default_reloc_type_lookup(bfd *abfd, int reloc_type)
+{
+    if (reloc_type == 586 && bfd_arch_bits_per_address(abfd) == 32)
+        return &bfd_howto_32;
+    return NULL;
+}
+/////
+int ENGINE_register_ECDH(ENGINE *e)
+{
+    if (!e || !e->ecdh)
+        return 0;
+    return engine_table_register(&ecdh_table, engine_unregister_all_ECDH, e, &dummy_nid_3, 1, 0);
+}
+/////
+int wrapf(const char *a1, ...)
+{
+    int v2;
+    char *ptr;
+    va_list va;
+    va_start(va, a1);
+    v2 = vasprintf(&ptr, a1, va);
+    if (v2 < 0)
+        xalloc_die();
+    if (current_col > 0)
+    {
+        if (max_col - current_col >= v2)
+        {
+            putchar_unlocked(' ');
+            ++current_col;
+        }
+        else
+        {
+            putchar_unlocked('\n');
+            current_col = 0;
+        }
+    }
+    fputs_unlocked(ptr, stdout);
+    free(ptr);
+    current_col += v2;
+    return v2;
+}
+/////
+int ENGINE_set_default_DH(ENGINE *e)
+{
+    if (e->dh_method)
+        return engine_table_register(&dh_table, engine_unregister_all_DH, e, &dummy_nid_2, 1, 1);
+    else
+        return 0;
+}
+/////
+// FUNCTION CRYPTO_pop_info NOT AVAILABLE
+/////
+// FUNCTION curl_multi_wait NOT AVAILABLE
+/////
+// FUNCTION shell_quote_copy NOT AVAILABLE
+/////
+// FUNCTION zlib_match NOT AVAILABLE
+/////
+// FUNCTION OP_MMX NOT AVAILABLE
+/////
+// FUNCTION ImageToFile NOT AVAILABLE
+/////
+// FUNCTION sqlite3GetCollSeq NOT AVAILABLE
+/////
+// FUNCTION ssh2_rportfwd_globreq_response NOT AVAILABLE
+/////
+// FUNCTION add_regexp NOT AVAILABLE
+/////
+// FUNCTION ASN1_UNIVERSALSTRING_to_string NOT AVAILABLE
+/////
+// FUNCTION mpz_goetgheluck_bin_uiui NOT AVAILABLE

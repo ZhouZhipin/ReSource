@@ -1,0 +1,3094 @@
+__int64 UI_add_info_string(__int64 a1, __int64 a2)
+{
+    return general_allocate_string(a1, a2, 0, 4, 0, 0LL, 0, 0, 0LL);
+}/////
+int vdbePmaReaderIncrMergeInit(PmaReader *a1, int a2) {
+    PmaReader *pReader = a1;
+    MergeEngine *pMerge = pReader->pMerge;
+    SorterTask *pTask = pMerge->pTask;
+    VdbeSorter *pSorter = pTask->pSorter;
+    int rc;
+    rc = vdbeMergeEngineInit(pTask, pMerge->nTask, a2);
+    if (rc) return rc;
+    int sz = pMerge->nBuffer;
+    if (pMerge->bUsePMA) {
+        rc = vdbeSorterOpenTempFile(pSorter, sz, &pMerge->aFile[0]);
+        if (rc) {
+            rc = vdbeSorterOpenTempFile(pSorter, sz, &pMerge->aFile[1]);
+            if (rc) return rc;
+        }
+        rc = vdbeIncrPopulate(pMerge);
+        if (rc) return rc;
+    } else {
+        if (pTask->pFile) {
+            pMerge->aFile[1] = pTask->pFile;
+            pMerge->iReadOff = pTask->iReadOff;
+            pTask->iReadOff += sz;
+        } else {
+            rc = vdbeSorterOpenTempFile(pSorter, pTask->nPMA, &pTask->pFile);
+            if (rc) return rc;
+            pTask->nPMA = 0;
+            pMerge->aFile[1] = pTask->pFile;
+            pMerge->iReadOff = pTask->iReadOff;
+            pTask->iReadOff += sz;
+        }
+    }
+    if (a2 != 1) {
+        return vdbePmaReaderNext(pReader);
+    }
+    return 0;
+}/////
+curl_off_t Curl_mime_size(struct Curl_mimepart *part)
+{
+    curl_off_t size;
+    if(part->kind == 4) {
+        size = multipart_size(part->subpart);
+        part->size = size;
+    }
+    else {
+        size = part->size;
+    }
+    if(part->vtbl) {
+        size = part->vtbl->size(part);
+        if(size < 0)
+            return size;
+    }
+    if(!(part->flags & 2)) {
+        size += slist_size(part->headers, 2, NULL);
+        size += slist_size(part->ctheaders, 2, "Content-Type") + 2;
+    }
+    return size;
+}/////
+struct MHD_Response * MHD_create_response_from_fd(size_t size, int fd)
+{
+    return MHD_create_response_from_fd_at_offset64(size, fd, 0LL);
+}/////
+int lf_copy(struct lf_buf *buf, int lines, FILE *fp)
+{
+    unsigned char *start = (unsigned char *)buf->ptr;
+    unsigned char *cur;
+    unsigned char *end = (unsigned char *)buf->end;
+    size_t len;
+    int result;
+
+    if (lines == 0) {
+        len = (char *)buf->ptr - (char *)start;
+        ck_fwrite(start, len, fp);
+        result = 0;
+    } else {
+        while (lines > 0) {
+            cur = (unsigned char *)rawmemchr((char *)buf->ptr, '\n');
+            buf->ptr = (char *)cur;
+            if (cur == end) {
+                len = end - start;
+                ck_fwrite(start, len, fp);
+                len = lf_refill(buf);
+                if (len == 0) {
+                    result = 0;
+                    return result;
+                }
+                start = (unsigned char *)buf->ptr;
+            } else {
+                lines--;
+                buf->ptr++;
+            }
+        }
+        len = (char *)buf->ptr - (char *)start;
+        ck_fwrite(start, len, fp);
+        result = 0;
+    }
+
+    return result;
+}/////
+unsigned char __fastcall sprintc(unsigned char *a1, unsigned char a2)
+{
+    unsigned char c = a2;
+    if (isprint((unsigned char)c)) {
+        *a1 = c;
+        a1[1] = 0;
+        return c;
+    }
+    if (c >= 0x80) {
+        *a1++ = 'M';
+        *a1++ = '-';
+        c += 0x80;
+    } else if (c < 0x20) {
+        *a1++ = '^';
+        c += 64;
+    } else if (c == 127) {
+        *a1++ = '^';
+        c = '?';
+    }
+    *a1 = c;
+    a1[1] = 0;
+    return c;
+}/////
+unsigned int gmp_snprintf_reps(void *info, unsigned char ch, unsigned int count)
+{
+    size_t remaining = *(size_t *)((char *)info + 8);
+    if (remaining >= 2) {
+        char *ptr = *(char **)info;
+        size_t n;
+        if (remaining - 1 < count) {
+            n = remaining - 1;
+        } else {
+            n = count;
+        }
+        memset(ptr, ch, n);
+        *(char **)info = ptr + n;
+        *(size_t *)((char *)info + 8) = remaining - n;
+        return count;
+    } else {
+        return count;
+    }
+}/////
+bfd_arch_info_type * bfd_arch_get_compatible (bfd *abfd1, bfd *abfd2, int a3)
+{
+  bfd_arch_info_type *arch1, *arch2;
+  int mach1, mach2;
+  bfd *first, *second;
+  unsigned short flags;
+
+  if (abfd1 == NULL || abfd2 == NULL)
+    return NULL;
+
+  arch1 = abfd1->arch_info;
+  arch2 = abfd2->arch_info;
+
+  if (arch1 == NULL || arch2 == NULL)
+    return NULL;
+
+  mach1 = arch1->mach;
+  mach2 = arch2->mach;
+
+  if (mach1 != 0 && mach2 != 0)
+  {
+    bfd_arch_info_type *(*compatible) (bfd_arch_info_type *, bfd_arch_info_type *);
+    compatible = arch1->compatible;
+    if (compatible == NULL)
+      return NULL;
+    return compatible (arch1, arch2);
+  }
+
+  if (mach1 == 0)
+  {
+    first = abfd1;
+    second = abfd2;
+  }
+  else
+  {
+    first = abfd2;
+    second = abfd1;
+  }
+
+  if (a3)
+    return second->arch_info;
+
+  flags = *(unsigned short *)((char *)first + 76);
+  if (((flags >> 12) & 3) == 1)
+    return second->arch_info;
+
+  if (strcmp (bfd_get_target (first), "binary") == 0)
+    return second->arch_info;
+
+  return NULL;
+}/////
+int process_dir(const char *a1, int a2, const unsigned char *a3)
+{
+    int success = (make_dir_parents(a1, a2, (unsigned int)make_ancestor, a3, dir_mode, (unsigned int)announce_mkdir, dir_mode_bits, owner_id, group_id, 0) & 1) == 0;
+    if (!success) {
+        if (a3[33] & 1) {
+            const char *last = last_component(a1);
+            if (!(restorecon(last, 0LL, 0LL) & 1)) {
+                int errnum = *__errno_location();
+                const char *format = gettext("failed to restore context for %s");
+                const char *v11 = quotearg_style(4LL, a1);
+                if (!ignorable_ctx_err((unsigned int)errnum))
+                    error(0, errnum, format, v11);
+            }
+        }
+        return 0;
+    } else {
+        return 1;
+    }
+}/////
+int MHD_post_process(void *connection, const char *post_data, size_t post_data_size)
+{
+    if (post_data_size == 0)
+        return 1;
+    if (connection == NULL)
+        return 0;
+    const char *content_type = *(const char **)((char *)connection + 24);
+    if (MHD_str_equal_caseless_n_("application/x-www-form-urlencoded", content_type, 33))
+        return post_process_urlencoded(connection, post_data, post_data_size);
+    if (MHD_str_equal_caseless_n_("multipart/form-data", content_type, 19))
+        return post_process_multipart(connection, post_data, post_data_size);
+    return 0;
+}/////
+int gz_decomp(unsigned int *state)
+{
+    unsigned int *strm = state + 30;
+    unsigned int leftover = state[38];
+    int ret = 0;
+    int ret_val = -1;
+    const char *err_msg = NULL;
+
+    while (1)
+    {
+        if (strm[2] == 0)
+        {
+            if (gz_avail((__int64)state) == -1)
+            {
+                ret_val = -1;
+                goto end;
+            }
+        }
+        ret = inflate(strm, 0);
+        if (ret == -2 || ret == 2)
+        {
+            gz_error((__int64)state, -2, "internal error: inflate stream corrupt");
+            ret_val = -1;
+            goto end;
+        }
+        if (ret == -4)
+        {
+            gz_error((__int64)state, -4, "out of memory");
+            ret_val = -1;
+            goto end;
+        }
+        if (ret == -3)
+        {
+            if (*(unsigned long long *)(strm + 6) == 0)
+                err_msg = "compressed data error";
+            else
+                err_msg = (const char *)(*(unsigned long long *)(strm + 6));
+            gz_error((__int64)state, -3, err_msg);
+            ret_val = -1;
+            goto end;
+        }
+        if (strm[8] == 0 || ret == 1)
+        {
+            break;
+        }
+    }
+    state[0] = leftover - strm[8];
+    *(unsigned long long *)(state + 1) = *(unsigned long long *)(strm + 3) - state[0];
+    if (ret == 1)
+        state[17] = 0;
+    ret_val = 0;
+end:
+    return ret_val;
+}/////
+int EVP_PKEY_assign(EVP_PKEY *pkey, int type, void *key)
+{
+    int ret = pkey_set_type(pkey, type, NULL, -1);
+    if (!ret)
+        return 0;
+    *(void**)((char*)pkey + 32) = key;
+    return 1;
+}/////
+long long quotearg_alloc(long long a1, long long a2, long long a3)
+{
+    return quotearg_alloc_mem(a1, a2, 0LL, a3);
+}/////
+int Curl_resolv(struct Curl_easy *data, const char *hostname, int port, char allowDOH, struct Curl_dns_entry **result)
+{
+    int rc = -1;
+    struct Curl_dns_entry *dns = NULL;
+    *result = NULL;
+
+    if (data->dns_cache) {
+        Curl_share_lock(data, CURL_LOCK_DATA_DNS, CURL_LOCK_ACCESS_SINGLE);
+        dns = Curl_fetch_addr(data, hostname, port);
+        if (dns) {
+            infof(data, "Hostname %s was found in DNS cache\n", hostname);
+            dns->inuse++;
+            rc = 0;
+            Curl_share_unlock(data, CURL_LOCK_DATA_DNS);
+            *result = dns;
+            return rc;
+        }
+        Curl_share_unlock(data, CURL_LOCK_DATA_DNS);
+    }
+
+    if (Curl_ipvalid(data)) {
+        struct in_addr addr4;
+        struct in6_addr addr6;
+        if (inet_pton(AF_INET, hostname, &addr4) > 0) {
+            dns = Curl_ip2addr(AF_INET, &addr4, hostname, port);
+        } else if (inet_pton(AF_INET6, hostname, &addr6) > 0) {
+            dns = Curl_ip2addr(AF_INET6, &addr6, hostname, port);
+        }
+        if (dns) {
+            dns = Curl_cache_addr(data->dns, dns, hostname, port);
+            if (data->dns_cache) {
+                Curl_share_lock(data, CURL_LOCK_DATA_DNS, CURL_LOCK_ACCESS_SINGLE);
+                Curl_share_unlock(data, CURL_LOCK_DATA_DNS);
+            }
+            *result = dns;
+            return 0;
+        }
+    }
+
+    if (data->resolver_callback) {
+        Curl_set_in_callback(data, 1);
+        int res = ((int (*)(void *, int, void *))data->resolver_callback)(data->resolver_data, 0, data->resolver_data2);
+        Curl_set_in_callback(data, 0);
+        if (res) {
+            return -1;
+        }
+    } else {
+        int waiting = 0;
+        if (allowDOH && ((data->set.flags >> 55) & 1)) {
+            dns = Curl_doh(data, hostname, port, &waiting);
+        } else {
+            dns = Curl_getaddrinfo(data, hostname, port, &waiting);
+        }
+        if (dns) {
+            dns = Curl_cache_addr(data->dns, dns, hostname, port);
+            if (data->dns_cache) {
+                Curl_share_lock(data, CURL_LOCK_DATA_DNS, CURL_LOCK_ACCESS_SINGLE);
+                Curl_share_unlock(data, CURL_LOCK_DATA_DNS);
+            }
+            *result = dns;
+            return 0;
+        }
+        if (waiting) {
+            return 1;
+        }
+    }
+
+    return rc;
+}/////
+int get_sesslist(struct sesslist *list, int include_default_only)
+{
+    DIR *dir;
+    strbuf *buf;
+    char *p, *name;
+    int i, count;
+
+    list->nsessions = 0;
+    list->sessions = NULL;
+    list->buffer = NULL;
+
+    buf = strbuf_new();
+    if (!buf)
+        return -1;
+
+    dir = enum_settings_start();
+    if (!dir) {
+        strbuf_free(buf);
+        return -1;
+    }
+
+    while (enum_settings_next(dir, buf))
+        BinarySink_put_byte(BinarySink_from_strbuf(buf), 0);
+    enum_settings_finish(dir);
+
+    list->buffer = strbuf_to_str(buf);
+    strbuf_free(buf);
+    if (!list->buffer)
+        return -1;
+
+    count = 0;
+    p = list->buffer;
+    while (*p) {
+        name = p;
+        while (*p)
+            p++;
+        p++;
+        if (include_default_only) {
+            if (strcmp(name, "Default Settings") == 0)
+                count++;
+        } else {
+            count++;
+        }
+    }
+
+    list->sessions = safemalloc(count, sizeof(char *), 0);
+    if (!list->sessions) {
+        safefree(list->buffer);
+        list->buffer = NULL;
+        return -1;
+    }
+
+    i = 0;
+    p = list->buffer;
+    while (*p) {
+        name = p;
+        while (*p)
+            p++;
+        p++;
+        if (include_default_only) {
+            if (strcmp(name, "Default Settings") == 0)
+                list->sessions[i++] = name;
+        } else {
+            list->sessions[i++] = name;
+        }
+    }
+    list->nsessions = i;
+
+    qsort(list->sessions, list->nsessions, sizeof(char *), sessioncmp);
+    return 0;
+}/////
+int tftp_connect(struct Curl_easy *data, bool *connected)
+{
+    struct tftp_conn *conn = Curl_ccalloc(1, 368);
+    if (!conn)
+        return 27;
+    data->conn = conn;
+    long timeout = *(long *)(*(void **)data + 1960);
+    if (timeout > 65464 || timeout < 8)
+        return 71;
+    int blksize = timeout > 512 ? timeout : 512;
+    conn->txbuf = Curl_ccalloc(1, blksize + 4);
+    if (!conn->txbuf)
+        return 27;
+    conn->rxbuf = Curl_ccalloc(1, blksize + 4);
+    if (!conn->rxbuf)
+    {
+        Curl_ccfree(conn->txbuf);
+        return 27;
+    }
+    Curl_conncontrol(data, 1);
+    conn->data = data;
+    conn->sockfd = *(int *)(data->conn + 1240);
+    conn->flags = 0;
+    conn->unknown = -100;
+    conn->blksize = 512;
+    conn->timeout = timeout;
+    conn->port = *(unsigned short *)(data->port + 4);
+    tftp_set_timeouts(conn);
+    if ((*(unsigned long long *)((char *)data + 1540) >> 23) & 1)
+    {
+        Curl_pgrsStartNow(data);
+        *connected = 1;
+        return 0;
+    }
+    int bind_result = bind(conn->sockfd, (const struct sockaddr *)(&conn->addr), *(int *)(data->conn + 16));
+    if (bind_result)
+    {
+        int err = *__errno_location();
+        char buffer[256];
+        const char *str = Curl_strerror(err, buffer, 256);
+        Curl_failf(data, "bind() failed;%s", str);
+        return 7;
+    }
+    *(unsigned long long *)((char *)data + 1540) = (*(unsigned long long *)((char *)data + 1540) & 0xFFFFFFFFFF7FFFFFULL) | 0x800000ULL;
+    Curl_pgrsStartNow(data);
+    *connected = 1;
+    return 0;
+}/////
+// FUNCTION MHD_response_execute_upgrade_ NOT AVAILABLE
+/////
+void delete_callbacks_for_context(void *context) {
+    struct callback **prev = &cbhead;
+    struct callback *cur;
+    for (cur = cbhead; cur; ) {
+        if (cur->context == context) {
+            *prev = cur->next;
+            safefree(cur);
+            cur = *prev;
+        } else {
+            prev = &cur->next;
+            cur = cur->next;
+        }
+    }
+    cbtail = (struct callback *)((uintptr_t)prev);
+}/////
+int BN_mul_word(BIGNUM *a, BN_ULONG w)
+{
+    BN_ULONG carry;
+    int newtop;
+
+    if (a == NULL) return 0;
+    if (w == 0) {
+        BN_set_word(a, 0);
+        return 1;
+    }
+    if (a->top == 0) return 1;
+
+    carry = bn_mul_words(a->d, a->d, a->top, w);
+    if (carry) {
+        newtop = a->top + 1;
+        if (newtop > a->dmax) {
+            if (!bn_expand2(a, newtop)) return 0;
+        }
+        a->d[a->top] = carry;
+        a->top = newtop;
+    }
+    return 1;
+}/////
+int vdbeRecordCompareString(int a1, const void *a2, void *a3) {
+    unsigned char v19 = *(unsigned char *)((char *)a2 + 1);
+    int rc = v19;
+    int v16, v17, v18, v14;
+    if (rc >= 128) {
+        sqlite3GetVarint32((char *)a2 + 1, &v19);
+    }
+    if (v19 < 12) {
+        if (v19 & 1) {
+            rc = *(signed char *)((char *)a3 + 21);
+            return rc;
+        } else {
+            v16 = *(unsigned char *)a2;
+            v17 = (v19 - 12) / 2;
+            if (v17 + v16 > a1) {
+                *(unsigned char *)((char *)a3 + 19) = sqlite3CorruptError(0x14275);
+                rc = 0;
+                return rc;
+            } else {
+                v14 = v17;
+                v18 = memcmp((char *)a2 + v16, *(const void **)(*(long long *)((char *)a3 + 8) + 16), v14);
+                if (v18 > 0) {
+                    rc = *(signed char *)((char *)a3 + 21);
+                    return rc;
+                } else if (v18 < 0) {
+                    rc = *(signed char *)((char *)a3 + 20);
+                    return rc;
+                } else {
+                    v18 = v17 - *(int *)(*(long long *)((char *)a3 + 8) + 12);
+                    if (v18 == 0) {
+                        if (*(unsigned short *)((char *)a3 + 16) > 1) {
+                            rc = sqlite3VdbeRecordCompareWithSkip(a1, a2, a3, 1);
+                            return rc;
+                        } else {
+                            rc = *(signed char *)((char *)a3 + 18);
+                            *(unsigned char *)((char *)a3 + 22) = 1;
+                            return rc;
+                        }
+                    } else {
+                        rc = *(signed char *)((char *)a3 + 20);
+                        return rc;
+                    }
+                }
+            }
+        }
+    } else {
+        rc = *(signed char *)((char *)a3 + 20);
+        return rc;
+    }
+}/////
+int engine_unlocked_init(ENGINE *e) {
+    int ref = e->funct_ref;
+    int to_return = 0;
+    if (ref == 0) {
+        int (*init_func)(ENGINE *) = e->init;
+        if (init_func != NULL) {
+            to_return = init_func(e);
+        } else {
+            to_return = 1;
+        }
+        if (to_return) {
+            CRYPTO_atomic_add(&e->struct_ref, 1, &e->lock);
+            CRYPTO_atomic_add(&e->funct_ref, 1, &e->lock);
+        }
+    } else {
+        to_return = 1;
+        CRYPTO_atomic_add(&e->struct_ref, 1, &e->lock);
+        CRYPTO_atomic_add(&e->funct_ref, 1, &e->lock);
+    }
+    return to_return;
+}/////
+MagickBooleanType CloneImageProfiles(Image *image,const Image *clone_image)
+{
+  if (image == (Image *) NULL)
+    return(MagickFalse);
+  if (image->signature != MagickCoreSignature)
+    return(MagickFalse);
+  if (image->debug != MagickFalse)
+    (void) LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
+  if (clone_image == (const Image *) NULL)
+    return(MagickFalse);
+  if (clone_image->signature != MagickCoreSignature)
+    return(MagickFalse);
+  if (clone_image->profiles != (SplayTreeInfo *) NULL)
+  {
+    if (image->profiles != (SplayTreeInfo *) NULL)
+      DestroyImageProfiles(image);
+    image->profiles=CloneSplayTree(clone_image->profiles,ConstantString,CloneStringInfo);
+  }
+  return(MagickTrue);
+}/////
+int print_normal_script(void *a1) {
+    return print_script(a1, find_change, print_normal_hunk);
+}/////
+unsigned int SetImageExtent(struct Image *image, size_t columns, size_t rows, struct ExceptionInfo *exception)
+{
+  unsigned int status;
+
+  if (columns == 0 || rows == 0)
+  {
+    ThrowMagickException(exception, "MagickCore/image.c", "SetImageExtent", 2641LL, 465LL, "NegativeOrZeroImageSize", "`%s'", (const char *)(image + 127));
+    return 0;
+  }
+
+  image->columns = columns;
+  image->rows = rows;
+
+  if (image->depth == 0)
+    image->depth = 8;
+
+  if (image->depth > 64)
+  {
+    ThrowMagickException(exception, "MagickCore/image.c", "SetImageExtent", 2653LL, 465LL, "ImageDepthNotSupported", "`%s'", (const char *)(image + 127));
+    return 0;
+  }
+
+  status = SyncImagePixelCache(image, exception);
+  return status;
+}/////
+int vdbeSorterFlushThread(void *a1){
+  int result;
+  result = vdbeSorterListToPMA((void *)a1, (void **)((char *)a1 + 32));
+  *(int *)((char *)a1 + 8) = 1;
+  return result;
+}/////
+int sqlite3GenerateIndexKey(void *pParse, void *pIndex, int regOut, int bSortOrder, int bMeta, int *piPartIdxLabel, void *pAltIndex, int iExtra) {
+  int nCol;
+  int reg;
+  int i;
+  Vdbe *v = *(Vdbe **)((char *)pParse + 16);
+  if (piPartIdxLabel) {
+    if (*(void **)((char *)pIndex + 72)) {
+      *piPartIdxLabel = sqlite3VdbeMakeLabel(pParse);
+    } else {
+      *piPartIdxLabel = 0;
+    }
+  }
+  if (bMeta) {
+    nCol = *(unsigned short *)((char *)pIndex + 94);
+  } else {
+    nCol = *(unsigned short *)((char *)pIndex + 96);
+  }
+  reg = sqlite3GetTempRange(pParse, nCol);
+  if (pAltIndex && reg != iExtra) {
+    pAltIndex = 0;
+  }
+  for (i = 0; i < nCol; i++) {
+    if (pAltIndex && *(short *)((char *)pAltIndex + 8 + 2 * i) == -2) continue;
+    sqlite3ExprCodeLoadIndexColumn(pParse, pIndex, regOut, i, reg + i, 0);
+    if (!bSortOrder) {
+      sqlite3VdbeAddOp3(v, 91, reg, nCol, bSortOrder);
+      sqlite3VdbeChangeP4(v, -1, sqlite3IndexAffinityStr(pParse, pIndex), 0);
+    }
+  }
+  sqlite3ReleaseTempRange(pParse, reg, nCol);
+  return reg;
+}/////
+char *sqlite3BinaryCompareCollSeq(Parse *pParse, Expr *pLeft, Expr *pRight) {
+    char *zColl;
+    if (pLeft->flags & 0x100) {
+        return sqlite3ExprCollSeq(pParse, pLeft);
+    } else if (pRight != NULL && (pRight->flags & 0x100)) {
+        return sqlite3ExprCollSeq(pParse, pRight);
+    } else {
+        zColl = sqlite3ExprCollSeq(pParse, pLeft);
+        if (zColl) return zColl;
+        if (pRight) {
+            return sqlite3ExprCollSeq(pParse, pRight);
+        }
+        return 0;
+    }
+}/////
+Image *CharcoalImage(const Image *image, const double radius, const double sigma, ExceptionInfo *exception)
+{
+  Image *edge_image, *blurred_image;
+  int status;
+  if (!image)
+    return((Image *) NULL);
+  if (image->signature != MagickCoreSignature)
+    return((Image *) NULL);
+  if (image->debug)
+    LogMagickEvent(TraceEvent,GetMagickModule(),"%s",image->filename);
+  if (!exception)
+    return((Image *) NULL);
+  if (exception->signature != MagickCoreSignature)
+    return((Image *) NULL);
+  edge_image=EdgeImage(image,radius,exception);
+  if (!edge_image)
+    return((Image *) NULL);
+  edge_image->taint=MagickFalse;
+  blurred_image=(Image *) NULL;
+  if (ClampImage(edge_image,exception) != MagickFalse)
+    blurred_image=BlurImage(edge_image,exception,radius,sigma);
+  DestroyImage(edge_image);
+  if (!blurred_image)
+    return((Image *) NULL);
+  status=NormalizeImage(blurred_image,exception);
+  if (status != MagickFalse)
+    status=NegateImage(blurred_image,MagickFalse,exception);
+  if (status != MagickFalse)
+    status=GrayscaleImage(blurred_image,image->colorspace,exception);
+  if (status == MagickFalse)
+    blurred_image=DestroyImage(blurred_image);
+  return(blurred_image);
+}/////
+unsigned char *PKCS12_pbe_crypt(EVP_PBE_CTX *pbe_ctx, const char *pass, int passlen, const unsigned char *in, int inlen, unsigned char **out, int *outlen, int encrypt)
+{
+    EVP_CIPHER_CTX ctx;
+    unsigned char *buf = NULL;
+    int outlen_tmp, tmplen, final_len;
+    if (pbe_ctx == NULL || pass == NULL || in == NULL) {
+        ERR_put_error(35, 119, 115, "p12_decr.c", __LINE__);
+        return NULL;
+    }
+    EVP_CIPHER_CTX_init(&ctx);
+    if (!EVP_PBE_CipherInit(pbe_ctx->type, pass, passlen, pbe_ctx->salt, &ctx, encrypt)) {
+        ERR_put_error(35, 119, 115, "p12_decr.c", __LINE__);
+        goto cleanup;
+    }
+    int blen = EVP_CIPHER_CTX_block_size(&ctx);
+    int buflen = blen + inlen;
+    buf = (unsigned char *)CRYPTO_malloc(buflen, "p12_decr.c", 0x57);
+    if (buf == NULL) {
+        ERR_put_error(35, 119, 115, "p12_decr.c", 0x58);
+        goto cleanup;
+    }
+    if (!EVP_CipherUpdate(&ctx, buf, &outlen_tmp, in, inlen)) {
+        ERR_put_error(35, 119, 115, "p12_decr.c", __LINE__);
+        goto cleanup;
+    }
+    if (!EVP_CipherFinal_ex(&ctx, buf + outlen_tmp, &tmplen)) {
+        ERR_put_error(35, 119, 115, "p12_decr.c", __LINE__);
+        goto cleanup;
+    }
+    final_len = outlen_tmp + tmplen;
+    if (out != NULL)
+        *out = buf;
+    if (outlen != NULL)
+        *outlen = final_len;
+    EVP_CIPHER_CTX_cleanup(&ctx);
+    return buf;
+cleanup:
+    EVP_CIPHER_CTX_cleanup(&ctx);
+    if (buf != NULL)
+        CRYPTO_free(buf);
+    return NULL;
+}/////
+int fxp_close_recv(void **a1, void *a2)
+{
+    safefree(a2);
+    fxp_got_status((__int64)a1);
+    sftp_pkt_free(a1);
+    return fxp_errtype == 0;
+}/////
+int curl_multi_socket_all(void *multi_handle, int *running_handles, void *a3, void *a4, void *a5, void *a6)
+{
+    int result;
+    char flags = *(char *)((char *)multi_handle + 390);
+    if (flags & 1) {
+        return 8;
+    } else {
+        result = multi_socket(multi_handle, 1, (unsigned int)-1, 0, running_handles, a6);
+        if (result <= 0) {
+            Curl_update_timer(multi_handle, multi_handle, a3, 35918650, a5, a6);
+        }
+        return result;
+    }
+}/////
+int curl_mfprintf(FILE *stream, const char *format, ...)
+{
+    va_list args;
+    int result;
+    va_start(args, format);
+    result = dprintf_formatf(stream, (int (*)(int, FILE*))fputc, format, args);
+    va_end(args);
+    return result;
+}/////
+int curl_easy_send(CURL *curl, const void *buffer, size_t buflen, size_t *sent)
+{
+    CURLcode result;
+    int sockfd;
+    void *conn = NULL;
+    ssize_t nwritten;
+    if (Curl_is_in_callback(curl))
+        return 93;
+    result = easy_connection(curl, &sockfd, &conn);
+    if (result != 0)
+        return result;
+    result = Curl_write(conn, sockfd, buffer, buflen, &nwritten);
+    if (nwritten == -1) {
+        return 55;
+    } else {
+        if (result != 0) {
+            *sent = nwritten;
+            return result;
+        } else {
+            if (nwritten > 0) {
+                *sent = nwritten;
+                return 0;
+            } else {
+                return 81;
+            }
+        }
+    }
+}/////
+int ndef_prefix_free(void *a1, uint64_t *a2, uint32_t *a3, void **a4)
+{
+    if (a4 == NULL)
+        return 0;
+    void **v10 = (void **)((char *)(*a4) + 40);
+    void *v11 = *v10;
+    if (v11 != NULL)
+        CRYPTO_free(v11);
+    *v10 = NULL;
+    *a2 = 0;
+    *a3 = 0;
+    return 1;
+}/////
+MagickBooleanType ListConfigureInfo(FILE *stream, ExceptionInfo *exception)
+{
+  char **list;
+  size_t count;
+  size_t i;
+  char *name;
+  char *value;
+  char *path;
+  int skip;
+  
+  if (stream == (FILE *) NULL)
+    stream = stdout;
+  
+  list = GetConfigureInfoList("*", &count, exception);
+  if (list == (char **) NULL)
+    return(MagickFalse);
+  
+  FormatLocaleFile(stream, "Name Value\n");
+  FormatLocaleFile(stream, "-------------------------------------------------------------------------------\n");
+  
+  for (i = 0; i < count; i++)
+  {
+    name = (char *) (list[i] + 0);
+    value = (char *) (list[i] + 8);
+    path = (char *) (list[i] + 16);
+    skip = *(int *) (list[i] + 28);
+    
+    if (skip != 0)
+      continue;
+    
+    if (name == (char *) NULL)
+      name = "unknown";
+    if (value == (char *) NULL)
+      value = "unknown";
+    
+    FormatLocaleFile(stream, "%s  %s\n", name, value);
+    
+    if (path != (char *) NULL)
+      FormatLocaleFile(stream, "\nPath: %s\n\n", path);
+  }
+  
+  fflush(stream);
+  RelinquishMagickMemory(list);
+  return(MagickTrue);
+}/////
+int ASN1_BIT_STRING_set_bit(ASN1_BIT_STRING *str, int bit, int value)
+{
+    int byte_offset = bit / 8;
+    unsigned char mask = 1 << (7 - (bit & 7));
+    unsigned char *data;
+    int new_len;
+
+    if (str == NULL) {
+        ERR_put_error(13, 183, 65, "a_bitstr.c", 202);
+        return 0;
+    }
+
+    str->flags &= 0xF0;
+    new_len = byte_offset + 1;
+
+    if (str->length < new_len) {
+        if (str->data == NULL) {
+            data = CRYPTO_malloc(new_len, "a_bitstr.c", 0xC3);
+            if (data == NULL) {
+                ERR_put_error(13, 183, 65, "a_bitstr.c", 202);
+                return 0;
+            }
+            if (str->length > 0) {
+                memcpy(data, str->data, str->length);
+                OPENSSL_cleanse(str->data, str->length);
+            }
+            memset(data + str->length, 0, new_len - str->length);
+        } else {
+            data = CRYPTO_realloc_clean(str->data, str->length, new_len, "a_bitstr.c", 0xC7);
+            if (data == NULL) {
+                ERR_put_error(13, 183, 65, "a_bitstr.c", 202);
+                return 0;
+            }
+            if (new_len > str->length)
+                memset(data + str->length, 0, new_len - str->length);
+        }
+        str->data = data;
+        str->length = new_len;
+    } else {
+        data = str->data;
+    }
+
+    if (value)
+        data[byte_offset] |= mask;
+    else {
+        data[byte_offset] &= ~mask;
+        while (str->length > 0 && data[str->length - 1] == 0)
+            str->length--;
+    }
+
+    return 1;
+}/////
+int read_rangelist(struct debug_info *info, struct range_list *list, size_t offset) {
+    unsigned char *buf_start, *buf_end, *cur;
+    size_t stride;
+    uint64_t base, start, end;
+
+    base = info->base_address;
+    buf_start = (unsigned char *)info->buffer->data;
+    buf_end = buf_start + info->buffer->size;
+    stride = info->stride;
+
+    if (!buf_start) {
+        if (!read_debug_ranges(info))
+            return 0;
+        buf_start = (unsigned char *)info->buffer->data;
+        buf_end = buf_start + info->buffer->size;
+    }
+
+    cur = buf_start + offset;
+    if (cur < buf_start)
+        return 0;
+
+    for (; cur + 2 * stride <= buf_end; ) {
+        start = read_address(info, cur, buf_end);
+        cur += stride;
+        end = read_address(info, cur, buf_end);
+        cur += stride;
+
+        if (start == 0 && end == 0)
+            return 1;
+
+        if (start == (uint64_t)-1 && end != (uint64_t)-1) {
+            base = end;
+            continue;
+        }
+
+        if (!arange_add(info, list, base + start, base + end))
+            return 0;
+    }
+
+    return 0;
+}/////
+struct bfd_hash_entry *
+unwarp_hash_lookup (struct bfd_link_info *info, bfd *abfd, struct bfd_hash_entry *entry)
+{
+  char *name = entry->string;
+  int leading = bfd_get_symbol_leading_char (abfd);
+  char *s1 = name;
+  char saved;
+  int skip_leading = 0;
+
+  if (*s1 == leading)
+    {
+      s1++;
+      skip_leading = 1;
+    }
+  else if (*s1 == *(char *)&info->some_field)
+    {
+      s1++;
+    }
+
+  if (strncmp (s1, "__wrap_", 7) == 0)
+    {
+      s1 += 7;
+      if (bfd_hash_lookup (info->hash_table, s1, 0, 0) != NULL)
+        {
+          if (skip_leading)
+            {
+              saved = *s1;
+              *s1 = *name;
+              entry = bfd_link_hash_lookup (info->link_hash, s1, 0, 0, 0);
+              *s1 = saved;
+            }
+          else
+            {
+              entry = bfd_link_hash_lookup (info->link_hash, s1, 0, 0, 0);
+            }
+          return entry;
+        }
+    }
+  return entry;
+}/////
+long DSO_ctrl(DSO *dso, int cmd, long larg, void *parg)
+{
+    DSO_METHOD *meth;
+    if (dso == NULL) {
+        ERR_put_error(37, 110, 67, "dso_lib.c", 313);
+        return -1;
+    }
+    meth = dso->meth;
+    if (meth == NULL) {
+        ERR_put_error(37, 110, 108, "dso_lib.c", 334);
+        return -1;
+    }
+    if (meth->ctrl == NULL) {
+        ERR_put_error(37, 110, 108, "dso_lib.c", 334);
+        return -1;
+    }
+    switch (cmd) {
+    case 1:
+        return dso->flags;
+    case 2:
+        dso->flags = (int)larg;
+        return 0;
+    case 3:
+        dso->flags |= (int)larg;
+        return 0;
+    default:
+        return meth->ctrl(dso, cmd, larg, parg);
+    }
+}/////
+__int64 __fastcall bfd_get_mtime(__int64 a1)
+{
+    int flag;
+    char statbuf[88];
+    __int64 mtime;
+
+    flag = (*(_WORD *)(a1 + 76) >> 3) & 1;
+    if (flag != 0)
+    {
+        return *(_QWORD *)(a1 + 56);
+    }
+    else
+    {
+        if (bfd_stat(a1, (__int64)statbuf) == 0)
+        {
+            mtime = *(__int64 *)(statbuf + 24);
+            *(_QWORD *)(a1 + 56) = mtime;
+            return mtime;
+        }
+        else
+        {
+            return 0LL;
+        }
+    }
+}/////
+QuantumInfo *GetQuantumInfo(const ImageInfo *image_info, QuantumInfo *quantum_info)
+{
+  assert(quantum_info != (QuantumInfo *) NULL);
+  memset(quantum_info, 0, sizeof(QuantumInfo));
+  quantum_info->depth = 8;
+  quantum_info->maximum = 65535.0;
+  quantum_info->scale = 0.0;
+  quantum_info->quantum = 1;
+  quantum_info->semaphore = AcquireSemaphoreInfo();
+  quantum_info->signature = 2880220587LL;
+  if (image_info != (const ImageInfo *) NULL)
+  {
+    const char *option;
+    option = GetImageOption(image_info, "quantum:format");
+    if (option != (const char *) NULL)
+      quantum_info->format = (QuantumFormatType) ParseCommandOption(64, 0, option);
+    option = GetImageOption(image_info, "quantum:minimum");
+    if (option != (const char *) NULL)
+      StringToDouble(option, &quantum_info->minimum);
+    option = GetImageOption(image_info, "quantum:maximum");
+    if (option != (const char *) NULL)
+      StringToDouble(option, &quantum_info->maximum);
+    if ((quantum_info->minimum == 0.0) && (quantum_info->maximum == 0.0))
+      quantum_info->scale = 0.0;
+    else if (quantum_info->minimum == quantum_info->maximum)
+    {
+      quantum_info->scale = 65535.0 / quantum_info->minimum;
+      quantum_info->minimum = 0.0;
+    }
+    else
+      quantum_info->scale = 65535.0 / (quantum_info->maximum - quantum_info->minimum);
+    option = GetImageOption(image_info, "quantum:scale");
+    if (option != (const char *) NULL)
+      StringToDouble(option, &quantum_info->scale);
+    option = GetImageOption(image_info, "quantum:polarity");
+    if (option != (const char *) NULL)
+      quantum_info->polarity = (LocaleCompare(option, "min-is-white") == 0) ? MagickTrue : MagickFalse;
+    quantum_info->colorspace = image_info->colorspace;
+    return ResetQuantumState(quantum_info);
+  }
+  return quantum_info;
+}/////
+__int64 __fastcall priv_print_gost01(__int64 a1, __int64 a2, __int64 a3) { return print_gost_01(a1, a2, a3, 2); }/////
+int sqlite3_prepare(sqlite3 *db, const char *zSql, int nByte, sqlite3_stmt **ppStmt, const char **pzTail)
+{
+    return sqlite3LockAndPrepare(db, zSql, nByte, 0, ppStmt, pzTail);
+}/////
+bfd_boolean bfd_elf_get_bfd_needed_list(bfd *abfd, struct bfd_link_needed_list **pneeded)
+{
+  asection *s;
+  void *buf = NULL;
+  char *p, *end;
+  Elf_Internal_Dyn dyn;
+  unsigned int shndx, strtab;
+  const char *name;
+  struct bfd_link_needed_list *n, *head = NULL;
+  void (*swap_dyn_in)(bfd *, char *, Elf_Internal_Dyn *);
+  unsigned int entsize;
+
+  *pneeded = NULL;
+
+  if (bfd_get_flavour(abfd) != bfd_target_elf_flavour
+      || bfd_get_format(abfd) != bfd_object)
+    return FALSE;
+
+  s = bfd_get_section_by_name(abfd, ".dynamic");
+  if (s == NULL || s->size == 0)
+    return TRUE;
+
+  if (!bfd_malloc_and_get_section(abfd, s, &buf))
+    return FALSE;
+
+  shndx = bfd_elf_section_from_bfd_section(abfd, s);
+  if (shndx == (unsigned int)-257)
+  {
+    free(buf);
+    return FALSE;
+  }
+
+  strtab = ((struct elf_section_data *)s)->this_hdr.sh_link;
+  swap_dyn_in = ((struct elf_backend_data *)elf_backend_data(abfd))->s->swap_dyn_in;
+  entsize = ((struct elf_backend_data *)elf_backend_data(abfd))->s->sizeof_dyn;
+
+  if (swap_dyn_in == NULL || entsize == 0)
+  {
+    free(buf);
+    return FALSE;
+  }
+
+  for (p = buf; p < end; p += entsize)
+  {
+    swap_dyn_in(abfd, p, &dyn);
+    if (dyn.d_tag == DT_NULL)
+      break;
+    else if (dyn.d_tag == DT_NEEDED)
+    {
+      name = bfd_elf_string_from_elf_section(abfd, strtab, dyn.d_un.d_val);
+      if (name == NULL)
+      {
+        free(buf);
+        return FALSE;
+      }
+      n = bfd_alloc(abfd, sizeof(struct bfd_link_needed_list));
+      if (n == NULL)
+      {
+        free(buf);
+        return FALSE;
+      }
+      n->next = head;
+      n->by = abfd;
+      n->name = name;
+      head = n;
+    }
+  }
+  *pneeded = head;
+  free(buf);
+  return TRUE;
+}/////
+size_t doh_write_cb(void *contents, size_t size, size_t nmemb, void *userp)
+{
+    size_t total = size * nmemb;
+    CURLcode result = Curl_dyn_addn(userp, contents, total);
+    if (result)
+        return 0;
+    return total;
+}/////
+CURLcode Curl_pretransfer(struct Curl_easy *data)
+{
+    CURLcode result;
+    int v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15, v16, v17, v21;
+    unsigned int v22, v23;
+    long long v24;
+    int state;
+
+    v24 = *(long long *)((char *)data + 4040);
+    v23 = 0;
+    if (!v24 && !*(long long *)((char *)data + 4008))
+    {
+        Curl_failf(data, "No URL set!");
+        return 3;
+    }
+    if (*(char *)((char *)data + 4072) & 1)
+    {
+        Curl_cfree(*(void **)((char *)data + 4040));
+        *(long long *)((char *)data + 4040) = 0;
+        *(char *)((char *)data + 4072) &= 0xFEu;
+    }
+    if (!*(long long *)((char *)data + 4040) && *(long long *)((char *)data + 4008))
+    {
+        v21 = curl_url_get(*(long long *)((char *)data + 4008), 0, (char *)data + 3352, 0);
+        if (v21)
+        {
+            Curl_failf(data, "No URL set!");
+            return 3;
+        }
+    }
+    *(int *)((char *)data + 5864) = *(int *)((char *)data + 2584);
+    *(long long *)((char *)data + 4040) = *(long long *)((char *)data + 3352);
+    v22 = 0;
+    *(short *)((char *)data + 6000) = (((*(long long *)((char *)data + 4032) & 0x40000000000LL) != 0) << 7) | (*(short *)((char *)data + 6000) & 0xFF7F);
+    *(long long *)((char *)data + 1696) = 0;
+    *(short *)((char *)data + 6000) &= 0xFFFDu;
+    *(short *)((char *)data + 6000) &= 0xFFF7u;
+    *(int *)((char *)data + 5688) = 0;
+    *(short *)((char *)data + 6000) &= 0xFFDFu;
+    *(long long *)((char *)data + 4880) = *(long long *)((char *)data + 1672);
+    *(long long *)((char *)data + 4912) = *(long long *)((char *)data + 1680);
+    Curl_cfree(*(void **)((char *)data + 6160));
+    *(long long *)((char *)data + 6160) = 0;
+    if (*(int *)((char *)data + 5864) == 5)
+    {
+        *(long long *)((char *)data + 5744) = *(long long *)((char *)data + 1968);
+    }
+    else if (*(int *)((char *)data + 5864) == 1)
+    {
+        *(long long *)((char *)data + 5744) = 0;
+    }
+    else if (*(int *)((char *)data + 5864) == 6)
+    {
+        *(long long *)((char *)data + 5744) = 0;
+    }
+    else
+    {
+        *(long long *)((char *)data + 5744) = *(long long *)((char *)data + 1736);
+        if (*(long long *)((char *)data + 1720))
+        {
+            if (*(long long *)((char *)data + 5744) == -1LL)
+            {
+                *(long long *)((char *)data + 5744) = strlen(*(const char **)((char *)data + 1720));
+            }
+        }
+    }
+    if (*(long long *)((char *)data + 4056))
+    {
+        Curl_cookie_loadfiles(data);
+    }
+    if (*(long long *)((char *)data + 4064))
+    {
+        v22 = Curl_loadhostpairs(data);
+    }
+    if (v22)
+    {
+        return v22;
+    }
+    *(short *)((char *)data + 6000) = (*(short *)((char *)data + 6000) & 0xFFEF) | 0x10;
+    Curl_initinfo(data);
+    Curl_pgrsResetTransferSizes(data);
+    Curl_pgrsStartNow(data);
+    *(long long *)((char *)data + 4888) &= *(long long *)((char *)data + 4880);
+    *(long long *)((char *)data + 4920) &= *(long long *)((char *)data + 4912);
+    if ((*(short *)((char *)data + 6000) >> 7) & 1)
+    {
+        if (*(int *)((char *)data + 6008))
+        {
+            return v22;
+        }
+        else
+        {
+            v22 = Curl_wildcard_init((char *)data + 6008);
+            if (v22)
+            {
+                return 27;
+            }
+            else
+            {
+                return v22;
+            }
+        }
+    }
+    else
+    {
+        return v22;
+    }
+}/////
+void sqlite3_str_appendall(sqlite3_str *p, const char *z)
+{
+  sqlite3_str_append(p, z, sqlite3Strlen30(z));
+}/////
+int TS_ACCURACY_set_millis(TS_ACCURACY *a, ASN1_INTEGER *millis)
+{
+    ASN1_INTEGER *new_millis;
+    if (a == NULL || millis == NULL)
+    {
+        ERR_put_error(47, 116, 65, "ts_rsp_utils.c", 264);
+        return 0;
+    }
+    if (a->millis == millis)
+        return 1;
+    ASN1_INTEGER_free(a->millis);
+    new_millis = ASN1_INTEGER_dup(millis);
+    if (new_millis == NULL)
+    {
+        ERR_put_error(47, 116, 65, "ts_rsp_utils.c", 264);
+        return 0;
+    }
+    a->millis = new_millis;
+    return 1;
+}/////
+asection *
+bfd_make_section_old_way (bfd *abfd, const char *name)
+{
+  if ((abfd->flags >> 5) & 1)
+    {
+      bfd_set_error (bfd_error_invalid_operation);
+      return NULL;
+    }
+  else if (strcmp (name, "*ABS*") == 0)
+    {
+      asection *sec = &bfd_std_section + 70;
+      if (!abfd->xvec->_bfd_make_section (abfd, sec))
+        return NULL;
+      return sec;
+    }
+  else if (strcmp (name, "*COM*") == 0)
+    {
+      asection *sec = &bfd_std_section;
+      if (!abfd->xvec->_bfd_make_section (abfd, sec))
+        return NULL;
+      return sec;
+    }
+  else if (strcmp (name, "*UND*") == 0)
+    {
+      asection *sec = &bfd_std_section + 35;
+      if (!abfd->xvec->_bfd_make_section (abfd, sec))
+        return NULL;
+      return sec;
+    }
+  else if (strcmp (name, "*IND*") == 0)
+    {
+      asection *sec = &bfd_std_section + 105;
+      if (!abfd->xvec->_bfd_make_section (abfd, sec))
+        return NULL;
+      return sec;
+    }
+  else
+    {
+      struct bfd_hash_entry *entry = bfd_hash_lookup (&abfd->section_hashtable, name, 1, 0);
+      if (entry == NULL)
+        return NULL;
+      if (entry->section != NULL)
+        return entry->section;
+      entry->section = (asection *) name;
+      asection *newsect = bfd_section_init (abfd, &entry->section);
+      if (newsect == NULL)
+        return NULL;
+      return newsect;
+    }
+}/////
+int MHD_queue_auth_fail_response(struct MHD_Connection *connection, int status_code, const char *realm, const char *opaque, int stale)
+{
+    return MHD_queue_auth_fail_response2(connection, status_code, realm, opaque, stale, 1);
+}/////
+void curl_global_cleanup(void)
+{
+    if (initialized == 0)
+        return;
+    if (--initialized == 0)
+    {
+        Curl_resolver_global_cleanup();
+        init_flags = 0;
+    }
+}/////
+unsigned __int64 bfd_get_elf_phdr_upper_bound(void *abfd)
+{
+    int flavour = *(int *)(*(void **)((char *)abfd + 8) + 8);
+    if (flavour != 5) {
+        bfd_set_error(3);
+        return -1ULL;
+    }
+    unsigned int phdr_count = *(unsigned int *)(*(void **)((char *)abfd + 248) + 68);
+    return (unsigned __int64)phdr_count << 6;
+}/////
+char *ReadBlobString(Image *image, char *string)
+{
+    int c;
+    size_t i;
+
+    if (image == (Image *) NULL)
+        return (char *) NULL;
+    if (image->signature != MagickCoreSignature)
+        return (char *) NULL;
+
+    for (i = 0; i < 4095; i++)
+    {
+        c = ReadBlobByte(image);
+        if (c == -1)
+        {
+            if (i == 0)
+                return (char *) NULL;
+            break;
+        }
+        string[i] = (char) c;
+        if (c == 10)
+        {
+            if (i > 0 && string[i - 1] == 13)
+                i--;
+            break;
+        }
+    }
+    string[i] = 0;
+    return string;
+}/////
+int whereScanInitIndexExpr(WhereScan *pScan, double nVal) {
+  pScan->affinity = sqlite3ExprAffinity(pScan->pExpr);
+  return whereScanNext(pScan, nVal);
+}/////
+bfd *bfd_openw(const char *filename, const char *target)
+{
+  bfd *abfd;
+  const char *target_vec;
+
+  abfd = bfd_new_bfd();
+  if (abfd == NULL)
+    return NULL;
+
+  target_vec = bfd_find_target(target, abfd);
+  if (target_vec == NULL)
+  {
+    bfd_delete_bfd(abfd);
+    return NULL;
+  }
+
+  abfd->filename = bfd_strdup(filename);
+  if (abfd->filename == NULL)
+  {
+    bfd_delete_bfd(abfd);
+    return NULL;
+  }
+
+  abfd->flags = BFD_WRITE;
+  if (!bfd_open_file(abfd))
+  {
+    bfd_set_error(1);
+    bfd_delete_bfd(abfd);
+    return NULL;
+  }
+
+  return abfd;
+}/////
+int ec_GFp_mont_group_set_curve(EC_GROUP *group, const BIGNUM *p, const BIGNUM *a, const BIGNUM *b, BN_CTX *ctx)
+{
+    BN_CTX *new_ctx = NULL;
+    BN_MONT_CTX *mont_ctx = NULL;
+    BIGNUM *R = NULL;
+    int ret = 0;
+
+    if (group->mont_ctx != NULL)
+    {
+        BN_MONT_CTX_free(group->mont_ctx);
+        group->mont_ctx = NULL;
+    }
+    if (group->mont_R != NULL)
+    {
+        BN_free(group->mont_R);
+        group->mont_R = NULL;
+    }
+    if (ctx == NULL)
+    {
+        new_ctx = BN_CTX_new();
+        if (new_ctx == NULL)
+            return 0;
+        ctx = new_ctx;
+    }
+    mont_ctx = BN_MONT_CTX_new();
+    if (mont_ctx == NULL)
+    {
+        ERR_put_error(16, 189, 3, "ecp_mont.c", 233);
+        if (new_ctx != NULL)
+            BN_CTX_free(new_ctx);
+        return 0;
+    }
+    if (!BN_MONT_CTX_set(mont_ctx, p, ctx))
+    {
+        ERR_put_error(16, 189, 3, "ecp_mont.c", 233);
+        BN_MONT_CTX_free(mont_ctx);
+        if (new_ctx != NULL)
+            BN_CTX_free(new_ctx);
+        return 0;
+    }
+    R = BN_new();
+    if (R == NULL)
+    {
+        BN_MONT_CTX_free(mont_ctx);
+        if (new_ctx != NULL)
+            BN_CTX_free(new_ctx);
+        return 0;
+    }
+    if (!BN_mod_mul_montgomery(R, BN_value_one(), &mont_ctx->RR, mont_ctx, ctx))
+    {
+        BN_free(R);
+        BN_MONT_CTX_free(mont_ctx);
+        if (new_ctx != NULL)
+            BN_CTX_free(new_ctx);
+        return 0;
+    }
+    group->mont_ctx = mont_ctx;
+    group->mont_R = R;
+    if (!ec_GFp_simple_group_set_curve(group, p, a, b, ctx))
+    {
+        BN_MONT_CTX_free(mont_ctx);
+        group->mont_ctx = NULL;
+        BN_free(R);
+        group->mont_R = NULL;
+        if (new_ctx != NULL)
+            BN_CTX_free(new_ctx);
+        return 0;
+    }
+    ret = 1;
+    if (new_ctx != NULL)
+        BN_CTX_free(new_ctx);
+    return ret;
+}/////
+EC_KEY *d2i_ECParameters(EC_KEY **key, const unsigned char **in, long len)
+{
+    const unsigned char *p;
+    EC_KEY *ret = NULL;
+    int new_key = 0;
+
+    if (in == NULL)
+    {
+        ERR_put_error(16, 144, 67, "ec_asn1.c", 1352);
+        return NULL;
+    }
+
+    if (key != NULL && *key != NULL)
+    {
+        ret = *key;
+    }
+    else
+    {
+        ret = EC_KEY_new();
+        if (ret == NULL)
+        {
+            ERR_put_error(16, 144, 65, "ec_asn1.c", 1360);
+            return NULL;
+        }
+        new_key = 1;
+        if (key != NULL)
+            *key = ret;
+    }
+
+    p = *in;
+    if (d2i_ECPKParameters((EC_GROUP **)&ret->group, &p, len) == NULL)
+    {
+        ERR_put_error(16, 144, 16, "ec_asn1.c", 1371);
+        if (new_key)
+        {
+            EC_KEY_free(ret);
+            if (key != NULL)
+                *key = NULL;
+        }
+        return NULL;
+    }
+
+    *in = p;
+    return ret;
+}/////
+int io_error(void)
+{
+    int errnum;
+    char *msg;
+    clearerr_unlocked(stdout);
+    errnum = errno;
+    msg = gettext("write error");
+    error(1, errnum, msg);
+    return (unsigned char)1;
+}/////
+void *GetImageRegistry(int type, const char *key, int arg3, int arg4)
+{
+    if (IsEventLogging(type, key, arg3, arg4))
+        LogMagickEvent(0x8000, "MagickCore/registry.c", "GetImageRegistry", 197, "%s", key);
+    if (registry != NULL)
+    {
+        RegistryNode *node = GetValueFromSplayTree(registry, key);
+        if (node != NULL)
+        {
+            int node_type = *(int *)node;
+            for (int nt = 0; nt < 4; nt++)
+            {
+                if (node_type == nt)
+                {
+                    if (type == 1)
+                    {
+                        if (nt == 1)
+                        {
+                            void *list = CloneImageList(*(void **)((char *)node + 8), arg3);
+                            if (!list)
+                                return NULL;
+                            return list;
+                        }
+                        else
+                        {
+                            return NULL;
+                        }
+                    }
+                    else if (type == 3)
+                    {
+                        if (nt == 3)
+                        {
+                            void *info = CloneImageInfo(*(void **)((char *)node + 8));
+                            if (!info)
+                                return NULL;
+                            return info;
+                        }
+                        else
+                        {
+                            return NULL;
+                        }
+                    }
+                    else
+                    {
+                        if (nt == 0)
+                            return NULL;
+                        if (nt == 1)
+                            return ConstantString((char *)(*(void **)((char *)node + 8)) + 1016);
+                        if (nt == 2)
+                            return ConstantString((char *)(*(void **)((char *)node + 8)) + 8816);
+                        if (nt == 3)
+                            return ConstantString(*(void **)((char *)node + 8));
+                    }
+                }
+            }
+        }
+        return NULL;
+    }
+    return NULL;
+}/////
+MagickBooleanType DestroyImagePixelCache(Image *image)
+{
+  if (image != (Image *) NULL) {
+    if (image->signature == MagickCoreSignature) {
+      if (image->debug != MagickFalse)
+        LogMagickEvent(DebugEvent,GetMagickModule(),"%s",image->filename);
+      if (image->cache != (PixelCache *) NULL)
+        image->cache=DestroyPixelCache(image->cache);
+      return(MagickTrue);
+    } else
+      return(MagickFalse);
+  } else
+    return(MagickFalse);
+}/////
+unsigned __int64 *monty_pow(unsigned __int64 *a1, unsigned __int64 *a2, unsigned __int64 *a3)
+{
+    unsigned __int64 *t, *res, *base;
+    unsigned __int64 bit;
+    unsigned __int64 bits;
+
+    base = mp_copy(a2);
+    bit = 0;
+    res = mp_copy(a1[5]);
+    t = mp_make_sized(2 * a1[2]);
+    bits = a3[0] << 6;
+
+    for (; bit < bits; bit++) {
+        mp_mul_into(t, res, base);
+        monty_reduce(a1, t);
+        mp_select_into(res, res, t, mp_get_bit(a3, bit));
+        if (bit + 1 < bits) {
+            mp_mul_into(t, base, base);
+            monty_reduce(a1, t);
+            mp_copy_into(base, t);
+        }
+    }
+
+    mp_free(base);
+    mp_free(t);
+    mp_clear(a1[8]);
+    return res;
+}/////
+int find_hash_any(const char *name, int min_digest_size)
+{
+    int idx;
+    int best_size;
+    unsigned int hash_id;
+    int i;
+
+    if (!name)
+        return -1;
+
+    hash_id = find_hash(name);
+    if (hash_id != -1)
+        return hash_id;
+
+    best_size = 129;
+    idx = -1;
+    for (i = 0; i < 32; i++)
+    {
+        if (hash_descriptor[26 * i] && (int)hash_descriptor[26 * i + 2] >= min_digest_size && (int)hash_descriptor[26 * i + 2] < best_size)
+        {
+            idx = i;
+            best_size = hash_descriptor[26 * i + 2];
+        }
+    }
+    return idx;
+}/////
+char *sqlite3_mprintf(const char *zFormat, ...)
+{
+    char *z;
+    va_list ap;
+    int rc;
+    rc = sqlite3_initialize();
+    if (rc)
+        return 0;
+    va_start(ap, zFormat);
+    z = sqlite3_vmprintf(zFormat, ap);
+    va_end(ap);
+    return z;
+}/////
+int SetStringInfoName(StringInfo *string_info, const char *name)
+{
+  if ((string_info == (void *) 0) || (name == (void *) 0) || (string_info->signature != MagickCoreSignature))
+    return(-1);
+  string_info->name=ConstantString(name);
+  return(0);
+}/////
+long long console_print_error_msg(char *a1, char *a2)
+{
+    struct termios v3;
+    premsg(&v3);
+    fputs(a1, stderr);
+    fputs(": ", stderr);
+    fputs(a2, stderr);
+    fputc('\n', stderr);
+    fflush(stderr);
+    return postmsg(&v3);
+}/////
+int print_xfer_stats(xtime_t start) {
+    char time_str[32];
+    char bytes_str1[656];
+    char bytes_str2[656];
+    char rate_str[656];
+    char *rate_ptr;
+    double rate_value;
+    xtime_t now;
+    int printed;
+
+    if (start != 0)
+        now = start;
+    else
+        now = gethrxtime();
+
+    human_readable(w_bytes, bytes_str1, 465, 1, 1);
+    human_readable(w_bytes, bytes_str2, 497, 1, 1);
+
+    if (start_time < now) {
+        rate_value = (double)(now - start_time) / 1000000000.0;
+        human_readable(w_bytes, rate_str, 465, 1000000000ULL, now - start_time);
+        strcat(rate_str, "/s");
+        rate_ptr = rate_str;
+    } else {
+        rate_value = 0.0;
+        rate_ptr = "Infinity B/s";
+    }
+
+    snprintf(time_str, sizeof(time_str), start ? "%.0f s" : "%g s", rate_value);
+
+    if (start != 0)
+        fputc_unlocked('\r', stderr);
+
+    if (abbreviation_lacks_prefix(bytes_str1)) {
+        printed = fprintf(stderr, ngettext("%lu byte copied, %s, %s", "%lu bytes copied, %s, %s", select_plural(w_bytes)), w_bytes, time_str, rate_ptr);
+    } else if (abbreviation_lacks_prefix(bytes_str2)) {
+        printed = fprintf(stderr, gettext("%lu bytes (%s) copied, %s, %s"), w_bytes, bytes_str1, time_str, rate_ptr);
+    } else {
+        printed = fprintf(stderr, gettext("%lu bytes (%s, %s) copied, %s, %s"), w_bytes, bytes_str1, bytes_str2, time_str, rate_ptr);
+    }
+
+    if (start != 0) {
+        if (printed >= progress_len) {
+        } else {
+            for (int i = printed; i < progress_len; i++)
+                fputc_unlocked(' ', stderr);
+        }
+        progress_len = printed;
+    } else {
+        fputc_unlocked('\n', stderr);
+    }
+
+    return 0;
+}/////
+int ENGINE_register_pkey_asn1_meths(ENGINE *e)
+{
+    int (*getter)(ENGINE *, int **, int *, int);
+    int *nids;
+    int num;
+
+    getter = (int (*)(ENGINE *, int **, int *, int))e->get_pkey_asn1_meths;
+    if (getter == NULL) {
+        return 0;
+    } else {
+        num = getter(e, 0, &nids, 0);
+        if (num <= 0) {
+            return 0;
+        } else {
+            return engine_table_register(&pkey_asn1_meth_table, engine_unregister_all_pkey_asn1_meths, e, nids, num, 0);
+        }
+    }
+}/////
+int ssl3_send_server_done(SSL *s)
+{
+    if (s->state == SSL3_ST_SW_SERVER_DONE_A)
+    {
+        *((unsigned char *)s->init_buf->data) = SSL3_MT_SERVER_DONE;
+        s->init_num = 4;
+        s->state = SSL3_ST_SW_SERVER_DONE_B;
+    }
+    return ssl3_do_write(s, SSL3_RT_HANDSHAKE);
+}/////
+int des3_cbc3_setiv(DES3_CBC_CTX *ctx, const unsigned int *iv)
+{
+    uint64_t v;
+    int i;
+    if (!ctx || !iv)
+        return -1;
+    v = des_load_lr(iv);
+    v = des_IP(v);
+    for (i = 0; i < 3; i++)
+        ctx->cl[i] = v;
+    return 0;
+}/////
+char *OP_ST() { return oappend_maybe_intel(&unk_7AB1DF); }/////
+int sqlite3PagerWrite(void *a1, int a2) {
+    unsigned int *pPrivate;
+    int flag;
+
+    if (a1 == 0) {
+        return -1;
+    } else {
+        pPrivate = *(unsigned int **)((char *)a1 + 40);
+        if (pPrivate == 0) {
+            return -1;
+        } else {
+            flag = *(short *)((char *)a1 + 52) & 4;
+            if (flag == 0 && pPrivate[11] != 0) {
+                return pPrivate[11];
+            } else {
+                return subjournalPageIfRequired(a1);
+            }
+        }
+    }
+}/////
+int BIO_free(void *a)
+{
+    int ret;
+    if (a == NULL)
+        return 0;
+    if (CRYPTO_add_lock((int *)((unsigned int *)a + 18), -1, 0x15, "bio_lib.c", 0x75) > 0)
+        return 1;
+    {
+        void *callback = *(void **)((unsigned int *)a + 1);
+        if (callback != NULL)
+        {
+            ret = ((int (*)(void *, int, int, int, int, int))callback)(a, 1, 0, 0, 0, 1);
+            if (ret <= 0)
+                return ret;
+        }
+    }
+    CRYPTO_free_ex_data(0, a, (void *)((unsigned int *)a + 6));
+    {
+        void *method = *(void **)a;
+        if (method != NULL)
+        {
+            void *destroy = *(void **)((unsigned char *)method + 64);
+            if (destroy != NULL)
+                ((void (*)(void *))destroy)(a);
+        }
+    }
+    CRYPTO_free(a);
+    return 1;
+}/////
+int EVP_PKEY_CTX_ctrl_str(EVP_PKEY_CTX *ctx, const char *type, const char *value)
+{
+    int ret;
+    EVP_PKEY_METHOD *pmeth;
+    int (*ctrl_str)(EVP_PKEY_CTX *, const char *, const char *);
+    const EVP_MD *md;
+    if (value == ((void *)0))
+    {
+        ERR_put_error(6, 150, 152, "pmeth_lib.c", 432);
+        return 0;
+    }
+    if (ctx == ((void *)0))
+    {
+        ERR_put_error(6, 150, 147, "pmeth_lib.c", 423);
+        return -2;
+    }
+    if (strcmp(type, "digest") == 0)
+    {
+        md = EVP_get_digestbyname(value);
+        if (md == ((void *)0))
+        {
+            ERR_put_error(6, 150, 152, "pmeth_lib.c", 432);
+            return 0;
+        }
+        ret = EVP_PKEY_CTX_ctrl(ctx, -1, 248, 1, 0, md);
+        return ret;
+    }
+    else
+    {
+        pmeth = *(EVP_PKEY_METHOD **)ctx;
+        if (pmeth == ((void *)0))
+        {
+            ERR_put_error(6, 150, 147, "pmeth_lib.c", 423);
+            return -2;
+        }
+        ctrl_str = *(int (**)(EVP_PKEY_CTX *, const char *, const char *))((char *)pmeth + 200);
+        if (ctrl_str == ((void *)0))
+        {
+            ERR_put_error(6, 150, 147, "pmeth_lib.c", 423);
+            return -2;
+        }
+        ret = ctrl_str(ctx, type, value);
+        return ret;
+    }
+}/////
+int compare_timers(int64_t *a1, int64_t *a2) {
+    int64_t v11 = a1[2] - now;
+    int64_t v10 = a2[2] - now;
+    if (v11 < v10) return -1;
+    if (v11 > v10) return 1;
+    int cmp = memcmp(a1, a2, 8);
+    if (cmp) return cmp;
+    if (a1[1] < a2[1]) return -1;
+    if (a1[1] > a2[1]) return 1;
+    return 0;
+}/////
+int compare(const struct element *a1, const struct element *a2)
+{
+    int ret;
+    if (keylist != NULL) {
+        ret = keycompare(a1, a2);
+        if (ret != 0) {
+            if (reverse & 1)
+                ret = -ret;
+            return ret;
+        }
+        if (unique & 1)
+            return 0;
+        if (stable & 1)
+            return 0;
+    }
+    size_t len1 = a1->size - 1;
+    size_t len2 = a2->size - 1;
+    if (a1->size != 1) {
+        if (len2 != 0) {
+            if (!(hard_LC_COLLATE & 1)) {
+                size_t n = (len1 < len2) ? len1 : len2;
+                int cmp = 0;
+                for (size_t i = 0; i < n; i++) {
+                    if (a1->ptr[i] == a2->ptr[i]) {
+                        continue;
+                    } else {
+                        cmp = (unsigned char)a1->ptr[i] - (unsigned char)a2->ptr[i];
+                        break;
+                    }
+                }
+                if (cmp != 0) {
+                    ret = cmp;
+                } else {
+                    if (len1 < len2)
+                        ret = -1;
+                    else if (len1 > len2)
+                        ret = 1;
+                    else
+                        ret = 0;
+                }
+            } else {
+                ret = xmemcoll0(a1->ptr, len1 + 1, a2->ptr, len2 + 1);
+                if (reverse & 1)
+                    ret = -ret;
+                return ret;
+            }
+        } else {
+            ret = 1;
+        }
+    } else {
+        ret = -(len2 != 0);
+    }
+    if (reverse & 1)
+        ret = -ret;
+    return ret;
+}/////
+int xtea_setup(unsigned int *key, int keylen, int num_rounds, void *skey)
+{
+    unsigned int key32[4];
+    unsigned int sum;
+    unsigned int i;
+    unsigned long long *skey64 = (unsigned long long *)skey;
+    if (!key || !skey) return -1;
+    if (keylen != 16) return 3;
+    if (num_rounds && num_rounds != 32) return 4;
+    key32[0] = _byteswap_ulong(key[0]);
+    key32[1] = _byteswap_ulong(key[1]);
+    key32[2] = _byteswap_ulong(key[2]);
+    key32[3] = _byteswap_ulong(key[3]);
+    sum = 0;
+    for (i = 0; i < 32; ++i)
+    {
+        skey64[i] = (unsigned long long)(key32[sum & 3] + sum);
+        sum -= 1640531527u;
+        skey64[i + 32] = (unsigned long long)(key32[(sum >> 11) & 3] + sum);
+    }
+    return 0;
+}/////
+int khazad_setup(const unsigned char *key, int keylen, int rounds, unsigned long long *skey)
+{
+    unsigned long long left, right, temp;
+    int i, j;
+
+    if (!key) {
+        crypt_argchk("key != NULL", "src/ciphers/khazad.c", 600);
+        return -1;
+    }
+    if (!skey) {
+        crypt_argchk("skey != NULL", "src/ciphers/khazad.c", 601);
+        return -1;
+    }
+    if (keylen != 16)
+        return 3;
+    if (rounds != 8 && rounds != 0)
+        return 4;
+
+    left = ((unsigned long long)key[0] << 56) | ((unsigned long long)key[1] << 48) |
+           ((unsigned long long)key[2] << 40) | ((unsigned long long)key[3] << 32) |
+           ((unsigned long long)key[4] << 24) | ((unsigned long long)key[5] << 16) |
+           ((unsigned long long)key[6] << 8)  | key[7];
+    right = ((unsigned long long)key[8] << 56) | ((unsigned long long)key[9] << 48) |
+            ((unsigned long long)key[10] << 40) | ((unsigned long long)key[11] << 32) |
+            ((unsigned long long)key[12] << 24) | ((unsigned long long)key[13] << 16) |
+            ((unsigned long long)key[14] << 8)  | key[15];
+
+    for (i = 0; i <= 8; ++i)
+    {
+        skey[i] = left ^ c[i] ^ T7[right & 0xFF] ^ T6[(right >> 8) & 0xFF] ^
+                  T5[(right >> 16) & 0xFF] ^ T4[(right >> 24) & 0xFF] ^
+                  T3[(right >> 32) & 0xFF] ^ T2[(right >> 40) & 0xFF] ^
+                  T1[(right >> 48) & 0xFF] ^ T0[(right >> 56) & 0xFF];
+        left = right;
+        right = skey[i];
+    }
+
+    skey[9] = skey[8];
+
+    for (j = 1; j < 8; ++j)
+    {
+        temp = skey[8 - j];
+        skey[j + 9] = T7[(unsigned char)T7[(unsigned char)temp]] ^
+                      T6[(unsigned char)T7[(unsigned char)(temp >> 8)]] ^
+                      T5[(unsigned char)T7[(unsigned char)(temp >> 16)]] ^
+                      T4[(unsigned char)T7[(unsigned char)(temp >> 24)]] ^
+                      T3[(unsigned char)T7[(unsigned char)(temp >> 32)]] ^
+                      T2[(unsigned char)T7[(unsigned char)(temp >> 40)]] ^
+                      T1[(unsigned char)T7[(unsigned char)(temp >> 48)]] ^
+                      T0[(unsigned char)T7[(unsigned char)(temp >> 56)]];
+    }
+
+    skey[17] = skey[0];
+    return 0;
+}/////
+bool ssh1_connection_need_antispoof_prompt(void *conn)
+{
+    return (seat_set_trust_status_1(*(void **)((char *)conn + 304), 0) & 1) == 0;
+}/////
+MagickResourceLimit GetMagickResourceLimit(int a1)
+{
+    MagickResourceLimit result = 0;
+    if (resource_semaphore[a1] == NULL)
+        ActivateSemaphoreInfo(&resource_semaphore[a1]);
+    LockSemaphoreInfo(resource_semaphore[a1]);
+    switch (a1)
+    {
+        case 1: result = qword_70E0; break;
+        case 2: result = qword_70F8; break;
+        case 3: result = qword_7100; break;
+        case 4: result = qword_70D0; break;
+        case 5: result = qword_70F0; break;
+        case 6: result = qword_70E8; break;
+        case 7: result = qword_7108; break;
+        case 8: result = qword_7110; break;
+        case 9: result = qword_7118; break;
+        case 10: result = qword_70C8; break;
+        case 11: result = qword_70D8; break;
+        default: result = 0; break;
+    }
+    UnlockSemaphoreInfo(resource_semaphore[a1]);
+    return result;
+}/////
+int MimeComponentTerminus()
+{
+    if (!mime_semaphore)
+        ActivateSemaphoreInfo(&mime_semaphore);
+    LockSemaphoreInfo(mime_semaphore);
+    if (mime_cache)
+        mime_cache = DestroyLinkedList(mime_cache, DestroyMimeElement);
+    UnlockSemaphoreInfo(mime_semaphore);
+    return RelinquishSemaphoreInfo(&mime_semaphore);
+}/////
+int mem_free(void *a1)
+{
+    if (a1 == NULL)
+        return 0;
+    struct my_struct *s = a1;
+    if (!s->field_28)
+        return 1;
+    if (!s->field_24)
+        return 1;
+    BUF_MEM *buf = (BUF_MEM *)s->field_48;
+    if (buf == NULL)
+        return 1;
+    if ((s->field_33 & 2) == 0)
+    {
+        BUF_MEM_free(buf);
+    }
+    else
+    {
+        buf->data = 0;
+        BUF_MEM_free(buf);
+    }
+    s->field_48 = 0;
+    return 1;
+}/////
+pid_t pipe_fork(int fds[2], unsigned int retries)
+{
+    double sleep_time = 0.25;
+    char cs_buf[140];
+    pid_t pid;
+    __int64 saved_temphead;
+    int saved_errno;
+
+    if (rpl_pipe2(fds, 0x80000) < 0)
+        return -1;
+
+    while (1) {
+        if (nmerge + 1 < (unsigned int)nprocs)
+            reap_some();
+
+        if (retries == 0) {
+            close(fds[0]);
+            close(fds[1]);
+            errno = saved_errno;
+            return -1;
+        }
+
+        cs_enter(cs_buf);
+        saved_temphead = temphead;
+        temphead = 0;
+
+        pid = fork();
+        saved_errno = errno;
+
+        if (pid == -1) {
+            cs_leave(cs_buf);
+            if (errno == EAGAIN) {
+                retries--;
+                xnanosleep(sleep_time);
+                sleep_time *= 2.0;
+                reap_exited();
+                continue;
+            } else {
+                close(fds[0]);
+                close(fds[1]);
+                errno = saved_errno;
+                return -1;
+            }
+        } else if (pid == 0) {
+            close(0);
+            close(1);
+            cs_leave(cs_buf);
+            ++nprocs;
+            return 0;
+        } else {
+            temphead = saved_temphead;
+            cs_leave(cs_buf);
+            errno = saved_errno;
+            ++nprocs;
+            return pid;
+        }
+    }
+}/////
+void * ihex_object_p(bfd *abfd)
+{
+    char buffer[9];
+    int idx;
+    int record_type;
+    void *old_tdata;
+
+    ihex_init();
+    if (bfd_seek(abfd, 0, SEEK_SET) != 0)
+        return NULL;
+
+    if (bfd_bread(buffer, 9, abfd) != 9)
+    {
+        if (bfd_get_error() == bfd_error_system_call)
+            bfd_set_error(bfd_error_wrong_format);
+        return NULL;
+    }
+
+    if (buffer[0] != ':')
+    {
+        bfd_set_error(bfd_error_wrong_format);
+        return NULL;
+    }
+
+    for (idx = 1; idx < 9; idx++)
+        if (hex_value[(unsigned char)buffer[idx]] == 99)
+        {
+            bfd_set_error(bfd_error_wrong_format);
+            return NULL;
+        }
+
+    record_type = hex_value[(unsigned char)buffer[8]] + 16 * hex_value[(unsigned char)buffer[7]];
+    if (record_type > 5)
+    {
+        bfd_set_error(bfd_error_wrong_format);
+        return NULL;
+    }
+
+    old_tdata = abfd->tdata.ihex_data;
+    if (ihex_mkobject(abfd))
+    {
+        if (ihex_scan(abfd))
+            return abfd->tdata.ihex_obj;
+        else
+        {
+            if (abfd->tdata.ihex_data != old_tdata)
+            {
+                if (abfd->tdata.ihex_data)
+                    bfd_release(abfd, abfd->tdata.ihex_data);
+            }
+            abfd->tdata.ihex_data = old_tdata;
+            return NULL;
+        }
+    }
+    else
+    {
+        if (abfd->tdata.ihex_data != old_tdata)
+        {
+            if (abfd->tdata.ihex_data)
+                bfd_release(abfd, abfd->tdata.ihex_data);
+        }
+        abfd->tdata.ihex_data = old_tdata;
+        return NULL;
+    }
+}/////
+struct user_entry *getuidbyname(const char *name)
+{
+    struct user_entry *entry;
+    struct passwd *pw;
+    size_t len;
+
+    if (name != NULL) {
+        entry = user_alist;
+        while (entry != NULL) {
+            if (entry->name[0] == name[0] && strcmp(entry->name, name) == 0)
+                return entry;
+            entry = entry->next;
+        }
+
+        entry = nouser_alist;
+        while (entry != NULL) {
+            if (entry->name[0] == name[0] && strcmp(entry->name, name) == 0)
+                return NULL;
+            entry = entry->next;
+        }
+
+        pw = getpwnam(name);
+        len = strlen(name);
+        entry = xmalloc((len + 24) & ~7);
+        strcpy(entry->name, name);
+        if (pw != NULL) {
+            entry->uid = pw->pw_uid;
+            entry->next = user_alist;
+            user_alist = entry;
+            return entry;
+        } else {
+            entry->next = nouser_alist;
+            nouser_alist = entry;
+            return NULL;
+        }
+    }
+    return NULL;
+}/////
+MagickBooleanType DeleteImageProperty(Image *image, const char *property)
+{
+  MagickBooleanType status;
+  if (image->signature != MagickCoreSignature)
+    return(MagickFalse);
+  if (image == (Image *) NULL)
+    return(MagickFalse);
+  if (image->debug != MagickFalse)
+    LogMagickEvent(0x8000LL,"MagickCore/property.c","DeleteImageProperty",285LL,"%s",image->filename);
+  if (image->properties != (SplayTreeInfo *) NULL)
+    status=DeleteNodeFromSplayTree(image->properties,property);
+  else
+    status=MagickFalse;
+  return(status);
+}/////
+void *bfd_default_reloc_type_lookup(bfd *abfd, int reloc_type)
+{
+    if (reloc_type == 586 && bfd_arch_bits_per_address(abfd) == 32)
+        return &bfd_howto_32;
+    else
+        return 0;
+}/////
+int ENGINE_register_ECDH(ENGINE *e)
+{
+    void *ecdh_methods = *(void **)((char *)e + 40);
+    if (ecdh_methods)
+        return engine_table_register(&ecdh_table, engine_unregister_all_ECDH, e, &dummy_nid_3, 1, 0);
+    return 1;
+}/////
+int wrapf(char *a1, ...)
+{
+    int v2;
+    char *ptr;
+    va_list arg;
+    va_start(arg, a1);
+    v2 = vasprintf(&ptr, a1, arg);
+    if (v2 < 0)
+        xalloc_die();
+    if (current_col > 0)
+    {
+        if (max_col - current_col >= v2)
+        {
+            putchar_unlocked(32);
+            current_col++;
+        }
+        else
+        {
+            putchar_unlocked(10);
+            current_col = 0;
+        }
+    }
+    fputs_unlocked(ptr, stdout);
+    free(ptr);
+    current_col += v2;
+    return v2;
+}/////
+int ENGINE_set_default_DH(ENGINE *e)
+{
+    if (e == NULL || e->pkey == NULL || e->pkey->ameth == NULL)
+        return 0;
+    if (!engine_table_register(&dh_table, engine_unregister_all_DH, e, &dummy_nid_2, 1, 1))
+        return 0;
+    return 1;
+}/////
+int CRYPTO_pop_info(void *a1)
+{
+    if (CRYPTO_is_mem_check_on(a1))
+    {
+        CRYPTO_mem_ctrl(3);
+        int ret = (pop_info() != 0);
+        CRYPTO_mem_ctrl(2);
+        return ret;
+    }
+    return 0;
+}/////
+int curl_multi_wait(CURLM *multi_handle, struct curl_waitfd *extra_fds, unsigned int extra_nfds, int timeout_ms, int *ret) {
+    return Curl_multi_wait(multi_handle, extra_fds, extra_nfds, timeout_ms, ret, 0, 0);
+}/////
+char *shell_quote_copy(char *buf, const char *arg)
+{
+    size_t len;
+    if (!sh_quoting_options)
+        init_sh_quoting_options();
+    len = strlen(arg);
+    return buf + quotearg_buffer(buf, (size_t)-1, arg, len, sh_quoting_options);
+}/////
+void zlib_match(struct LZ77Context *ctx, int dist, int len)
+{
+    void *out = *(void **)((char *)ctx + 8);
+    while (len > 0)
+    {
+        int n;
+        if (len <= 260)
+        {
+            if (len > 258)
+                n = len - 3;
+            else
+                n = len;
+        }
+        else
+        {
+            n = 258;
+        }
+        len -= n;
+
+        int lo = -1;
+        int hi = 29;
+        int mid;
+        while (1)
+        {
+            if (hi - lo < 2)
+                __assert_fail("j - i >= 2", "sshzlib.c", 0x1FEu, "void zlib_match(struct LZ77Context *, int, int)");
+            mid = (lo + hi) / 2;
+            if (n >= lencodes[3 * mid + 1])
+            {
+                if (n <= lencodes[3 * mid + 2])
+                    break;
+                lo = mid;
+            }
+            else
+            {
+                hi = mid;
+            }
+        }
+        short *pcode = (short *)&lencodes[3 * mid];
+        if (*pcode > 279)
+            outbits(out, (unsigned char)mirrorbytes[*pcode - 88], 8);
+        else
+            outbits(out, (unsigned char)mirrorbytes[2 * *pcode - 512], 7);
+        if (pcode[1])
+            outbits(out, n - *((int *)pcode + 1), pcode[1]);
+
+        int lo2 = -1;
+        int hi2 = 30;
+        int mid2;
+        while (1)
+        {
+            if (hi2 - lo2 < 2)
+                __assert_fail("j - i >= 2", "sshzlib.c", 0x222u, "void zlib_match(struct LZ77Context *, int, int)");
+            mid2 = (lo2 + hi2) / 2;
+            if (dist >= distcodes[3 * mid2 + 1])
+            {
+                if (dist <= distcodes[3 * mid2 + 2])
+                    break;
+                lo2 = mid2;
+            }
+            else
+            {
+                hi2 = mid2;
+            }
+        }
+        short *pdist = (short *)&distcodes[3 * mid2];
+        outbits(out, (unsigned char)mirrorbytes[8 * *pdist], 5);
+        if (pdist[1])
+            outbits(out, dist - *((int *)pdist + 1), pdist[1]);
+    }
+}/////
+char *OP_MMX() {
+    const char **names_table;
+    int index;
+    index = dword_AD19EC;
+    used_prefixes |= prefixes & 0x200;
+    if (prefixes & 0x200) {
+        names_table = names_xmm;
+        if (rex & 4) {
+            rex_used |= 0x44u;
+            index += 8;
+        }
+    } else {
+        names_table = names_mm;
+    }
+    return oappend(names_table[index]);
+}/////
+MagickBooleanType ImageToFile(Image *image, char *filename, ExceptionInfo *exception)
+{
+  struct stat buf;
+  ssize_t bytes_read;
+  size_t offset;
+  size_t chunk_size;
+  int fd;
+  int close_result;
+  int read_error;
+  int write_error;
+  void *buffer;
+  void *read_ptr;
+  MagickBooleanType status;
+  status = MagickFalse;
+  read_error = 0;
+  write_error = 0;
+  if (image == NULL)
+    return MagickFalse;
+  if (image->signature != MagickCoreSignature)
+    return MagickFalse;
+  if (image->blob == NULL)
+    return MagickFalse;
+  if (image->blob->type == UndefinedStream)
+    return MagickFalse;
+  if (image->logging)
+    LogMagickEvent(0x8000LL, "MagickCore/blob.c", "ImageToFile", 2329, "%s", filename);
+  if (filename == NULL)
+    return MagickFalse;
+  if (*filename == '\0')
+    fd = AcquireUniqueFileResource(filename);
+  else if (LocaleCompare(filename, "-") != 0)
+    fd = open_utf8(filename, 194, 0x180u);
+  else
+    fd = fileno(stdout);
+  if (fd == -1)
+  {
+    int err = errno;
+    const char *msg = GetExceptionMessage(err);
+    ThrowMagickException(exception, "MagickCore/blob.c", "ImageToFile", 2340, 435, "UnableToWriteBlob", "'%s': %s", filename, msg);
+    DestroyString(msg);
+    return MagickFalse;
+  }
+  chunk_size = 81920;
+  if (fstat(fd, &buf) == 0 && buf.st_size > 0)
+  {
+    if (buf.st_size < 81920)
+      chunk_size = buf.st_size;
+  }
+  buffer = AcquireQuantumMemory(chunk_size, 1);
+  if (buffer == NULL)
+  {
+    close(fd);
+    ThrowMagickException(exception, "MagickCore/blob.c", "ImageToFile", 2350, 400, "MemoryAllocationError", "`%s'", filename);
+    return MagickFalse;
+  }
+  read_ptr = ReadBlobStream(image, chunk_size, buffer, &bytes_read);
+  if (bytes_read < 0)
+  {
+    read_error = 1;
+    chunk_size = 0;
+  }
+  else
+    chunk_size = bytes_read;
+  offset = 0;
+  for (; chunk_size > 0; )
+  {
+    for (offset = 0; offset < chunk_size; )
+    {
+      ssize_t n = write(fd, (const char *)read_ptr + offset, chunk_size - offset);
+      if (n <= 0)
+      {
+        if (errno != 4)
+        {
+          write_error = 1;
+          break;
+        }
+      }
+      else
+        offset += n;
+    }
+    if (offset < chunk_size)
+    {
+      if (write_error == 0)
+        write_error = 1;
+      break;
+    }
+    read_ptr = ReadBlobStream(image, chunk_size, buffer, &bytes_read);
+    if (bytes_read < 0)
+    {
+      read_error = 1;
+      break;
+    }
+    chunk_size = bytes_read;
+  }
+  if (LocaleCompare(filename, "-") != 0)
+    close_result = close(fd);
+  else
+    close_result = 0;
+  RelinquishMagickMemory(buffer);
+  if (close_result == -1 || offset < chunk_size || read_error)
+  {
+    int err = errno;
+    const char *msg = GetExceptionMessage(err);
+    ThrowMagickException(exception, "MagickCore/blob.c", "ImageToFile", 2378, 435, "UnableToWriteBlob", "'%s': %s", filename, msg);
+    DestroyString(msg);
+    status = MagickFalse;
+  }
+  else
+    status = MagickTrue;
+  return status;
+}/////
+CollSeq *sqlite3GetCollSeq(sqlite3 *db, unsigned char enc, CollSeq *pColl, const char *zName)
+{
+    CollSeq *p;
+    if (pColl) {
+        p = pColl;
+        if (p->method) return p;
+    } else {
+        p = sqlite3FindCollSeq(db, enc, (const unsigned char *)zName, 0);
+        if (p && p->method) return p;
+    }
+    callCollNeeded(db, enc, zName);
+    p = sqlite3FindCollSeq(db, enc, (const unsigned char *)zName, 0);
+    if (p) {
+        if (p->method) return p;
+        if (synthCollSeq(db, &p) == SQLITE_OK && p->method) return p;
+    }
+    sqlite3ErrorMsg(db, "no such collation sequence: %s", zName);
+    db->errCode = SQLITE_ERROR;
+    return 0;
+}/////
+void ssh2_rportfwd_globreq_response(struct ssh2_connection_state *state, PktIn *pktin, void *rpf)
+{
+    if (pktin->type == 81) {
+        char *msg = dupprintf("Remote port forwarding from %s enabled", ((struct rportfwd *)rpf)->hostname);
+        logevent_and_free(state->logctx, msg);
+    } else {
+        char *msg = dupprintf("Remote port forwarding from %s refused", ((struct rportfwd *)rpf)->hostname);
+        logevent_and_free(state->logctx, msg);
+        struct rportfwd *realpf = del234(state->rportfwds, rpf);
+        if (realpf != rpf)
+            __assert_fail("realpf == rpf", "ssh2connection-client.c", 0xCEu, "void ssh2_rportfwd_globreq_response(struct ssh2_connection_state *, PktIn *, void *)");
+        portfwdmgr_close(state->portfwdmgr, ((struct rportfwd *)rpf)->pfwd);
+        free_rportfwd(rpf);
+    }
+}/////
+int add_regexp(char **a1, const char *a2)
+{
+    size_t len;
+    char *err, *buf, *ptr;
+    size_t cap, needed;
+    int has_buf;
+
+    if (a2 == NULL) {
+        return -1;
+    } else {
+        len = strlen(a2);
+        err = rpl_re_compile_pattern(a2, len, a1[4]);
+        if (err != NULL) {
+            error(2, 0, "%s: %s", a2, err);
+            return -1;
+        } else {
+            buf = a1[0];
+            ptr = a1[1];
+            cap = (size_t)a1[2];
+            has_buf = (buf != NULL);
+            *((unsigned char *)a1 + 24) = (unsigned char)has_buf;
+            needed = (ptr - buf) + (has_buf ? 2 : 0) + len + 1;
+            if (needed <= cap) {
+            } else {
+                size_t new_cap = cap ? cap : 1;
+                while (new_cap < needed)
+                    new_cap *= 2;
+                char *new_buf = (char *)xrealloc(buf, new_cap);
+                if (new_buf == NULL)
+                    return -1;
+                ptr = new_buf + (ptr - buf);
+                buf = new_buf;
+                cap = new_cap;
+                a1[0] = buf;
+                a1[2] = (char *)cap;
+            }
+            if (has_buf) {
+                *ptr++ = '\\';
+                *ptr++ = '|';
+            }
+            memcpy(ptr, a2, len + 1);
+            ptr += len + 1;
+            a1[1] = ptr;
+            return 0;
+        }
+    }
+}/////
+int ASN1_UNIVERSALSTRING_to_string(ASN1_STRING *str)
+{
+    if (str->type != 28)
+        return 0;
+    else if (str->length % 4 != 0)
+        return 0;
+    else {
+        int len = str->length;
+        unsigned char *p = str->data;
+        int chunks = len / 4;
+        for (int i = 0; i < chunks; i++) {
+            if (p[0] || p[1] || p[2])
+                return 0;
+            str->data[i] = p[3];
+            p += 4;
+        }
+        str->data[chunks] = '\0';
+        str->length = chunks;
+        str->type = ASN1_PRINTABLE_type(str->data, str->length);
+        return 1;
+    }
+}/////
+void mpz_goetgheluck_bin_uiui(mpz_t rop, unsigned long n, unsigned long k) {
+  unsigned long v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15, v16;
+  unsigned long v17, v18, v19, v20, v21, v22, v23, v24, v25, v26, v27, v28;
+  unsigned long v29, v30, v31, v32, v33, v34, v35, v36, v37, v38;
+  unsigned long *v39, *v133;
+  unsigned long v40, v41[6], v42, v43, v44, v45, v46, v47, v48, v49;
+  unsigned long v50, v51, v52, v53, v54, v55, v56, v57, v58, v59;
+  unsigned long v60, v61, v62, v63, v64, v65, v66, v67, v68, v69;
+  unsigned long v70, v71, v72, v73, v74, v75, v76, v77, v78, v79;
+  unsigned long v80, v81, v82, v83, v84, v85, v86, v87, v88, v89;
+  unsigned long v90, v91, v92, v93, v94, v95, v96, v97, v98, v99;
+  unsigned long v100, v101, v102, v103, v104, v105, v106, v107, v108;
+  unsigned long v109, v110, v111, v112, v113, v114, v115, v116, v117;
+  unsigned long v118, v119, v120, v121, v122, v123, v124, v125, v126;
+  unsigned long v127, v128, v129, v130, v131, v132, v134, v135, v136;
+  unsigned long v137, v138, v139, v140, v141, v142, v143, v144, v145;
+  unsigned long v146, v147, v148, v149, v150, v151, v152, v153, v154;
+  unsigned long v155, v156, v157, v158, v159, v160, v161, v162, v163;
+  unsigned long v164, v165, v166, v167, v168, v169, v170, v171, v172;
+  unsigned long v173;
+
+  v172 = (unsigned long)rop;
+  v171 = n;
+  v170 = k;
+  v136 = -1327014256;
+
+  while (1) {
+    if (v136 == -2060109893) {
+      v160 = v171 - ((v171 >> 1) & 0x5555555555555555ULL);
+      v160 = (v160 & 0x3333333333333333ULL) + ((v160 >> 2) & 0x3333333333333333ULL);
+      v160 = (v160 + (v160 >> 4)) & 0x0F0F0F0F0F0F0F0FULL;
+      v160 += v160 >> 8;
+      v160 += v160 >> 16;
+      v160 += (v160 >> 32);
+      v164 = (unsigned char)v160;
+      v136 = 201397027;
+    } else if (v136 == -1978580308) {
+      v149 = id_to_n(v150);
+      v136 = -1257486020;
+    } else if (v136 == -1934563832) {
+      ++v138;
+      v30 = 872813954;
+      if ((v141 & *(unsigned long *)(v169 + 8 * v140)) == 0)
+        v30 = 981332907;
+      v136 = v30;
+    } else if (v136 == -1874841551) {
+      v136 = 343740744;
+    } else if (v136 == -1847597136) {
+      v40 = -1874841551;
+      if (v163)
+        v40 = 1926117906;
+      v136 = v40;
+    } else if (v136 == -1842993970) {
+      v136 = 1302571213;
+    } else if (v136 == -1841318998) {
+      v32 = v164++;
+      *(unsigned long *)(v168 + 8 * v32) = v166;
+      v166 = v137;
+      v136 = 254599507;
+    } else if (v136 == -1736673980) {
+      v155 += v158 % v157;
+      v41[5] = v157;
+      v158 /= v157;
+      v156 = v159 % v157;
+      v41[4] = v157;
+      v159 /= v157;
+      v15 = 1338332444;
+      if (v156 < v155)
+        v15 = 1595169204;
+      v136 = v15;
+    } else if (v136 == -1617541617) {
+      v136 = -800052859;
+    } else if (v136 == -1531078244) {
+      v136 = 321281381;
+    } else if (v136 == -1426947839) {
+      v14 = v164++;
+      *(unsigned long *)(v168 + 8 * v14) = v166;
+      v166 = 1;
+      v136 = 1684715299;
+    } else if (v136 == -1327014256) {
+      v136 = 263368643;
+    } else if (v136 == -1268666381) {
+      v136 = 408180220;
+    } else if (v136 == -1259808554) {
+      v136 = -666554003;
+    } else if (v136 == -1257486020) {
+      v146 = v149;
+      v148 = v171;
+      v147 = v170;
+      v144 = 0;
+      v19 = -472066901;
+      if (v166 > v165)
+        v19 = 1158492829;
+      v136 = v19;
+    } else if (v136 == -1005488255) {
+      v144 = 1;
+      v166 *= v146;
+      v136 = -493474264;
+    } else if (v136 == -800052859) {
+      v136 = 1711713439;
+    } else if (v136 == -737446315) {
+      v43 = v167;
+      v10 = log_n_max(v171);
+      v136 = 983119416;
+      v134 = (unsigned long)v41 - ((8 * (v43 / v10) + 23) & 0xFFFFFFFFFFFFFFF0ULL);
+    } else if (v136 == -696095292) {
+      v162 = v171 - v170;
+      v162 = (v162 & 0x5555555555555555ULL) + ((v162 >> 1) & 0x5555555555555555ULL);
+      v162 = (v162 & 0x3333333333333333ULL) + ((v162 >> 2) & 0x3333333333333333ULL);
+      v162 = (v162 + (v162 >> 4)) & 0x0F0F0F0F0F0F0F0FULL;
+      v162 += v162 >> 8;
+      v162 += v162 >> 16;
+      v162 += (v162 >> 32);
+      v167 = (unsigned char)v162;
+      v136 = 668486404;
+    } else if (v136 == -690309802) {
+      v26 = 944167399;
+      if (v166 > v165)
+        v26 = 906975125;
+      v136 = v26;
+    } else if (v136 == -689445419) {
+      v6 = primesieve_size(v171);
+      v7 = (unsigned long)_gmp_tmp_reentrant_alloc(&v163, 8 * v6);
+      v136 = -294445697;
+      v135 = v7;
+    } else if (v136 == -666554003) {
+      v16 = -1268666381;
+      if (v159 >= v157)
+        v16 = -1736673980;
+      v136 = v16;
+    } else if (v136 == -652549899) {
+      v31 = 957497537;
+      if (v166 > v165)
+        v31 = -1841318998;
+      v136 = v31;
+    } else if (v136 == -648446646) {
+      v173 = v166;
+      v37 = -572770956;
+      if (*(int *)v172 < 1)
+        v37 = 1105423333;
+      v136 = v37;
+    } else if (v136 == -616783057) {
+      v136 = 1239650530;
+    } else if (v136 == -586931070) {
+      v143 = id_to_n(v150);
+      v136 = -113431241;
+    } else if (v136 == -572770956) {
+      v39 = *(unsigned long **)(v172 + 8);
+      v136 = 1097970268;
+      v133 = v39;
+    } else if (v136 == -493474264) {
+      v136 = 1171230310;
+    } else if (v136 == -472066901) {
+      v136 = 567069312;
+    } else if (v136 == -413633934) {
+      v136 = 1181947067;
+    } else if (v136 == -387093416) {
+      v136 = 571669828;
+    } else if (v136 == -385051850) {
+      ++v150;
+      v18 = 1239650530;
+      if ((v153 & *(unsigned long *)(v169 + 8 * v152)) == 0)
+        v18 = -1978580308;
+      v136 = v18;
+    } else if (v136 == -294445697) {
+      v169 = v135;
+      v167 = _gmp_primesieve((unsigned long *)v135, v171) + 1;
+      v44 = v167;
+      v8 = (unsigned int)log_n_max(v171);
+      v9 = 1188679392;
+      if (8 * (v44 / v8 + 1) <= 0x7F00)
+        v9 = -737446315;
+      v136 = v9;
+    } else if (v136 == -238159887) {
+      v153 = (v153 >> 63) | (2 * v153);
+      v152 += v153 & 1;
+      v136 = 1525729588;
+    } else if (v136 == -221169599) {
+      v157 = 3;
+      v159 = v171;
+      v158 = v170;
+      v155 = 0;
+      v13 = 1684715299;
+      if (v166 > v165)
+        v13 = -1426947839;
+      v136 = v13;
+    } else if (v136 == -113431241) {
+      v142 = v143;
+      v41[1] = v171 % v143;
+      v25 = -413633934;
+      if (v171 % v143 < v170 % v143)
+        v25 = -110663562;
+      v136 = v25;
+    } else if (v136 == -110663562) {
+      v136 = -690309802;
+    } else if (v136 == -34467782) {
+      v136 = 2007520730;
+    } else if (v136 == -30507765) {
+      v5 = primesieve_size(v171);
+      v136 = -294445697;
+      v135 = (unsigned long)v41 - ((8 * v5 + 15) & 0xFFFFFFFFFFFFFFF0ULL);
+    } else if (v136 == -7942039) {
+      v136 = -413633934;
+    } else if (v136 == 186197353) {
+      v136 = 2101882703;
+    } else if (v136 == 201397027) {
+      v167 -= v164;
+      v166 = 1ULL << v167;
+      v164 = 0;
+      v136 = -221169599;
+    } else if (v136 == 254599507) {
+      v136 = 516324820;
+    } else if (v136 == 263368643) {
+      v136 = -1531078244;
+    } else if (v136 == 321281381) {
+      v163 = 0;
+      v4 = -689445419;
+      if (8 * primesieve_size(v171) <= 0x7F00)
+        v4 = -30507765;
+      v136 = v4;
+    } else if (v136 == 343740744) {
+      break;
+    } else if (v136 == 408180220) {
+      v154 = limb_apprsqrt(v171);
+      v154 = n_to_bit(v154);
+      v136 = 1600216224;
+    } else if (v136 == 415717776) {
+      v136 = -616783057;
+    } else if (v136 == 468791417) {
+      v136 = 1297067123;
+    } else if (v136 == 516324820) {
+      v136 = 872813954;
+    } else if (v136 == 567069312) {
+      v144 += v147 % v146;
+      v41[3] = v146;
+      v147 /= v146;
+      v145 = v148 % v146;
+      v41[2] = v146;
+      v148 /= v146;
+      v21 = 1336228275;
+      if (v145 < v144)
+        v21 = -1005488255;
+      v136 = v21;
+    } else if (v136 == 568404784) {
+      v136 = -7942039;
+    } else if (v136 == 571669828) {
+      v165 >>= 1;
+      v136 = -1617541617;
+    } else if (v136 == 610315375) {
+      v165 *= 2;
+      v151 = n_to_bit(v171 >> 1);
+      v136 = 1665367877;
+    } else if (v136 == 668486404) {
+      v136 = 1087360433;
+    } else if (v136 == 872813954) {
+      v141 = (v141 >> 63) | (2 * v141);
+      v140 += v141 & 1;
+      v136 = 937117980;
+    } else if (v136 == 906975125) {
+      v27 = v164++;
+      *(unsigned long *)(v168 + 8 * v27) = v166;
+      v166 = v142;
+      v136 = 568404784;
+    } else if (v136 == 937117980) {
+      v33 = -1842993970;
+      if (v138 <= v139)
+        v33 = -1934563832;
+      v136 = v33;
+    } else if (v136 == 944167399) {
+      v166 *= v142;
+      v136 = 568404784;
+    } else if (v136 == 957497537) {
+      v166 *= v137;
+      v136 = 254599507;
+    } else if (v136 == 981332907) {
+      v137 = id_to_n(v138);
+      v136 = -652549899;
+    } else if (v136 == 983119416) {
+      v168 = v134;
+      v165 = (unsigned long)-1 / v171;
+      v136 = -696095292;
+    } else if (v136 == 1087360433) {
+      v161 = v170;
+      v161 = (v161 & 0x5555555555555555ULL) + ((v161 >> 1) & 0x5555555555555555ULL);
+      v161 = (v161 & 0x3333333333333333ULL) + ((v161 >> 2) & 0x3333333333333333ULL);
+      v161 = (v161 + (v161 >> 4)) & 0x0F0F0F0F0F0F0F0FULL;
+      v161 += v161 >> 8;
+      v161 += v161 >> 16;
+      v161 += (v161 >> 32);
+      v164 = (unsigned char)v161;
+      v136 = 1242191849;
+    } else if (v136 == 1097970268) {
+      *v133 = v173;
+      *(int *)(v172 + 4) = 1;
+      v136 = 1403438695;
+    } else if (v136 == 1105423333) {
+      v38 = (unsigned long *)_gmpz_realloc((mpz_ptr)v172, 1);
+      v136 = 1097970268;
+      v133 = v38;
+    } else if (v136 == 1158492829) {
+      v20 = v164++;
+      *(unsigned long *)(v168 + 8 * v20) = v166;
+      v166 = 1;
+      v136 = -472066901;
+    } else if (v136 == 1171230310) {
+      v22 = 415717776;
+      if (v148 >= v146)
+        v22 = 567069312;
+      v136 = v22;
+    } else if (v136 == 1173311315) {
+      v35 = v164++;
+      *(unsigned long *)(v168 + 8 * v35) = v166;
+      v36 = _gmpz_prodlimbs((mpz_ptr)v172, (unsigned long *)v168, v164);
+      v136 = 1403438695;
+      v41[0] = v36;
+    } else if (v136 == 1181947067) {
+      v136 = -238159887;
+    } else if (v136 == 1188679392) {
+      v42 = v167;
+      v11 = log_n_max(v171);
+      v12 = (unsigned long)_gmp_tmp_reentrant_alloc(&v163, 8 * (v42 / v11 + 1));
+      v136 = 983119416;
+      v134 = v12;
+    } else if (v136 == 1239650530) {
+      v153 = (v153 >> 63) | (2 * v153);
+      v152 += v153 & 1;
+      v136 = 1601852444;
+    } else if (v136 == 1242191849) {
+      v167 += v164;
+      v136 = -2060109893;
+    } else if (v136 == 1297067123) {
+      v136 = 610315375;
+    } else if (v136 == 1302571213) {
+      v34 = -648446646;
+      if (v164)
+        v34 = 1173311315;
+      v136 = v34;
+    } else if (v136 == 1336228275) {
+      v144 = 0;
+      v136 = -493474264;
+    } else if (v136 == 1338332444) {
+      v155 = 0;
+      v136 = -1259808554;
+    } else if (v136 == 1403438695) {
+      v136 = -1847597136;
+    } else if (v136 == 1525729588) {
+      v28 = -387093416;
+      if (v150 <= v151)
+        v28 = 1665367877;
+      v136 = v28;
+    } else if (v136 == 1595169204) {
+      v155 = 1;
+      v166 *= v157;
+      v136 = -1259808554;
+    } else if (v136 == 1600216224) {
+      v136 = -34467782;
+    } else if (v136 == 1601852444) {
+      v23 = 468791417;
+      if (v150 <= v151)
+        v23 = -385051850;
+      v136 = v23;
+    } else if (v136 == 1665367877) {
+      ++v150;
+      v24 = -238159887;
+      if ((v153 & *(unsigned long *)(v169 + 8 * v152)) == 0)
+        v24 = -586931070;
+      v136 = v24;
+    } else if (v136 == 1684715299) {
+      v136 = -1736673980;
+    } else if (v136 == 1711713439) {
+      v29 = n_to_bit(v171 - v170);
+      v140 = (v29 + 1) >> 6;
+      v141 = 1ULL << ((v29 + 1) & 0x3F);
+      v138 = v29 + 1;
+      v139 = n_to_bit(v171);
+      v136 = -1934563832;
+    } else if (v136 == 1926117906) {
+      _gmp_tmp_reentrant_free(v163);
+      v136 = -1874841551;
+    } else if (v136 == 2007520730) {
+      v136 = 186197353;
+    } else if (v136 == 2101882703) {
+      v17 = n_to_bit(5);
+      v152 = v17 >> 6;
+      v153 = 1ULL << (v17 & 0x3F);
+      v150 = v17;
+      v151 = v154;
+      v136 = -385051850;
+    } else {
+      break;
+    }
+  }
+}
