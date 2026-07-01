@@ -1,0 +1,3978 @@
+CFS_PREDICTION:
+predict control flow: {}
+
+CURRENT_CODE:
+char *UI_add_info_string(char *a1, char *a2)
+{
+    return general_allocate_string(a1, a2, 0, 4, 0, 0, 0, 0, 0);
+}
+/////
+CFS_PREDICTION:
+predict control flow: {if (!&&!=){}if (==){}}
+
+CURRENT_CODE:
+int vdbePmaReaderIncrMergeInit(void *pReader, int iTask)
+{
+    void *pTask = *(void **)((char *)pReader + 72);
+    void *pIncr = *(void **)pTask;
+    int nBuffer = *(int *)((char *)pTask + 24);
+    int fd = *(int *)(*(char **)((char *)pIncr + 16) + 32);
+    int rc;
+
+    rc = vdbeMergeEngineInit(*(void **)pTask, *(void **)((char *)pTask + 8), iTask);
+    if (rc) return rc;
+
+    if (*(int *)((char *)pTask + 32))
+    {
+        rc = vdbeSorterOpenTempFile(fd, nBuffer, (void ***)((char *)pTask + 40));
+        if (rc) return rc;
+        rc = vdbeSorterOpenTempFile(fd, nBuffer, (void ***)((char *)pTask + 56));
+        if (rc) return rc;
+    }
+    else
+    {
+        if (*(void **)((char *)pIncr + 88) == 0)
+        {
+            rc = vdbeSorterOpenTempFile(fd, *(int *)((char *)pIncr + 96), (void ***)((char *)pIncr + 88));
+            *(int *)((char *)pIncr + 96) = 0;
+            if (rc) return rc;
+        }
+        *(void **)((char *)pTask + 56) = *(void **)((char *)pIncr + 88);
+        *(int *)((char *)pTask + 16) = *(int *)((char *)pIncr + 96);
+        *(int *)((char *)pIncr + 96) += nBuffer;
+    }
+
+    rc = *(unsigned int *)((char *)pTask + 32);
+    if (rc) rc = vdbeIncrPopulate(pTask);
+    if (rc == 0 && iTask != 1) rc = vdbePmaReaderNext(pReader);
+
+    return rc;
+}
+/////
+CFS_PREDICTION:
+predict control flow: {if (==)if ()for ()if (<)if (!)if (>=&&!)if ()while (){if (!)}if ()}
+
+CURRENT_CODE:
+long long Curl_mime_size(struct Curl_mimepart *part)
+{
+    long long size;
+    long long result;
+    long long header_size;
+    long long custom_header_size;
+    struct Curl_mimepart *parent;
+    struct curl_slist *headers;
+    struct curl_slist *custom_headers;
+
+    if (part->kind == 4) {
+        parent = part->parent;
+        if (parent) {
+            unsigned long long boundary_len = strlen(parent->boundary) + 1;
+            size = boundary_len + 5;
+            struct Curl_mimepart *child = parent->firstchild;
+            while (child) {
+                long long child_size = Curl_mime_size(child);
+                if (child_size < 0) {
+                    size = child_size;
+                } else if (size >= 0) {
+                    size += boundary_len + 5 + child_size;
+                }
+                child = child->next;
+            }
+            part->size = size;
+        } else {
+            part->size = 0;
+        }
+    }
+
+    if (part->sizefunc) {
+        long long (*func)(struct Curl_mimepart *) = *(long long (**)(struct Curl_mimepart *))((char *)part->sizefunc + 16);
+        result = func(part);
+    } else {
+        result = part->size;
+    }
+
+    if (result >= 0 && !(part->flags & 2)) {
+        header_size = 0;
+        if (part->headers) {
+            struct curl_slist *h = part->headers;
+            do {
+                header_size += strlen(h->data) + 2;
+                h = h->next;
+            } while (h);
+        }
+        long long total_header = result + header_size;
+        custom_header_size = 0;
+        if (part->custom_headers) {
+            struct curl_slist *ch = part->custom_headers;
+            do {
+                if (!match_header(ch->data, "Content-Type", 12))
+                    custom_header_size += strlen(ch->data) + 2;
+                ch = ch->next;
+            } while (ch);
+        }
+        result = total_header + custom_header_size + 2;
+    }
+    return result;
+}
+/////
+CFS_PREDICTION:
+predict control flow: {}
+
+CURRENT_CODE:
+void *MHD_create_response_from_fd(int64_t a1, int a2) {
+    return MHD_create_response_from_fd_at_offset64(a1, a2, 0LL);
+}
+/////
+CFS_PREDICTION:
+predict control flow: {for (>)if (!=)if (!){}}
+
+CURRENT_CODE:
+size_t lf_copy(void *state, int unused, FILE *out) {
+    int number_lines = 1;
+    const char *start = *(const char **)((char *)state + 8);
+    while (number_lines) {
+        char *nl = rawmemchr(*(const char **)((char *)state + 8), '\n');
+        if (nl == *(const char **)((char *)state + 24)) {
+            ck_fwrite(start, nl - start, out);
+            size_t result = lf_refill(state);
+            if (!result) return result;
+            start = *(const char **)((char *)state + 8);
+        } else {
+            number_lines--;
+            *(const char **)((char *)state + 8) = nl + 1;
+        }
+    }
+    return ck_fwrite(start, *(const char **)((char *)state + 8) - start, out);
+}
+/////
+CFS_PREDICTION:
+predict control flow: {if (!)if (<)elseif (>){}if (==)else}
+
+CURRENT_CODE:
+int sprintc(char *buf, char c) {
+    enum { ISPRINT_MASK = 0x4000, HIGH_OFFSET = 0x80, CTRL_SHIFT = 64, DEL_CODE = 127, CARET = '^', DEL_CHAR = '?', HIGH_PREFIX1 = 'M', HIGH_PREFIX2 = '-' };
+    char *p = buf;
+    char ch = c;
+    const unsigned short *ctype = *__ctype_b_loc();
+    if (!(ctype[(unsigned char)ch] & ISPRINT_MASK)) {
+        if (ch < 0) {
+            *p++ = HIGH_PREFIX1;
+            *p++ = HIGH_PREFIX2;
+            ch += HIGH_OFFSET;
+        }
+        if ((unsigned char)ch <= 0x1F) {
+            *p++ = CARET;
+            ch += CTRL_SHIFT;
+        } else if ((unsigned char)ch == DEL_CODE) {
+            *p++ = CARET;
+            ch = DEL_CHAR;
+        }
+    }
+    *p = ch;
+    *(p + 1) = '\0';
+    return (int)(p - buf + 1);
+}
+/////
+CFS_PREDICTION:
+predict control flow: {if (>){}if (!=){}}
+
+CURRENT_CODE:
+unsigned int gmp_snprintf_reps(struct gmp_snprintf_state *a1, int a2, unsigned int a3)
+{
+    size_t v4;
+    size_t v5;
+    size_t v6;
+    if (!a1)
+        return a3;
+    v4 = a1->remaining;
+    if (v4 > 1)
+    {
+        v5 = v4 - 1;
+        v6 = a3;
+        if (v5 <= a3)
+            v6 = v5;
+        memset(a1->ptr, a2, v6);
+        a1->ptr += v6;
+        a1->remaining -= v6;
+    }
+    return a3;
+}
+/////
+CFS_PREDICTION:
+predict control flow: {if (==&&!=)if (!=)elseif (){}else}
+
+CURRENT_CODE:
+void *
+bfd_arch_get_compatible(void *a1, void *a2, int a3, long a4)
+{
+    void *v4 = a2;
+    void *v5 = *(void **)((char *)a1 + 192);
+    if (*(int *)((char *)v5 + 12))
+    {
+        void *v6 = *(void **)((char *)a2 + 192);
+        if (*(int *)((char *)v6 + 12))
+            return ((void *(*)(void *, void *, int, long, void *))(*(void **)((char *)v5 + 48)))(a1, v6, a3, a4, v4);
+        void *v8 = a1;
+        a1 = v4;
+        v4 = v8;
+    }
+    if (a3 || (*(unsigned char *)((char *)a1 + 77) & 0x30) == 0x10 || !strcmp(*(const char **)(*(char **)((char *)a1 + 8)), "binary"))
+        return *(void **)((char *)v4 + 192);
+    else
+        return (v4 ? *(void **)((char *)v4 + 192) : 0);
+}
+/////
+CFS_PREDICTION:
+predict control flow: {if (!||!=)if (==&&){}}
+
+CURRENT_CODE:
+int process_dir(int a1, int a2, void *a3)
+{
+    if (!a3)
+        return 1;
+    unsigned char failed = make_dir_parents(a1, a2, (unsigned int)&make_ancestor, a3, dir_mode, (unsigned int)&announce_mkdir, dir_mode_bits, owner_id, group_id, 0) ^ 1;
+    if (!failed && ((unsigned char *)a3)[33])
+        *__errno_location() = 95;
+    return failed;
+}
+/////
+CFS_PREDICTION:
+predict control flow: {if (!||!||!)if (!)for (<){if (<||==&&>=){}if (!=)if (!&&!&&>){}if (==)if (>&&==){}elseif (){}else{}}if ()}
+
+CURRENT_CODE:
+int MHD_post_process(struct MHD_PostProcessor *pp, const char *data, size_t len)
+{
+    long __stack_chk = __readfsqword(0x28u);
+    size_t skip = 0;
+    int continue_flag = 1;
+    size_t offset = 0;
+    int ret;
+
+    if (len == 0)
+        return 1;
+    if (!pp)
+        return 0;
+
+    ret = MHD_str_equal_caseless_n_("application/x-www-form-urlencoded", pp->content_type, 33);
+    if (ret)
+        return post_process_urlencoded(pp, data, len);
+
+    ret = MHD_str_equal_caseless_n_("multipart/form-data", pp->content_type, 19);
+    if (!ret)
+        return 0;
+
+    while (1)
+    {
+        if (len <= offset && (!pp->buffer_pos || !continue_flag))
+            return 1;
+
+        size_t current = pp->buffer_pos;
+        size_t copy = len - offset;
+        if (copy > pp->buffer_size - current)
+            copy = pp->buffer_size - current;
+
+        memcpy(pp->buffer + current, data + offset, copy);
+        offset += copy;
+        size_t new_pos = current + copy;
+        pp->buffer_pos = new_pos;
+
+        if (!continue_flag && copy == 0 && len > offset)
+        {
+            pp->state = 0;
+            return 0;
+        }
+
+        int substate = pp->substate;
+        if (substate == 2)
+            goto state_2;
+
+        if (substate <= 2)
+        {
+            if (substate == 1)
+            {
+                char c = pp->buffer[0];
+                if (c == '\n')
+                {
+                    skip++;
+                    pp->substate = 0;
+                    continue_flag = 0;
+                    goto move_skip;
+                }
+                else
+                    goto state_1_continue;
+            }
+            else
+                goto state_switch;
+        }
+        else if (substate == 3)
+        {
+            char c = pp->buffer[0];
+            if (c == '-')
+            {
+                skip++;
+                pp->substate = 4;
+                continue_flag = 0;
+                goto move_skip;
+            }
+            else
+            {
+                pp->substate = 2;
+                goto state_2;
+            }
+        }
+        else if (substate == 4)
+        {
+            char c = pp->buffer[0];
+            if (c != '-')
+            {
+                pp->state = 0;
+                return 0;
+            }
+            skip++;
+            pp->substate = 2;
+            pp->state = pp->substate_value;
+            continue_flag = 0;
+            goto move_skip;
+        }
+        else
+            goto state_switch;
+
+state_1_continue:
+        {
+            char c = pp->buffer[0];
+            if (c == '\n')
+            {
+                skip++;
+                pp->substate = 0;
+                continue_flag = 0;
+                goto move_skip;
+            }
+            if (c == '-')
+            {
+                skip++;
+                pp->substate = 4;
+                continue_flag = 0;
+                goto move_skip;
+            }
+            pp->substate = 2;
+            goto state_2;
+        }
+
+state_2:
+        {
+            char c = pp->buffer[0];
+            if (c == '\r')
+            {
+                if (new_pos > 1 && pp->buffer[1] == '\n')
+                {
+                    pp->substate = 0;
+                    skip += 2;
+                    continue_flag = 0;
+                }
+                else
+                {
+                    pp->substate = 1;
+                    skip++;
+                    continue_flag = 0;
+                }
+            }
+            else if (c == '\n')
+            {
+                skip++;
+                pp->substate = 0;
+                continue_flag = 0;
+            }
+            else
+            {
+                pp->substate = 0;
+                pp->state = 0;
+                return 0;
+            }
+            goto move_skip;
+        }
+
+state_switch:
+        switch (pp->state)
+        {
+            case 0:
+                return 0;
+            case 1:
+                pp->state = 0;
+                return 0;
+            case 2:
+                find_boundary(pp, pp->boundary, pp->original_boundary_len, &skip, 7, 1);
+                continue_flag = 0;
+                goto move_skip;
+            case 3:
+                if (!find_boundary(pp, pp->boundary, pp->original_boundary_len, &skip, 7, 1))
+                {
+                    if (!pp->state)
+                        return 0;
+                    goto end_check;
+                }
+                continue_flag = 0;
+                goto move_skip;
+            case 7:
+                pp->flag_136 = 1;
+                if (!process_multipart_headers(pp, &skip, 8))
+                {
+                    if (!pp->state)
+                        return 0;
+                    goto end_check;
+                }
+                continue_flag = 1;
+                goto move_skip;
+            case 8:
+                if (pp->mime_type && (unsigned int)MHD_str_equal_caseless_n_(pp->mime_type, "multipart/mixed", 15))
+                {
+                    char *tmp = strstr(pp->mime_type, "boundary=");
+                    pp->boundary_copy = tmp;
+                    if (!tmp)
+                    {
+                        pp->state = 0;
+                        return 0;
+                    }
+                    char *dup = strdup(tmp + 9);
+                    pp->boundary_copy = dup;
+                    if (!dup)
+                    {
+                        pp->state = 0;
+                        return 0;
+                    }
+                    free(pp->mime_type);
+                    pp->mime_type = NULL;
+                    pp->sub_boundary_len = strlen(pp->boundary_copy);
+                    pp->state = 11;
+                    continue_flag = 1;
+                }
+                else
+                {
+                    pp->state = 9;
+                    pp->ptr_112 = NULL;
+                    continue_flag = 1;
+                }
+                goto move_skip;
+            case 9:
+                continue_flag = process_value_to_boundary(pp, &skip, pp->boundary, pp->original_boundary_len, 10, 1);
+                if (!continue_flag && !pp->state)
+                    return 0;
+                if (continue_flag)
+                    continue_flag = 0;
+                goto move_skip;
+            case 10:
+                pp->flags = 0;
+                free_unmarked(pp);
+                if (pp->boundary_copy)
+                {
+                    free(pp->boundary_copy);
+                    pp->boundary_copy = NULL;
+                }
+                pp->state = 7;
+                continue_flag = 1;
+                goto move_skip;
+            case 11:
+                if (!pp->boundary_copy)
+                {
+                    pp->state = 0;
+                    return 0;
+                }
+                if (find_boundary(pp, pp->boundary_copy, pp->sub_boundary_len, &skip, 12, 3))
+                {
+                    continue_flag = 0;
+                    goto move_skip;
+                }
+                if (!pp->state)
+                    return 0;
+                goto end_check;
+            case 12:
+                pp->flags = 0;
+                if (pp->ptr_48)
+                    pp->flags |= 1;
+                if (pp->mime_type)
+                    pp->flags |= 2;
+                if (pp->ptr_64)
+                    pp->flags |= 4;
+                if (pp->ptr_72)
+                    pp->flags |= 8;
+                pp->state = 13;
+                continue_flag = 1;
+                goto move_skip;
+            case 13:
+                pp->ptr_112 = NULL;
+                if (!process_multipart_headers(pp, &skip, 14))
+                {
+                    if (!pp->state)
+                        return 0;
+                    goto end_check;
+                }
+                continue_flag = 1;
+                goto move_skip;
+            case 14:
+                continue_flag = process_value_to_boundary(pp, &skip, pp->boundary_copy, pp->sub_boundary_len, 15, 3);
+                if (!continue_flag && !pp->state)
+                    return 0;
+                if (continue_flag)
+                    continue_flag = 0;
+                goto move_skip;
+            case 15:
+                free_unmarked(pp);
+                pp->state = 13;
+                continue_flag = 1;
+                goto move_skip;
+            default:
+                mhd_panic(mhd_panic_cls, "postprocessor.c", 1338, NULL);
+                continue_flag = 0;
+                goto move_skip;
+        }
+
+end_check:
+        if (skip)
+        {
+            size_t move = pp->buffer_pos - skip;
+            memmove(pp->buffer, pp->buffer + skip, move);
+            pp->buffer_pos = move;
+            skip = 0;
+            continue_flag = 1;
+        }
+        if (len <= offset)
+            return 1;
+        pp->state = 0;
+        return 0;
+
+move_skip:
+        if (skip)
+        {
+            size_t move = pp->buffer_pos - skip;
+            memmove(pp->buffer, pp->buffer + skip, move);
+            pp->buffer_pos = move;
+            skip = 0;
+            continue_flag = 1;
+        }
+    }
+}
+/////
+CFS_PREDICTION:
+predict control flow: {while (){if (!||==)if (==){}}if ()}
+
+CURRENT_CODE:
+int gz_decomp(void *state)
+{
+    int ret;
+    int v2 = 0;
+    int initial = *(int *)(state + 152);
+    while (1)
+    {
+        if (*(int *)(state + 128) == 0)
+        {
+            ret = gz_avail(state);
+            if (ret == -1)
+                return -1;
+            if (*(int *)(state + 128) == 0)
+            {
+                gz_error(state, -5, "unexpected end of file");
+                return -1;
+            }
+        }
+        v2 = inflate(state + 120, 0);
+        if (((v2 + 2) & 0xFFFFFFFB) == 0)
+        {
+            gz_error(state, -2, "internal error: inflate stream corrupt");
+            return -1;
+        }
+        if (v2 == -4)
+        {
+            gz_error(state, -4, "out of memory");
+            return -1;
+        }
+        if (v2 == -3)
+            break;
+        if (*(int *)(state + 152) == 0 || v2 == 1)
+        {
+            unsigned int v4 = initial - *(int *)(state + 152);
+            *(int *)state = v4;
+            *(long long *)(state + 8) = *(long long *)(state + 144) - v4;
+            if (v2 == 1)
+                *(int *)(state + 68) = 0;
+            return 0;
+        }
+    }
+    const char *msg = *(const char **)(state + 168);
+    if (msg == 0)
+        msg = "compressed data error";
+    gz_error(state, -3, msg);
+    return -1;
+}
+/////
+CFS_PREDICTION:
+predict control flow: {if (!)if ()}
+
+CURRENT_CODE:
+int EVP_PKEY_assign(EVP_PKEY *pkey, int type, void *key)
+{
+    int ret;
+    ret = EVP_PKEY_set_type(pkey, type);
+    if (ret) {
+        pkey->pkey.ptr = key;
+        ret = (key != NULL);
+    }
+    return ret;
+}
+/////
+CFS_PREDICTION:
+predict control flow: {}
+
+CURRENT_CODE:
+char *quotearg_alloc(char *a1, size_t a2, void *a3)
+{
+    return quotearg_alloc_mem(a1, a2, 0, a3);
+}
+/////
+CFS_PREDICTION:
+predict control flow: {if (!)if (!=)if (==){}if (&&<=||>||!=){if ()if (!)}elseif (!||!||!){}if (){if ()}else}
+
+CURRENT_CODE:
+int Curl_resolv(struct Curl_easy *data, const char *hostname, int port, int allowDOH, struct Curl_dns_entry **entry, int wait)
+{
+    struct connectdata *conn = data->conn;
+    struct Curl_dns_entry *dns = NULL;
+    int result = -1;
+    int resolver_error = 0;
+    struct in_addr addr4;
+    struct in6_addr addr6;
+    int immediate;
+
+    immediate = allowDOH;
+    *entry = NULL;
+    conn->state &= ~CURLSHARE_NOSHARE;
+
+    if (conn->share != NULL)
+        Curl_share_lock(conn->share, 3, 2);
+
+    dns = fetch_addr(data, hostname, port, allowDOH, entry, wait);
+    if (dns != NULL) {
+        Curl_infof(conn, "Hostname %s was found in DNS cache\n", hostname);
+        dns->refcount++;
+        result = 0;
+        if (conn->share == NULL)
+            goto check_dns;
+    } else {
+        result = -1;
+        if (conn->share == NULL)
+            goto resolve;
+    }
+
+    Curl_share_unlock(conn->share, 3);
+
+check_dns:
+    if (dns != NULL) {
+        goto done;
+    }
+
+resolve:
+    if (conn->resolver != NULL) {
+        Curl_set_in_callback(data, 1);
+        resolver_error = conn->resolver(conn->data, 0, conn->resolver_arg);
+        Curl_set_in_callback(data, 0);
+        if (resolver_error != 0)
+            return CURLE_COULDNT_RESOLVE_HOST;
+    }
+
+    if ((inet_pton(AF_INET, hostname, &addr4) > 0 &&
+         (dns = Curl_ip2addr(AF_INET, &addr4, hostname, port)) != NULL) ||
+        (inet_pton(AF_INET6, hostname, &addr6) > 0 &&
+         (dns = Curl_ip2addr(AF_INET6, &addr6, hostname, port)) != NULL)) {
+        /* success */
+    } else {
+        if (!Curl_ipvalid(data))
+            return CURLE_COULDNT_RESOLVE_HOST;
+
+        if (immediate && conn->doh < 0)
+            dns = Curl_doh(data, hostname, port, &resolver_error);
+        else
+            dns = Curl_getaddrinfo(data, hostname, port, &resolver_error);
+
+        if (dns == NULL) {
+            if (resolver_error != 0)
+                goto done;
+            if (!Curl_resolv_check(data, &dns)) {
+                result = (dns != NULL) ? 0 : -1;
+                goto done;
+            }
+            return CURLE_COULDNT_RESOLVE_HOST;
+        }
+    }
+
+    if (conn->share != NULL)
+        Curl_share_lock(conn->share, 3, 2);
+    dns = Curl_cache_addr(conn, dns, hostname, port);
+    if (conn->share != NULL)
+        Curl_share_unlock(conn->share, 3);
+    if (dns != NULL)
+        result = 0;
+    else
+        Curl_freeaddrinfo(dns);
+
+done:
+    *entry = dns;
+    return result;
+}
+/////
+CFS_PREDICTION:
+predict control flow: {if (!)while (){}}
+
+CURRENT_CODE:
+void get_sesslist(struct sesslist *list, int include_default)
+{
+    if (include_default) {
+        struct strbuf *buf = strbuf_new();
+        void *enum_state = enum_settings_start();
+        if (enum_state) {
+            while (enum_settings_next(enum_state, buf))
+                BinarySink_put_byte(buf, 0);
+            enum_settings_finish(enum_state);
+        }
+        BinarySink_put_byte(buf, 0);
+        char *data = strbuf_to_str(buf);
+        list->data = data;
+        list->count = 1;
+        if (*data) {
+            char *p, *q;
+            do {
+                if (strcmp(data, "Default Settings") != 0)
+                    list->count++;
+                if (*data) {
+                    do
+                        data++;
+                    while (*data);
+                    q = data;
+                } else {
+                    q = data;
+                }
+                data = q + 1;
+            } while (q[1]);
+        }
+        list->entries = safemalloc(list->count + 1, sizeof(char *), 0);
+        list->entries[0] = "Default Settings";
+        char *cur = list->data;
+        int idx = 1;
+        if (*cur) {
+            char *end;
+            do {
+                if (strcmp(cur, "Default Settings") != 0)
+                    list->entries[idx++] = cur;
+                if (*cur) {
+                    do
+                        cur++;
+                    while (*cur);
+                    end = cur;
+                } else {
+                    end = cur;
+                }
+                cur = end + 1;
+            } while (end[1]);
+        } else {
+            idx = 1;
+        }
+        qsort(list->entries, idx, sizeof(char *), sessioncmp);
+    } else {
+        safefree(list->data);
+        safefree(list->entries);
+        list->data = NULL;
+        list->entries = NULL;
+    }
+}
+/////
+CFS_PREDICTION:
+predict control flow: {if (!)if (==){}if (>=||>){}if (!||!||!){if (<)if (){}}else}
+
+CURRENT_CODE:
+CURLcode tftp_connect(struct connectdata *conn, unsigned char *result)
+{
+    struct tftp_conn *tc;
+    size_t blksize;
+    int blksize_val;
+    int alloc_size;
+    char errbuf[256];
+    unsigned long stack_canary = __readfsqword(0x28u);
+    int *errno_p;
+    const char *err_str;
+
+    tc = Curl_ccalloc(1, sizeof(struct tftp_conn));
+    if (!tc)
+        return CURLE_OUT_OF_MEMORY;
+    conn->proto.tftp = tc;
+
+    blksize = *(size_t *)(conn->data->set.tftp_blksize);
+    if (blksize) {
+        if ((blksize - 8) > 0xFFB0)
+            return CURLE_BAD_FUNCTION_ARGUMENT;
+        blksize_val = (int)blksize;
+        alloc_size = 512;
+        if (blksize >= 512)
+            alloc_size = (int)blksize;
+    } else {
+        blksize_val = 512;
+        alloc_size = 512;
+    }
+
+    if (!tc->sendbuf) {
+        tc->sendbuf = Curl_ccalloc(1, alloc_size + 4);
+        if (!tc->sendbuf)
+            return CURLE_OUT_OF_MEMORY;
+    }
+    if (!tc->recvbuf) {
+        tc->recvbuf = Curl_ccalloc(1, alloc_size + 4);
+        if (!tc->recvbuf)
+            return CURLE_OUT_OF_MEMORY;
+    }
+
+    Curl_conncontrol(conn, 1);
+    tc->conn = conn;
+    tc->sockfd = conn->sock[0];
+    tc->flags = 0;
+    tc->timeout = -100;
+    tc->blksize_default = 512;
+    tc->blksize = blksize_val;
+    tc->remote_addr.ss_family = conn->remote_addr->ss_family;
+    tftp_set_timeouts(tc);
+
+    if (conn->bits.tftpbinding >= 0) {
+        if (bind(tc->sockfd, (struct sockaddr *)&tc->remote_addr, conn->remote_addrlen)) {
+            errno_p = __errno_location();
+            err_str = Curl_strerror(*errno_p, errbuf, 256);
+            Curl_failf(conn->data, "bind() failed;%s", err_str);
+            return CURLE_COULDNT_CONNECT;
+        }
+        conn->bits.tftpbinding |= 0x80;
+    }
+
+    Curl_pgrsStartNow(conn->data);
+    *result = 1;
+    return CURLE_OK;
+}
+/////
+CFS_PREDICTION:
+// FUNCTION MHD_response_execute_upgrade_ NOT AVAILABLE
+
+CURRENT_CODE:
+// FUNCTION MHD_response_execute_upgrade_ NOT AVAILABLE
+/////
+CFS_PREDICTION:
+predict control flow: {while (){if (!=)if (==&&==)elseif (){}else{}}if ()}
+
+CURRENT_CODE:
+extern void run_idempotent_callback(void *);
+extern void safefree(void *);
+
+void delete_callbacks_for_context(void *a1)
+{
+    struct callback_node **prev_next = 0;
+    struct callback_node *new_head = 0;
+    struct callback_node *last_node = 0;
+    while (1) {
+        struct callback_node *node = cbhead;
+        if (!cbhead)
+            break;
+        cbhead = cbhead->next;
+        void *context = node->context;
+        if (context == a1 || (node->func == run_idempotent_callback && *((unsigned long long *)context + 1) == (unsigned long long)a1)) {
+            safefree(node);
+        } else {
+            if (new_head)
+                *prev_next = node;
+            else
+                new_head = node;
+            prev_next = &node->next;
+            last_node = node;
+        }
+    }
+    cbhead = new_head;
+    if (last_node) {
+        last_node->next = 0;
+        cbtail = last_node;
+    } else {
+        cbtail = 0;
+    }
+}
+/////
+CFS_PREDICTION:
+predict control flow: {if (!)if (!=){}if (==){}}
+
+CURRENT_CODE:
+int BN_mul_word(BIGNUM *a, BN_ULONG w)
+{
+    int top = a->top;
+    BN_ULONG carry;
+    if (top == 0)
+        return 1;
+    if (w == 0) {
+        BN_set_word(a, 0);
+        return 1;
+    }
+    carry = bn_mul_words(a->d, a->d, top, w);
+    if (carry) {
+        if (top + 1 > a->dmax) {
+            if (bn_expand2(a, top + 1) == NULL)
+                return 0;
+        }
+        a->d[top] = carry;
+        a->top = top + 1;
+    }
+    return 1;
+}
+/////
+CFS_PREDICTION:
+predict control flow: {if (>=){}if (!){}elseif (>){}if (<){}for (<){if ()}}
+
+CURRENT_CODE:
+int vdbeRecordCompareString(int nKey, const unsigned char *pKey, void *pPKey)
+{
+    int nStr;
+    int nCopy;
+    int nOther;
+    int cmp;
+    int result;
+    unsigned char *pOther;
+    int v4;
+    int diff;
+
+    nStr = pKey[1];
+    if (nStr > 127)
+        sqlite3GetVarint32(pKey + 1, &nStr);
+    if (nStr <= 11)
+        return *((char *)pPKey + 20);
+    if ((nStr & 1) == 0)
+        return *((char *)pPKey + 21);
+    v4 = (nStr - 12) / 2;
+    if (v4 + *pKey > nKey)
+    {
+        *((unsigned char *)pPKey + 19) = sqlite3CorruptError(0);
+        return 0;
+    }
+    pOther = *(unsigned char **)((char *)pPKey + 8);
+    nOther = *(int *)(pOther + 12);
+    nCopy = (nStr - 12) / 2;
+    if (nOther <= v4)
+        nCopy = nOther;
+    cmp = memcmp(&pKey[*pKey], *(const void **)(pOther + 16), nCopy);
+    if (cmp <= 0)
+    {
+        if (cmp < 0)
+        {
+            result = *((char *)pPKey + 20);
+        }
+        else
+        {
+            diff = v4 - nOther;
+            if (diff)
+            {
+                if (diff <= 0)
+                    result = *((char *)pPKey + 20);
+                else
+                    result = *((char *)pPKey + 21);
+            }
+            else if (*((unsigned short *)pPKey + 8) > 1u)
+            {
+                result = sqlite3VdbeRecordCompareWithSkip(nKey, pKey, (void *)pPKey, 1);
+            }
+            else
+            {
+                result = *((char *)pPKey + 18);
+                *((unsigned char *)pPKey + 22) = 1;
+            }
+        }
+    }
+    else
+    {
+        result = *((char *)pPKey + 21);
+    }
+    return result;
+}
+/////
+CFS_PREDICTION:
+predict control flow: {if (!||!||!){}if (!){}}
+
+CURRENT_CODE:
+int engine_unlocked_init(struct engine *eng) {
+    if (eng->init_count || !eng->init_func) {
+        eng->error_count++;
+        eng->init_count++;
+        return 1;
+    }
+    int result = eng->init_func();
+    if (result) {
+        eng->error_count++;
+        eng->init_count++;
+    }
+    return result;
+}
+/////
+CFS_PREDICTION:
+predict control flow: {if (!=)if (==&&!=){}}
+
+CURRENT_CODE:
+MagickBooleanType CloneImageProfiles(Image *image, const Image *clone_image)
+{
+  if (image == (Image *) NULL)
+    return(MagickFalse);
+  if (image->signature != MagickCoreSignature)
+    return(MagickFalse);
+  if (image->debug != MagickFalse)
+    LogMagickEvent(DebugEvent,GetMagickModule(),"%s",image->filename);
+  if (clone_image == (const Image *) NULL)
+    return(MagickFalse);
+  if (clone_image->signature != MagickCoreSignature)
+    return(MagickFalse);
+  if (clone_image->profiles != (SplayTreeInfo *) NULL)
+  {
+    if (image->profiles != (SplayTreeInfo *) NULL)
+      DestroyImageProfiles(image);
+    image->profiles=CloneSplayTree(clone_image->profiles,ConstantString,
+      CloneStringInfo);
+    if (image->profiles == (SplayTreeInfo *) NULL)
+      return(MagickFalse);
+  }
+  return(MagickTrue);
+}
+/////
+CFS_PREDICTION:
+predict control flow: {}
+
+CURRENT_CODE:
+void print_normal_script(long long a1)
+{
+    print_script(a1, find_change, (void (*)(long long))print_normal_hunk);
+}
+/////
+CFS_PREDICTION:
+predict control flow: {if (!=&&!=)if (==){}if (>){}}
+
+CURRENT_CODE:
+MagickBooleanType SetImageExtent(Image *image, size_t width, size_t height, ExceptionInfo *exception, double a5, double a6, double a7, double a8)
+{
+    if (width && height)
+    {
+        image->columns = width;
+        image->rows = height;
+        if (image->depth == 0)
+        {
+            image->depth = 8;
+            ThrowMagickException(exception, "MagickCore/image.c", "SetImageExtent", 2647, 465, "ImageDepthNotSupported", "`%s'", image->filename);
+        }
+        if (image->depth > 64)
+        {
+            image->depth = 64;
+            ThrowMagickException(exception, "MagickCore/image.c", "SetImageExtent", 2653, 465, "ImageDepthNotSupported", "`%s'", image->filename);
+        }
+        return SyncImagePixelCache(image, exception, a5, a6, a7, a8);
+    }
+    else
+    {
+        ThrowMagickException(exception, "MagickCore/image.c", "SetImageExtent", 2641, 465, "NegativeOrZeroImageSize", "`%s'", image->filename);
+        return MagickFalse;
+    }
+}
+/////
+CFS_PREDICTION:
+predict control flow: {}
+
+CURRENT_CODE:
+int vdbeSorterFlushThread(void *a1) {
+    int result = vdbeSorterListToPMA(a1, (long long *)((char *)a1 + 32));
+    *(int *)((char *)a1 + 8) = 1;
+    return result;
+}
+/////
+CFS_PREDICTION:
+predict control flow: {if (&&){}elseif (){}else{}}
+
+CURRENT_CODE:
+int sqlite3GenerateIndexKey(Parse *pParse, Index *pIndex, int regBase, int nCol, int op, unsigned int *p1Key, int iPartIdxLabel, KeyInfo *pPriorKey, int regOrig)
+{
+    Vdbe *pVdbe = pParse->pVdbe;
+    int v24;
+    int v14;
+    int v15;
+    int v16;
+    int v17;
+    short v18;
+    int v19;
+    short v20;
+
+    if (p1Key)
+    {
+        if (pIndex->p2Key)
+        {
+            *p1Key = --pParse->iPKey;
+            pParse->regBase = regBase + 1;
+            sqlite3ExprIfFalseDup(pParse, pIndex->p2Key, *p1Key, 0x10, iPartIdxLabel);
+            pParse->regBase = 0;
+            pPriorKey = 0;
+        }
+        else
+        {
+            *p1Key = 0;
+        }
+    }
+
+    if (op && (pIndex->bUnordered & 8))
+    {
+        v24 = pIndex->nKeyCol2;
+        v14 = sqlite3GetTempRange(pParse, v24);
+    }
+    else
+    {
+        v24 = pIndex->nKeyCol;
+        v14 = sqlite3GetTempRange(pParse, v24);
+    }
+    v15 = v14;
+
+    if (pPriorKey)
+    {
+        if (v14 == regOrig)
+        {
+            if (pPriorKey->p2Key)
+                pPriorKey = 0;
+        }
+        else
+        {
+            pPriorKey = 0;
+        }
+    }
+
+    if (v24 > 0)
+    {
+        for (v16 = 0; v16 < v24; v16++)
+        {
+            if (!pPriorKey
+                || (v20 = pPriorKey->aSortOrder[v16], pIndex->aSortOrder[v16] != v20)
+                || v20 == -2)
+            {
+                v17 = v15 + v16;
+                v18 = pIndex->aSortOrder[v16];
+                if (v18 == -2)
+                {
+                    pParse->regBase = regBase + 1;
+                    sqlite3ExprCodeCopy(pParse, pIndex->aColExpr[v16], v17);
+                    pParse->regBase = 0;
+                }
+                else
+                {
+                    sqlite3ExprCodeGetColumnOfTable(pVdbe, pIndex->pTable, regBase, v18, v17, iPartIdxLabel);
+                }
+                v19 = pVdbe->nOp;
+                if (v19 > 0 && pVdbe->aOp[v19 - 1].opcode == 83)
+                    sqlite3VdbeChangeToNoop(pVdbe, v19 - 1);
+            }
+        }
+    }
+
+    if (nCol)
+    {
+        sqlite3VdbeAddOp3(pVdbe, 91, v15, v24, nCol);
+        if (pIndex->pTable->aCol[0])
+        {
+            char *zAff = sqlite3IndexAffinityStr(pParse, pIndex);
+            sqlite3VdbeChangeP4(pVdbe, -1, zAff, 0);
+        }
+    }
+
+    sqlite3ReleaseTempRange(pParse, v15, v24);
+    return v15;
+}
+/////
+CFS_PREDICTION:
+predict control flow: {if (&&!){}elseif (!&&){}else{}}
+
+CURRENT_CODE:
+CollSeq *sqlite3BinaryCompareCollSeq(Parse *pParse, unsigned __int8 *pLeft, unsigned __int8 *pRight) {
+    CollSeq *result;
+    if ((pLeft[5] & 1) != 0)
+        return sqlite3ExprCollSeq(pParse, pLeft);
+    if (pRight && (pRight[5] & 1) != 0)
+        return sqlite3ExprCollSeq(pParse, pRight);
+    result = sqlite3ExprCollSeq(pParse, pLeft);
+    if (!result)
+        result = sqlite3ExprCollSeq(pParse, pRight);
+    return result;
+}
+/////
+CFS_PREDICTION:
+predict control flow: {if (!=)if (==)if(==){}if (!=){if (!||!||!)}if (>=){}}
+
+CURRENT_CODE:
+Image *CharcoalImage(Image *image, ExceptionInfo *exception, double radius, double sigma)
+{
+    Image *v4;
+    Image *v6;
+
+    if (!image)
+        return NULL;
+    if (image->signature != MagickCoreSignature)
+        return NULL;
+    if (image->debug)
+        LogMagickEvent(0x8000, "MagickCore/visual-effects.c", "CharcoalImage", 477, "%s", image->filename);
+    if (!exception)
+        return NULL;
+    if (exception->signature != MagickCoreSignature)
+        return NULL;
+
+    v4 = EdgeImage(image, exception, radius);
+    if (!v4)
+        return NULL;
+    v4->alpha_trait = 0;
+    if (ClampImage(v4, exception))
+    {
+        v6 = BlurImage(v4, exception, radius, sigma);
+        DestroyImage(v4);
+        if (v6 && (!NormalizeImage(v6, exception) || !NegateImage(v6, 0, exception) || !GrayscaleImage(v6, image->type, exception)))
+            v6 = DestroyImage(v6);
+    }
+    else
+    {
+        DestroyImage(v4);
+        v6 = NULL;
+    }
+    return v6;
+}
+/////
+CFS_PREDICTION:
+predict control flow: {if (!||!||!){}if (!){}if ()if (!=)while (!=){if ()}}
+
+CURRENT_CODE:
+void *PKCS12_pbe_crypt(const unsigned char **a1, const char *a2, unsigned int a3, const unsigned char *a4, int a5, void **a6, int *a7, unsigned int a8)
+{
+    EVP_CIPHER_CTX *ctx;
+    void *buf = NULL;
+    int outlen, tmplen;
+    int blocksize;
+
+    if (!a1 || !a2 || !a4)
+        return NULL;
+
+    ctx = EVP_CIPHER_CTX_new();
+    if (!ctx)
+        return NULL;
+
+    if (!EVP_PBE_CipherInit(*a1, a2, a3, a1[1], ctx, a8))
+    {
+        ERR_put_error(0x23u, 119, 115, "p12_decr.c", 83);
+        goto err;
+    }
+
+    blocksize = EVP_CIPHER_CTX_block_size(ctx);
+    buf = CRYPTO_malloc(blocksize + a5, "p12_decr.c", 0x57u);
+    if (!buf)
+    {
+        ERR_put_error(0x23u, 119, 65, "p12_decr.c", 88);
+        goto err;
+    }
+
+    if (!EVP_CipherUpdate(ctx, buf, &outlen, a4, a5))
+    {
+        CRYPTO_free(buf);
+        buf = NULL;
+        ERR_put_error(0x23u, 119, 6, "p12_decr.c", 96);
+        goto err;
+    }
+
+    tmplen = outlen;
+    if (!EVP_CipherFinal_ex(ctx, (unsigned char *)buf + outlen, &outlen))
+    {
+        CRYPTO_free(buf);
+        buf = NULL;
+        ERR_put_error(0x23u, 119, 116, "p12_decr.c", 104);
+        goto err;
+    }
+
+    if (a7 != NULL)
+        *a7 = outlen + tmplen;
+    if (a6 != NULL)
+        *a6 = buf;
+
+err:
+    EVP_CIPHER_CTX_free(ctx);
+    return buf;
+}
+/////
+CFS_PREDICTION:
+predict control flow: {}
+
+CURRENT_CODE:
+bool fxp_close_recv(void *a1, void *var_msg)
+{
+    safefree(var_msg);
+    fxp_got_status(a1);
+    sftp_pkt_free(a1);
+    return fxp_errtype == 0;
+}
+/////
+CFS_PREDICTION:
+predict control flow: {if ()if (>=)}
+
+CURRENT_CODE:
+int curl_multi_socket_all(void *multi, int *running_handles)
+{
+    int v2;
+    v2 = 8;
+    if (!*(_BYTE *)((char *)multi + 390))
+    {
+        v2 = multi_socket(multi, 1, -1, 0, running_handles);
+        if (v2 <= 0)
+            Curl_update_timer(multi);
+    }
+    return v2;
+}
+/////
+CFS_PREDICTION:
+predict control flow: {}
+
+CURRENT_CODE:
+int curl_mfprintf(FILE *a1, const char *a2, ...)
+{
+    va_list va;
+    va_start(va, a2);
+    return dprintf_formatf(a1, fputc, a2, va);
+}
+/////
+CFS_PREDICTION:
+predict control flow: {if (!){if ()if (!)if (==)if (!&&){}}else}
+
+CURRENT_CODE:
+CURLcode curl_easy_send(CURL *curl, const void *buffer, size_t len, size_t *sent)
+{
+    bool in_callback;
+    int sockfd;
+    size_t nwritten;
+    CURLcode result;
+    void *conn;
+
+    in_callback = Curl_is_in_callback(curl);
+    result = CURLE_SEND_FAIL_REWIND;
+    if (!in_callback) {
+        result = easy_connection(curl, &sockfd, &conn);
+        if (result == CURLE_OK) {
+            *sent = 0;
+            result = Curl_write(conn, sockfd, buffer, len, &nwritten);
+            if (nwritten == (size_t)-1) {
+                result = CURLE_SEND_FAIL_REWIND;
+            } else if (nwritten == 0 && result == CURLE_OK) {
+                result = CURLE_AGAIN;
+            } else {
+                *sent = nwritten;
+            }
+        }
+    }
+    return result;
+}
+/////
+CFS_PREDICTION:
+predict control flow: {if (!)if (!=){}}
+
+CURRENT_CODE:
+int ndef_prefix_free(void *context, void **out_ptr, int *out_val, NdefPrefix **prefix_ptr)
+{
+    int result = 0;
+    if (prefix_ptr)
+    {
+        NdefPrefix *prefix = *prefix_ptr;
+        void *data = prefix->data;
+        if (data)
+            CRYPTO_free(data);
+        prefix->data = NULL;
+        *out_ptr = NULL;
+        *out_val = 0;
+        result = 1;
+    }
+    return result;
+}
+/////
+CFS_PREDICTION:
+predict control flow: {if (==)if (!=)for (<){if (&&!=)if (>=){}if (!||>){}if (>)elseif (!)}}
+
+CURRENT_CODE:
+int ListConfigureInfo(FILE *stream, void *exception)
+{
+    FILE *file;
+    char **list;
+    size_t count;
+    char *previous_path = NULL;
+    size_t i;
+
+    file = stream ? stream : stdout;
+    list = (char **)GetConfigureInfoList("*", &count, exception);
+    if (!list)
+        return 0;
+
+    for (i = 0; i < count; i++)
+    {
+        char **entry = (char **)list[i];
+        if (!entry || !((int *)entry)[7])
+            break;
+
+        char *path = entry[0];
+        char *name = entry[1];
+        char *value = entry[2];
+
+        if (!previous_path || LocaleCompare(previous_path, path) != 0)
+        {
+            FormatLocaleFile(file, "\nPath: %s\n\n", path);
+            FormatLocaleFile(file, "Name Value\n");
+            FormatLocaleFile(file, "-------------------------------------------------------------------------------\n");
+            previous_path = path;
+        }
+
+        if (name)
+        {
+            FormatLocaleFile(file, "%s", name);
+            size_t len = strlen(name);
+            while (len < 20)
+            {
+                FormatLocaleFile(file, " ");
+                len++;
+            }
+        }
+        else
+        {
+            FormatLocaleFile(file, "%s", "unknown");
+            size_t len = 7;
+            while (len < 20)
+            {
+                FormatLocaleFile(file, " ");
+                len++;
+            }
+        }
+        FormatLocaleFile(file, " %s\n", value ? value : "unknown");
+    }
+
+    fflush(file);
+    RelinquishMagickMemory(list);
+    return 1;
+}
+/////
+CFS_PREDICTION:
+predict control flow: {if (==||==)if (!=)elseif (<){}if (){if (!)if (>)for (>=)if (){}}else}
+
+CURRENT_CODE:
+int ASN1_BIT_STRING_set_bit(ASN1_BIT_STRING *bs, int bit, int val)
+{
+    unsigned char *new_data;
+    int byte_index, shift;
+    if (!bs)
+        return 0;
+    shift = 1 << (7 - (bit & 7));
+    byte_index = bit / 8;
+    bs->flags &= ~0xFUL;
+    if (byte_index + 1 > bs->length)
+    {
+        if (val == 0)
+            return 1;
+        if (bs->data)
+            new_data = CRYPTO_realloc_clean(bs->data, bs->length, byte_index + 1, "a_bitstr.c", 199);
+        else
+            new_data = CRYPTO_malloc(byte_index + 1, "a_bitstr.c", 0xC3);
+        if (!new_data)
+        {
+            ERR_put_error(0x0D, 183, 65, "a_bitstr.c", 202);
+            return 0;
+        }
+        if (byte_index + 1 > bs->length)
+            memset(new_data + bs->length, 0, byte_index + 1 - bs->length);
+        bs->data = new_data;
+        bs->length = byte_index + 1;
+    }
+    bs->data[byte_index] = (bs->data[byte_index] & ~shift) | (val ? shift : 0);
+    while (bs->length > 0 && bs->data[bs->length - 1] == 0)
+        bs->length--;
+    return 1;
+}
+/////
+CFS_PREDICTION:
+predict control flow: {if ()if (!)for (<){if (>=||==)if (!=&&!=)if (==)else}if ()}
+
+CURRENT_CODE:
+int read_rangelist(struct Context *ctx, struct RangeList *list, int64_t offset)
+{
+    if (!ctx || !list)
+        return 0;
+
+    uint64_t base = *(uint64_t *)((char *)ctx + 184);
+    uint64_t *sec = *(uint64_t **)((char *)ctx + 168);
+    uint8_t elem_size = *(uint8_t *)((char *)ctx + 180);
+
+    int result;
+
+    if (sec[13] == 0) {
+        result = read_section(
+            *(uint64_t *)((char *)ctx + 16),
+            (const char **)(**(uint64_t **)((char *)ctx + 160) + 176),
+            sec[1],
+            0,
+            &sec[13],
+            &sec[14]);
+        if (result != 0)
+            return 0;
+    }
+
+    uint64_t size = sec[13];
+    uint64_t buf = sec[14];
+    result = 0;
+
+    bool overflow = __builtin_add_overflow(size, offset, &size);
+    if (overflow)
+        return 0;
+
+    uint64_t cur = size;
+    uint64_t end = buf + sec[13];
+
+    while (1) {
+        if (end < cur + 2 * elem_size)
+            return 0;
+
+        int64_t v12 = read_address(ctx, cur, end);
+        int64_t v14 = read_address(ctx, cur + elem_size, end);
+        cur += 2 * elem_size;
+
+        if (v12 == 0 && v14 == 0)
+            break;
+
+        if (v12 == -1 && v14 != -1) {
+            base = v14;
+        } else {
+            result = arange_add(ctx, list, base + v12, base + v14);
+            if (result == 0)
+                return result;
+        }
+    }
+
+    return 1;
+}
+/////
+CFS_PREDICTION:
+predict control flow: {if (==||==)if ()if (!=&&==){}elseif (){}else{}}
+
+CURRENT_CODE:
+void *unwrap_hash_lookup(void *a1, void *a2, void *a3)
+{
+    void *ret;
+    const char *p;
+    const char *q;
+    char saved;
+
+    ret = a3;
+    p = *(const char **)((char *)a3 + 8);
+    if (ISDIGIT(*p) || *p == *(char *)((char *)a1 + 8))
+        p++;
+    if (!memcmp(p, "__wrap_", 7) && bfd_hash_lookup(*(void **)((char *)a1 + 64), p + 7, 0, 0))
+    {
+        q = (const char *)((void **)ret)[1];
+        if (q == p)
+        {
+            ret = bfd_link_hash_lookup(*(void **)((char *)a1 + 40), p + 7, 0, 0, 0);
+        }
+        else
+        {
+            saved = p[6];
+            p[6] = *q;
+            ret = bfd_link_hash_lookup(*(void **)((char *)a1 + 40), p + 6, 0, 0, 0);
+            if (saved)
+                p[6] = saved;
+        }
+    }
+    return ret;
+}
+/////
+CFS_PREDICTION:
+predict control flow: {if (==){}switch{casecasecaseif (!=){}elseif (){}casecase}}
+
+CURRENT_CODE:
+int DSO_ctrl(DSO *dso, int cmd, int arg)
+{
+    switch (cmd) {
+        case 2:
+            dso->flags = arg;
+            return 0;
+        case 3:
+            dso->flags |= arg;
+            return 0;
+        case 1:
+            return dso->flags;
+        default:
+            if (dso->meth && dso->meth->priv_print)
+                return dso->meth->priv_print();
+            ERR_put_error(0x25u, 110, 108, "dso_lib.c", 334);
+            return -1;
+    }
+}
+/////
+CFS_PREDICTION:
+predict control flow: {if (!=)if (==){}else}
+
+CURRENT_CODE:
+time_t bfd_get_mtime(bfd *abfd)
+{
+    if (abfd == NULL)
+        return 0;
+    if (abfd->flags & BFD_IN_MEMORY)
+        return abfd->mtime;
+    struct stat st;
+    if (bfd_stat(abfd, &st) != 0)
+        return abfd->mtime;
+    abfd->mtime = st.st_mtime;
+    return st.st_mtime;
+}
+/////
+CFS_PREDICTION:
+predict control flow: {if (==)if (!=)for (<){if (>=||==){}if (>)if (<=)if (>&&==)}}
+
+CURRENT_CODE:
+QuantumInfo *GetQuantumInfo(Image *image, QuantumInfo *quantum_info, SemaphoreInfo *semaphore_info)
+{
+  const char *option;
+  const char *min_string;
+  const char *max_string;
+  const char *scale_string;
+  const char *polarity_string;
+  double min_val;
+  double max_val;
+  double scale_val;
+  if (!quantum_info)
+    return((QuantumInfo *) NULL);
+  memset(quantum_info,0,sizeof(*quantum_info));
+  quantum_info->depth=8;
+  quantum_info->maximum=1.0;
+  quantum_info->scale=65535.0;
+  quantum_info->colorspace=1;
+  quantum_info->semaphore=AcquireSemaphoreInfo(semaphore_info);
+  quantum_info->signature=2880220587LL;
+  if (image != (Image *) NULL)
+  {
+    option=GetImageOption(image,"quantum:format");
+    if (option != (const char *) NULL)
+      quantum_info->depth=ParseCommandOption(64,0,option);
+    min_string=GetImageOption(image,"quantum:minimum");
+    if (min_string != (const char *) NULL)
+      quantum_info->minimum=InterpretLocaleValue(min_string);
+    max_string=GetImageOption(image,"quantum:maximum");
+    if (max_string != (const char *) NULL)
+      quantum_info->maximum=InterpretLocaleValue(max_string);
+    min_val=quantum_info->minimum;
+    if ((min_val == 0.0) && (quantum_info->maximum == 0.0))
+      quantum_info->scale=0.0;
+    else
+    {
+      max_val=quantum_info->maximum;
+      if (min_val == max_val)
+      {
+        quantum_info->scale=65535.0/min_val;
+        quantum_info->minimum=0.0;
+      }
+      else
+      {
+        scale_val=65535.0/(max_val-min_val);
+        quantum_info->scale=scale_val;
+      }
+    }
+    scale_string=GetImageOption(image,"quantum:scale");
+    if (scale_string != (const char *) NULL)
+      quantum_info->scale=InterpretLocaleValue(scale_string);
+    polarity_string=GetImageOption(image,"quantum:polarity");
+    if (polarity_string != (const char *) NULL)
+      quantum_info->polarity=LocaleCompare(polarity_string,"min-is-white") == 0;
+    quantum_info->colorspace=image->colorspace;
+  }
+  return(ResetQuantumState(quantum_info));
+}
+/////
+CFS_PREDICTION:
+predict control flow: {}
+
+CURRENT_CODE:
+__int64 __fastcall priv_print_gost01(__int64 a1, int *a2, int a3, __int64 a4)
+{
+    return print_gost_01(a1, a2, a3, a4, 2);
+}
+/////
+CFS_PREDICTION:
+predict control flow: {}
+
+CURRENT_CODE:
+int sqlite3_prepare(sqlite3 *db, const char *zSql, int nByte, sqlite3_stmt **ppStmt, const char **pzTail)
+{
+    return sqlite3LockAndPrepare(db, zSql, nByte, 0, 0, ppStmt, pzTail);
+}
+/////
+CFS_PREDICTION:
+predict control flow: {if (==||==)if (!)if ()for (<){if (!=)if ( ==){}if (>=){}}if ()}
+
+CURRENT_CODE:
+bfd_boolean
+bfd_elf_get_bfd_needed_list (bfd *abfd, struct bfd_link_needed_list **pneeded)
+{
+  struct bfd_link_needed_list *needed;
+  asection *s;
+  unsigned int sh_link;
+  void *contents = NULL;
+  bfd_boolean result = TRUE;
+  char *p, *end;
+  unsigned int entry_size;
+  void (*parse) (bfd *, char *, long *, unsigned int *);
+  const struct elf_backend_data *ebd;
+
+  *pneeded = NULL;
+
+  if (abfd->xvec->flavour != 5
+      || (abfd->flags & 7) != 1)
+    return TRUE;
+
+  s = bfd_get_section_by_name (abfd, ".dynamic");
+  if (s == NULL || s->size == 0)
+    return TRUE;
+
+  if (!bfd_malloc_and_get_section (abfd, s, &contents))
+    goto error;
+
+  sh_link = bfd_elf_section_from_bfd_section (abfd, s);
+  if (sh_link == (unsigned int) -257)
+    goto error;
+
+  ebd = (const struct elf_backend_data *) (abfd->xvec->bfd_elf_backend_data);
+  entry_size = *((unsigned char *) ebd + 6);
+  parse = (void (*)(bfd *, char *, long *, unsigned int *)) (*((void **) ebd + 10));
+
+  p = contents;
+  end = (char *) contents + s->size;
+
+  while (p < end)
+    {
+      long tag;
+      unsigned int val;
+
+      parse (abfd, p, &tag, &val);
+      if (tag == 0)
+	break;
+      if (tag == 1)
+	{
+	  const char *str;
+
+	  str = bfd_elf_string_from_elf_section (abfd, sh_link, val);
+	  if (str == NULL)
+	    goto error;
+
+	  needed = (struct bfd_link_needed_list *) bfd_alloc (abfd, 24);
+	  if (needed == NULL)
+	    goto error;
+
+	  needed->next = *pneeded;
+	  needed->by = abfd;
+	  needed->name = str;
+	  *pneeded = needed;
+	}
+
+      p += entry_size;
+    }
+
+  free (contents);
+  return TRUE;
+
+ error:
+  if (contents != NULL)
+    free (contents);
+  return FALSE;
+}
+/////
+CFS_PREDICTION:
+predict control flow: {if (!){}}
+
+CURRENT_CODE:
+size_t doh_write_cb(const void *ptr, size_t size, size_t nmemb, void *userdata)
+{
+    size_t result = size * nmemb;
+    if (Curl_dyn_addn(userdata, ptr, result))
+        result = 0;
+    return result;
+}
+/////
+CFS_PREDICTION:
+predict control flow: {if (!){}elseif (!&&!){}if ()if (!=)elseif (==||==)if (!){if (&&)}}
+
+CURRENT_CODE:
+CURLcode Curl_pretransfer(struct Curl_easy *data) {
+    void *mdata;
+    char *url;
+    unsigned char mdata_flags;
+    int httpcode;
+    int result;
+
+    mdata = data->mdata;
+    url = data->url;
+    mdata_flags = data->mdata_flags;
+
+    if (mdata && !(mdata_flags & 1)) {
+        /* skip cleanup and URL parsing */
+    } else {
+        if (mdata) {
+            Curl_cfree(mdata);
+            data->mdata = NULL;
+            mdata_flags &= ~1;
+            data->mdata_flags = mdata_flags;
+        }
+        if (!url) {
+            Curl_failf(data, "No URL set!");
+            return CURLE_URL_MALFORMAT;
+        }
+        if (!(mdata_flags & 1)) {
+            if (curl_url_get(url, 0, data->urlbuffer, 0) != 0) {
+                Curl_failf(data, "No URL set!");
+                return CURLE_URL_MALFORMAT;
+            }
+        }
+    }
+
+    data->httpcode = data->set_httpcode;
+    data->mdata = data->urlbuffer;
+    data->bits = ( (data->flags2 >> 2) << 7 ) | (data->bits & 0x55);
+    data->someptr = 0;
+    data->someint = 0;
+    data->val4880 = data->val1672;
+    data->val4912 = data->val1680;
+    Curl_cfree(data->ptr6160);
+    data->ptr6160 = NULL;
+
+    httpcode = data->httpcode;
+    if (httpcode == 5) {
+        data->timeout = data->val1968;
+    } else if (httpcode == 1 || httpcode == 6) {
+        data->timeout = 0;
+    } else {
+        long long tmp = data->val1736;
+        data->timeout = tmp;
+        if (tmp == -1 && data->val1720) {
+            data->timeout = strlen(data->val1720);
+        }
+    }
+
+    if (data->cookie_file) {
+        Curl_cookie_loadfiles(data);
+    }
+    if (!data->host_pairs || (result = Curl_loadhostpairs(data), !result)) {
+        data->bits |= 0x10;
+        Curl_initinfo(data);
+        Curl_pgrsResetTransferSizes(data);
+        Curl_pgrsStartNow(data);
+        data->mask4888 &= data->val4880;
+        data->mask4920 &= data->val4912;
+        result = 0;
+        if ((signed char)data->bits < 0 && !data->wildcard) {
+            result = Curl_wildcard_init(&data->wildcard);
+            if (result) {
+                result = CURLE_WILDCARD_INIT;
+            }
+        }
+    }
+
+    return result;
+}
+/////
+CFS_PREDICTION:
+predict control flow: {}
+
+CURRENT_CODE:
+void sqlite3_str_appendall(sqlite3_str *a1, const char *a2)
+{
+    sqlite3_str_append(a1, a2, sqlite3Strlen30(a2));
+}
+/////
+CFS_PREDICTION:
+predict control flow: {if (==)if (!=){}if (!){}}
+
+CURRENT_CODE:
+int TS_ACCURACY_set_millis(TS_ACCURACY *a, ASN1_INTEGER *millis)
+{
+    if (a->millis != millis) {
+        ASN1_INTEGER *new_millis;
+        if (millis) {
+            new_millis = ASN1_INTEGER_dup(millis);
+            if (!new_millis) {
+                ERR_put_error(0x2Fu, 116, 65, "ts_rsp_utils.c", 264);
+                return 0;
+            }
+        } else {
+            new_millis = NULL;
+        }
+        ASN1_INTEGER_free(a->millis);
+        a->millis = new_millis;
+    }
+    return 1;
+}
+/////
+CFS_PREDICTION:
+predict control flow: {if (!=){}if (==)if (||)if (!)if ()}
+
+CURRENT_CODE:
+asection *bfd_make_section_old_way(bfd *abfd, const char *name)
+{
+  asection *section;
+  struct bfd_hash_entry *entry;
+  if ((abfd->flags & 0x20) != 0)
+  {
+    bfd_set_error(bfd_error_invalid_operation);
+    return NULL;
+  }
+  section = (asection *)&off_321470;
+  if (strcmp(name, "*ABS*") == 0)
+    goto check;
+  if (strcmp(name, "*COM*") == 0)
+  {
+    section = (asection *)&bfd_std_section;
+    goto check;
+  }
+  if (strcmp(name, "*UND*") == 0)
+  {
+    section = (asection *)&off_321358;
+    goto check;
+  }
+  section = (asection *)&off_321470[70];
+  if (strcmp(name, "*IND*") == 0)
+    goto check;
+  entry = bfd_hash_lookup((struct bfd_hash_table *)((char *)abfd + 104), name, TRUE, FALSE);
+  if (entry == NULL)
+    return NULL;
+  section = *((asection **)(entry + 3));
+  if (section == NULL)
+  {
+    *((asection **)(entry + 3)) = (asection *)name;
+    section = bfd_section_init(abfd, (asection **)(entry + 3));
+  }
+  return section;
+check:
+  if (!((unsigned int (*)(bfd *, asection *))(*(void **)((char *)abfd->xvec + 288)))(abfd, section))
+    section = NULL;
+  return section;
+}
+/////
+CFS_PREDICTION:
+predict control flow: {}
+
+CURRENT_CODE:
+int MHD_queue_auth_fail_response(void *a1, __int64 a2, const char *a3, __int64 a4, int a5)
+{
+    return MHD_queue_auth_fail_response2(a1, a2, a3, a4, a5, 1);
+}
+/////
+CFS_PREDICTION:
+predict control flow: {if (!)if ()}
+
+CURRENT_CODE:
+int curl_global_cleanup(void)
+{
+    int result = 0;
+    if (initialized)
+    {
+        initialized--;
+        if (initialized == 0)
+            result = Curl_resolver_global_cleanup();
+    }
+    return result;
+}
+/////
+CFS_PREDICTION:
+predict control flow: {if (!=){}}
+
+CURRENT_CODE:
+unsigned long long bfd_get_elf_phdr_upper_bound(void *abfd) {
+    if (*(int *)(*(void **)((char *)abfd + 8) + 8) == 5)
+        return (unsigned long long)*(unsigned int *)(*(void **)((char *)abfd + 248) + 68) << 6;
+    bfd_set_error(3);
+    return (unsigned long long)-1;
+}
+/////
+CFS_PREDICTION:
+predict control flow: {for (<){if (==)for (>&&==)if (!=){}}}
+
+CURRENT_CODE:
+char *ReadBlobString(struct Image *image, char *string)
+{
+    int v2;
+    int v3;
+    if (!image)
+        return NULL;
+    if (*(unsigned long *)((char *)image + 13392) != 2880220587UL)
+        return NULL;
+    v2 = 0;
+    while (1)
+    {
+        v3 = ReadBlobByte(image);
+        if (v3 == -1)
+            break;
+        string[v2] = (char)v3;
+        if (v3 == '\n')
+        {
+            if (v2 > 0 && string[v2 - 1] == '\r')
+                --v2;
+            goto done;
+        }
+        if (++v2 == 4095)
+            goto done;
+    }
+    if (v2)
+        goto done;
+    return NULL;
+done:
+    string[v2] = '\0';
+    return string;
+}
+/////
+CFS_PREDICTION:
+predict control flow: {}
+
+CURRENT_CODE:
+int whereScanInitIndexExpr(WhereScan *pScan, double iRowid)
+{
+    pScan->affinity = sqlite3ExprAffinity(pScan->pExpr);
+    return whereScanNext(pScan, iRowid);
+}
+/////
+CFS_PREDICTION:
+predict control flow: {if (==)if (!=||==){}if (!)if (){}}
+
+CURRENT_CODE:
+bfd *bfd_openw(const char *filename, const char *target)
+{
+  bfd *abfd;
+  char *bfd_filename;
+
+  abfd = bfd_new_bfd();
+  if (abfd == NULL)
+    return NULL;
+
+  if (bfd_find_target(target) == NULL)
+  {
+    bfd_delete_bfd(abfd);
+    return NULL;
+  }
+
+  bfd_filename = bfd_malloc(strlen(filename) + 1);
+  if (bfd_filename == NULL)
+  {
+    abfd->filename = NULL;
+    bfd_delete_bfd(abfd);
+    return NULL;
+  }
+
+  memcpy(bfd_filename, filename, strlen(filename) + 1);
+  abfd->filename = bfd_filename;
+  abfd->flags = (abfd->flags & ~0x08) | 0x10;
+
+  if (!bfd_open_file(abfd))
+  {
+    bfd_set_error(1);
+    bfd_delete_bfd(abfd);
+    return NULL;
+  }
+
+  return abfd;
+}
+/////
+CFS_PREDICTION:
+predict control flow: {if (){}if (!=){}if (==||==)if (!){}}
+
+CURRENT_CODE:
+int ec_GFp_mont_group_set_curve(EC_GROUP *group, const BIGNUM *p, const BIGNUM *a, const BIGNUM *b, BN_CTX *ctx) {
+    BN_MONT_CTX *mont_ctx;
+    BIGNUM *R;
+    BN_CTX *new_ctx = NULL;
+    int ret;
+
+    if (group->mont_data) {
+        BN_MONT_CTX_free(group->mont_data);
+        group->mont_data = NULL;
+    }
+    if (group->mont_R) {
+        BN_free(group->mont_R);
+        group->mont_R = NULL;
+    }
+    if (!ctx) {
+        new_ctx = BN_CTX_new();
+        if (!new_ctx)
+            return 0;
+        ctx = new_ctx;
+    }
+    mont_ctx = BN_MONT_CTX_new();
+    if (!mont_ctx) {
+        if (new_ctx)
+            BN_CTX_free(new_ctx);
+        return 0;
+    }
+    if (!BN_MONT_CTX_set(mont_ctx, p, ctx)) {
+        ERR_put_error(0x10, 189, 3, "ecp_mont.c", 233);
+        if (new_ctx)
+            BN_CTX_free(new_ctx);
+        BN_MONT_CTX_free(mont_ctx);
+        return 0;
+    }
+    R = BN_new();
+    if (!R) {
+        if (new_ctx)
+            BN_CTX_free(new_ctx);
+        BN_MONT_CTX_free(mont_ctx);
+        return 0;
+    }
+    if (!BN_mod_mul_montgomery(R, BN_value_one(), mont_ctx->RR, mont_ctx, ctx)) {
+        BN_free(R);
+        if (new_ctx)
+            BN_CTX_free(new_ctx);
+        BN_MONT_CTX_free(mont_ctx);
+        return 0;
+    }
+    group->mont_data = mont_ctx;
+    group->mont_R = R;
+    ret = ec_GFp_simple_group_set_curve(group, p, a, b, ctx);
+    if (!ret) {
+        BN_MONT_CTX_free(group->mont_data);
+        group->mont_data = NULL;
+        BN_free(group->mont_R);
+        group->mont_R = NULL;
+    }
+    if (new_ctx)
+        BN_CTX_free(new_ctx);
+    return ret;
+}
+/////
+CFS_PREDICTION:
+predict control flow: {if (==||==){}if (!=&&!=)if (!){}}
+
+CURRENT_CODE:
+EC_KEY *d2i_ECParameters(EC_KEY **a, const unsigned char **pp, long length)
+{
+    EC_KEY *ret = NULL;
+    int allocated = 0;
+
+    if (!pp || !*pp) {
+        ERR_put_error(16, 144, 67, "ec_asn1.c", 1352);
+        return NULL;
+    }
+
+    if (a) {
+        if (*a == NULL) {
+            *a = EC_KEY_new();
+            if (!*a) {
+                ERR_put_error(16, 144, 65, "ec_asn1.c", 1360);
+                return NULL;
+            }
+            ret = *a;
+            allocated = 1;
+        } else {
+            ret = *a;
+        }
+    } else {
+        ret = EC_KEY_new();
+        if (!ret) {
+            ERR_put_error(16, 144, 65, "ec_asn1.c", 1360);
+            return NULL;
+        }
+        allocated = 1;
+    }
+
+    if (!d2i_ECPKParameters(&ret->group, pp, length)) {
+        ERR_put_error(16, 144, 16, "ec_asn1.c", 1371);
+        if (allocated) {
+            EC_KEY_free(ret);
+            if (a) *a = NULL;
+        }
+        return NULL;
+    }
+
+    return ret;
+}
+/////
+CFS_PREDICTION:
+predict control flow: {}
+
+CURRENT_CODE:
+long long io_error()
+{
+    clearerr_unlocked(stdout);
+    error(1, *__errno_location(), dcgettext(0, "write error", 5));
+    return seq_fast();
+}
+/////
+CFS_PREDICTION:
+predict control flow: {if (!=)if (==)else}
+
+CURRENT_CODE:
+void *GetImageRegistry(int type, const char *key, void *extra)
+{
+  void *value;
+  int type_field;
+  if (IsEventLogging())
+    LogMagickEvent(0x8000, "MagickCore/registry.c", "GetImageRegistry", 197, "%s", key);
+  value = registry;
+  if (registry)
+  {
+    value = GetValueFromSplayTree(registry, key);
+    if (value)
+    {
+      switch (type)
+      {
+        case 2:
+          if (*(int *)value == 2)
+            value = CloneImageInfo(*(void **)((char *)value + 8));
+          else
+            value = 0;
+          break;
+        case 3:
+          type_field = *(int *)value;
+          if (type_field == 2)
+            value = ConstantString((void *)(*(char **)((char *)value + 8) + 8816));
+          else if (type_field == 3)
+            value = ConstantString(*(void **)((char *)value + 8));
+          else if (type_field == 1)
+            value = ConstantString((void *)(*(char **)((char *)value + 8) + 1016));
+          else
+            value = 0;
+          break;
+        case 1:
+          if (*(int *)value == 1)
+            value = CloneImageList(*(void **)((char *)value + 8), extra);
+          else
+            value = 0;
+          break;
+        default:
+          value = 0;
+          break;
+      }
+    }
+  }
+  return value;
+}
+/////
+CFS_PREDICTION:
+predict control flow: {if (!=)if (==)}
+
+CURRENT_CODE:
+int DestroyImagePixelCache(Image *image, ExceptionInfo *exception)
+{
+  if (image == (Image *) NULL)
+    return(0);
+  if (image->signature != 2880220587LL)
+    return(0);
+  if (image->debug != 0)
+    (void) LogMagickEvent(0x8000,"MagickCore/cache.c","DestroyImagePixelCache",875,"%s",image->filename);
+  if (image->cache != (Cache) NULL)
+    image->cache=DestroyPixelCache(image->cache,exception);
+  return(1);
+}
+/////
+CFS_PREDICTION:
+predict control flow: {for (<)if (!=){}}
+
+CURRENT_CODE:
+unsigned __int64 *monty_pow(unsigned __int64 *ctx, unsigned __int64 *base, unsigned __int64 *exp) {
+    unsigned __int64 *tmp, *res, *scratch;
+    unsigned __int64 bit_idx;
+    char bit;
+
+    tmp = mp_copy(base);
+    res = mp_copy((unsigned __int64 *)*(ctx + 5));
+    scratch = mp_make_sized(2 * *(ctx + 2));
+    bit_idx = 0;
+
+    while (1) {
+        mp_mul_into(scratch, res, tmp);
+        monty_reduce(ctx, scratch);
+        bit = mp_get_bit(exp, bit_idx);
+        mp_select_into(res, res, scratch, bit);
+        bit_idx++;
+        if ((*exp << 6) <= bit_idx)
+            break;
+        mp_mul_into(scratch, tmp, tmp);
+        monty_reduce(ctx, scratch);
+        mp_copy_into(tmp, scratch);
+    }
+
+    mp_free(tmp);
+    mp_free(scratch);
+    mp_clear((unsigned __int64 *)*(ctx + 8));
+    return res;
+}
+/////
+CFS_PREDICTION:
+predict control flow: {if (==)if (!=){}for (<){if (<){}if (>=||<=)if (>&&>=&&<=)}if (){}else{}}
+
+CURRENT_CODE:
+int find_hash_any(const char *name, int min_size) {
+    int idx, best_idx = -1, best_size = 129;
+
+    if (name != NULL) {
+        idx = find_hash(name);
+        if (idx != -1) {
+            return idx;
+        }
+    } else {
+        crypt_argchk("name != NULL", "src/misc/crypt/crypt_find_hash_any.c", 24);
+    }
+
+    for (idx = 0; idx < 32; idx++) {
+        if (hash_descriptor[idx].active) {
+            if (hash_descriptor[idx].hashsize >= min_size && hash_descriptor[idx].hashsize < best_size) {
+                best_size = hash_descriptor[idx].hashsize;
+                best_idx = idx;
+            }
+        }
+    }
+
+    return best_idx;
+}
+/////
+CFS_PREDICTION:
+predict control flow: {if ()}
+
+CURRENT_CODE:
+char* sqlite3_mprintf(const char* format, ...)
+{
+    gcc_va_list va;
+    if (sqlite3_initialize())
+        return 0;
+    va_start(va, format);
+    return sqlite3_vmprintf(format, va);
+}
+/////
+CFS_PREDICTION:
+predict control flow: {if (!=)if (==)else}
+
+CURRENT_CODE:
+MagickBooleanType SetStringInfoName(StringInfo *string_info, const char *name)
+{
+  if (string_info == (StringInfo *) NULL)
+    return(MagickFalse);
+  if (string_info->signature != MagickCoreSignature)
+    return(MagickFalse);
+  if (name == (const char *) NULL)
+    return(MagickFalse);
+  string_info->name = ConstantString(name);
+  return(MagickTrue);
+}
+/////
+CFS_PREDICTION:
+predict control flow: {}
+
+CURRENT_CODE:
+void console_print_error_msg(const char *s, const char *a2)
+{
+    struct termios v3;
+    unsigned long v4 = __readfsqword(0x28u);
+    premsg(&v3);
+    fputs(s, stderr);
+    fwrite(": ", 1, 2, stderr);
+    fputs(a2, stderr);
+    fputc('\n', stderr);
+    fflush(stderr);
+    postmsg(&v3);
+    if (v4 != __readfsqword(0x28u))
+        __stack_chk_fail();
+}
+/////
+CFS_PREDICTION:
+predict control flow: {if (!){}}
+
+CURRENT_CODE:
+void print_xfer_stats(unsigned long long now)
+{
+    unsigned long long t;
+    char buf1[660], buf2[660], buf3[660];
+    const char *s1, *s2, *rate;
+    int ret;
+
+    if (now == 0)
+        t = gethrxtime();
+    else
+        t = now;
+
+    s1 = human_readable(w_bytes, buf1, sizeof(buf1), 1, 1);
+    s2 = human_readable(w_bytes, buf2, sizeof(buf2), 1, 1);
+
+    if (start_time >= t)
+    {
+        rate = dcgettext(NULL, "Infinity", 5);
+    }
+    else
+    {
+        char *tmp = human_readable(w_bytes, buf3, sizeof(buf3), 1000000000ULL, t - start_time);
+        strcat(tmp, "/s");
+        rate = tmp;
+    }
+
+    if (s1[strlen(s1) - 2] == ' ')
+    {
+        const char *fmt = dcngettext(NULL, "%lu byte copied, %s, %s", "%lu bytes copied, %s, %s", w_bytes, 5);
+        ret = fprintf(stderr, fmt, w_bytes, s1, s2);
+    }
+    else
+    {
+        const char *fmt;
+        if (s2[strlen(s2) - 2] == ' ')
+            fmt = dcgettext(NULL, "%lu bytes (%s) copied, %s, %s", 5);
+        else
+            fmt = dcgettext(NULL, "%lu bytes (%s, %s) copied, %s, %s", 5);
+        ret = fprintf(stderr, fmt, w_bytes, s1, s2, rate);
+    }
+
+    if (now)
+    {
+        if (ret >= 0 && progress_len > ret)
+            fprintf(stderr, "%*s", progress_len - ret, "");
+        progress_len = ret;
+        fputc('\r', stderr);
+    }
+    else
+    {
+        fputc('\n', stderr);
+    }
+}
+/////
+CFS_PREDICTION:
+predict control flow: {if (){if (>)}}
+
+CURRENT_CODE:
+int ENGINE_register_pkey_asn1_meths(ENGINE *e)
+{
+    int (*func)(ENGINE *, int, void **, int);
+    int count;
+    void *data;
+    int result;
+
+    func = (int (*)(ENGINE *, int, void **, int))(*((void **)e + 12));
+    if (!func)
+        return 1;
+
+    count = func(e, 0, &data, 0);
+    if (count > 0)
+        result = engine_table_register(&pkey_asn1_meth_table, engine_unregister_all_pkey_asn1_meths, e, data, count, 0);
+    else if (count < 0)
+        result = 0;
+    else
+        result = 1;
+
+    return result;
+}
+/////
+CFS_PREDICTION:
+predict control flow: {if (==){}}
+
+CURRENT_CODE:
+int ssl3_send_server_done(SSL *s)
+{
+    unsigned char *p;
+    if (s->state == SSL3_ST_CW_SERVER_DONE_A)
+    {
+        p = s->init_buf->data;
+        *p = SSL3_MT_SERVER_DONE;
+        p[1] = 0;
+        p[2] = 0;
+        p[3] = 0;
+        s->state = SSL3_ST_CW_SERVER_DONE_B;
+        s->init_num = 4;
+        s->init_off = 0;
+    }
+    return ssl3_do_write(s, SSL3_RT_HANDSHAKE);
+}
+/////
+CFS_PREDICTION:
+predict control flow: {}
+
+CURRENT_CODE:
+unsigned __int64 des3_cbc3_setiv(void *a1, unsigned int *a2)
+{
+    unsigned __int64 result = des_IP(((unsigned __int64)_byteswap_ulong(a2[1]) << 32) | _byteswap_ulong(a2[0]));
+    ((unsigned __int64 *)a1)[-3] = result;
+    ((unsigned __int64 *)a1)[-2] = result;
+    ((unsigned __int64 *)a1)[-1] = result;
+    return result;
+}
+/////
+CFS_PREDICTION:
+predict control flow: {}
+
+CURRENT_CODE:
+char *OP_ST()
+{
+    return oappend_maybe_intel("%st");
+}
+/////
+CFS_PREDICTION:
+predict control flow: {if (&&>=){}if ()if (==){}elseif (>){}else{}}
+
+CURRENT_CODE:
+int sqlite3PagerWrite(PgHdr *pPg){
+  Pager *pPager = pPg->pPager;
+  int rc;
+
+  if( (pPg->flags & 4) && pPager->nRef >= pPg->nRef ){
+    rc = (pPager->pgno != pPg->pgno);
+    if( rc != 0 ){
+      rc = subjournalPageIfRequired(pPg);
+    }
+  } else {
+    rc = pPager->eState;
+    if( rc == 0 ){
+      if( pPager->sectorSize > pPager->pageSize ){
+        rc = pagerWriteLargeSector(pPg);
+      } else {
+        rc = pager_write(pPg);
+      }
+    }
+  }
+  return rc;
+}
+/////
+CFS_PREDICTION:
+predict control flow: {if (==)if (>)if (!=&&<=)if (!)elseif (){}}
+
+CURRENT_CODE:
+int BIO_free(BIO *a)
+{
+    unsigned int *p = (unsigned int *)a;
+    int v1;
+    int v2;
+    void (*destroy)(unsigned int *, long long, long long, long long, long long, long long);
+    void (*free_func)(unsigned int *, unsigned int *, long long);
+
+    if (!a)
+        return 0;
+
+    v1 = CRYPTO_add_lock(p + 18, -1, 21, "bio_lib.c", 117);
+    v2 = 1;
+    if (v1 <= 0)
+    {
+        destroy = (void (*)(unsigned int *, long long, long long, long long, long long, long long))*((void **)p + 1);
+        if (!destroy || (v2 = destroy(p, 1, 0, 0, 0, 1), v2 > 0))
+        {
+            CRYPTO_free_ex_data(0, (long long)p, (long long)(p + 24));
+            v2 = 1;
+            if (*(void **)p)
+            {
+                free_func = (void (*)(unsigned int *, unsigned int *, long long))*(void **)((char *)p + 64);
+                if (free_func)
+                {
+                    free_func(p, p, 1);
+                    CRYPTO_free(p);
+                }
+                v2 = 1;
+            }
+        }
+    }
+    return v2;
+}
+/////
+CFS_PREDICTION:
+predict control flow: {if (!||!||!){}if (!=)if (!){}if ()}
+
+CURRENT_CODE:
+int EVP_PKEY_CTX_ctrl_str(EVP_PKEY_CTX *ctx, const char *name, const char *value)
+{
+    int (*ctrl_str)(EVP_PKEY_CTX *, const char *);
+    const EVP_MD *md;
+
+    if (ctx == NULL || *(void **)ctx == NULL)
+        goto err;
+    ctrl_str = (int (*)(EVP_PKEY_CTX *, const char *))(*(void **)((char *)*(void **)ctx + 200));
+    if (ctrl_str == NULL)
+        goto err;
+
+    if (strcmp(name, "digest") == 0)
+    {
+        if (value == NULL || (md = EVP_get_digestbyname(value)) == NULL)
+        {
+            ERR_put_error(6, 150, 152, "pmeth_lib.c", 432);
+            return 0;
+        }
+        return EVP_PKEY_CTX_ctrl(ctx, -1, 248, 1, 0, EVP_MD_type(md));
+    }
+    else
+    {
+        return ctrl_str(ctx, name);
+    }
+
+err:
+    ERR_put_error(6, 150, 147, "pmeth_lib.c", 423);
+    return -2;
+}
+/////
+CFS_PREDICTION:
+predict control flow: {if (>=)if (>)if (<)for (<=) if (>)}
+
+CURRENT_CODE:
+int compare_timers(const struct timer *a, const struct timer *b) {
+    long long delta_a = a->expiry - now;
+    long long delta_b = b->expiry - now;
+    if (delta_a < delta_b) return -1;
+    if (delta_a > delta_b) return 1;
+    if (a->id < b->id) return -1;
+    if (a->id > b->id) return 1;
+    if (a->seq < b->seq) return -1;
+    if (a->seq > b->seq) return 1;
+    return 0;
+}
+/////
+CFS_PREDICTION:
+predict control flow: {if (!=){if ()if (!&&!){if (==)if (!)if ()}else}if ()else}
+
+CURRENT_CODE:
+int compare(const void *a, const void *b) {
+    const struct { const char *s; size_t len; } *k1 = a, *k2 = b;
+    int result;
+    const char *s1 = k1->s;
+    const char *s2 = k2->s;
+    size_t len1 = k1->len;
+    size_t len2 = k2->len;
+    if (!keylist || (result = keycompare(k1, k2)) == 0 && !unique && !stable) {
+        if (len1 == 1) {
+            result = -(len2 != 1);
+        } else {
+            result = 1;
+            if (len2 != 1) {
+                if (hard_LC_COLLATE) {
+                    result = xmemcoll0(s1, len1, s2, len2);
+                } else {
+                    size_t compare_len = len1 < len2 ? len1 : len2;
+                    compare_len--;
+                    result = memcmp(s1, s2, compare_len);
+                    if (result == 0) {
+                        result = (len1 > len2) - (len1 < len2);
+                    }
+                }
+            }
+        }
+        if (reverse) {
+            result = -result;
+        }
+    }
+    return result;
+}
+/////
+CFS_PREDICTION:
+predict control flow: {if (!=||!=)for (<){}}
+
+CURRENT_CODE:
+int xtea_setup(unsigned int *key, int keylen, int flags, unsigned int *skey)
+{
+    unsigned int K[4];
+    unsigned int sum = 1013904242;
+    unsigned int *ptr;
+    unsigned int v8;
+
+    if (key == NULL)
+    {
+        crypt_argchk("key != NULL", "src/ciphers/xtea.c", 36);
+        return 4;
+    }
+    if (skey == NULL)
+    {
+        crypt_argchk("skey != NULL", "src/ciphers/xtea.c", 37);
+        return 4;
+    }
+    if (keylen != 16)
+        return 3;
+    if ((flags & 0xFFFFFFDF) != 0)
+        return 4;
+
+    K[0] = _byteswap_ulong(key[0]);
+    K[1] = _byteswap_ulong(key[1]);
+    K[2] = _byteswap_ulong(key[2]);
+    K[3] = _byteswap_ulong(key[3]);
+
+    skey[0] = K[0];
+    skey[32] = K[3] - 1640531527;
+    skey[1] = K[1] - 1640531527;
+    skey[33] = K[2] + 1013904242;
+
+    ptr = skey + 2;
+    do
+    {
+        *ptr = K[sum & 3] + sum;
+        v8 = sum - 1640531527;
+        ptr[32] = K[(v8 >> 11) & 3] + v8;
+        ptr[1] = K[v8 & 3] + v8;
+        ptr[33] = K[((v8 - 1640531527) >> 11) & 3] + (v8 - 1640531527);
+        ptr[2] = K[((unsigned char)v8 - 71) & 3] + (v8 - 1640531527);
+        ptr[34] = K[((v8 + 1013904242) >> 11) & 3] + (v8 + 1013904242);
+        ptr[3] = K[((unsigned char)v8 + 114) & 3] + (v8 + 1013904242);
+        ptr[35] = K[((v8 - 626627285) >> 11) & 3] + (v8 - 626627285);
+        ptr[4] = K[((unsigned char)v8 + 43) & 3] + (v8 - 626627285);
+        sum = v8 + 2027808484;
+        ptr[36] = K[(sum >> 11) & 3] + sum;
+        ptr += 5;
+    } while (sum != -957401312);
+
+    return 0;
+}
+/////
+CFS_PREDICTION:
+predict control flow: {if (==||!=)if (!=){}if ()}
+
+CURRENT_CODE:
+int khazad_setup(const unsigned char *key, int keylen, int flags, uint64_t *skey)
+{
+    uint64_t v5, v6, v7, v8, v9, v10, v11, v12, v13, v14;
+    uint64_t *src, *dst;
+
+    if (!key || !skey) {
+        if (!key) crypt_argchk("key != NULL", "src/ciphers/khazad.c", 600);
+        if (!skey) crypt_argchk("skey != NULL", "src/ciphers/khazad.c", 601);
+        return 4;
+    }
+    if (keylen != 16) return 3;
+    if ((flags & 0xFFFFFFF7) != 0) return 4;
+
+    v5 = ((uint64_t)key[14] << 8) ^ ((uint64_t)key[13] << 16) ^ ((uint64_t)key[12] << 24) ^ ((uint64_t)key[11] << 32) ^ ((uint64_t)key[10] << 40) ^ key[15] ^ ((uint64_t)key[9] << 48) ^ ((uint64_t)key[8] << 56);
+    v6 = T6[BYTE1(v5)] ^ T5[BYTE2(v5)] ^ T4[BYTE3(v5)] ^ T3[BYTE4(v5)] ^ T2[BYTE5(v5)] ^ T1[BYTE6(v5)] ^ T7[(uint8_t)v5] ^ T0[HIBYTE(v5)] ^ ((uint64_t)key[6] << 8) ^ ((uint64_t)key[5] << 16) ^ ((uint64_t)key[4] << 24) ^ ((uint64_t)key[3] << 32) ^ ((uint64_t)key[2] << 40) ^ ((uint64_t)key[1] << 48) ^ key[7] ^ 0xBA542F7453D3D24DULL ^ ((uint64_t)key[0] << 56);
+    skey[0] = v6;
+    v7 = T6[BYTE1(v6)] ^ T5[BYTE2(v6)] ^ T4[BYTE3(v6)] ^ T3[BYTE4(v6)] ^ T2[BYTE5(v6)] ^ T1[BYTE6(v6)] ^ T7[(uint8_t)v6] ^ T0[HIBYTE(v6)] ^ v5 ^ 0x50AC8DBF70529A4CULL;
+    skey[1] = v7;
+    v8 = T6[BYTE1(v7)] ^ T5[BYTE2(v7)] ^ T4[BYTE3(v7)] ^ T3[BYTE4(v7)] ^ T2[BYTE5(v7)] ^ T1[BYTE6(v7)] ^ T7[(uint8_t)v7] ^ T0[HIBYTE(v7)] ^ v6 ^ 0xEAD597D133515BA6ULL;
+    skey[2] = v8;
+    v9 = T6[BYTE1(v8)] ^ T5[BYTE2(v8)] ^ T4[BYTE3(v8)] ^ T3[BYTE4(v8)] ^ T2[BYTE5(v8)] ^ T1[BYTE6(v8)] ^ T7[(uint8_t)v8] ^ T0[HIBYTE(v8)] ^ v7 ^ 0xDE48A899DB32B7FCULL;
+    skey[3] = v9;
+    v10 = T6[BYTE1(v9)] ^ T5[BYTE2(v9)] ^ T4[BYTE3(v9)] ^ T3[BYTE4(v9)] ^ T2[BYTE5(v9)] ^ T1[BYTE6(v9)] ^ T7[(uint8_t)v9] ^ T0[HIBYTE(v9)] ^ v8 ^ 0xE39E919BE2BB416ELL;
+    skey[4] = v10;
+    v11 = T6[BYTE1(v10)] ^ T5[BYTE2(v10)] ^ T4[BYTE3(v10)] ^ T3[BYTE4(v10)] ^ T2[BYTE5(v10)] ^ T1[BYTE6(v10)] ^ T7[(uint8_t)v10] ^ T0[HIBYTE(v10)] ^ v9 ^ 0xA5CB6B95A1F3B102ULL;
+    skey[5] = v11;
+    v12 = T6[BYTE1(v11)] ^ T5[BYTE2(v11)] ^ T4[BYTE3(v11)] ^ T3[BYTE4(v11)] ^ T2[BYTE5(v11)] ^ T1[BYTE6(v11)] ^ T7[(uint8_t)v11] ^ T0[HIBYTE(v11)] ^ v10 ^ 0xCCC41D14C363DA5DULL;
+    skey[6] = v12;
+    v13 = T6[BYTE1(v12)] ^ T5[BYTE2(v12)] ^ T4[BYTE3(v12)] ^ T3[BYTE4(v12)] ^ T2[BYTE5(v12)] ^ T1[BYTE6(v12)] ^ T7[(uint8_t)v12] ^ T0[HIBYTE(v12)] ^ v11 ^ 0x5FDC7DCD7F5A6C5CULL;
+    skey[7] = v13;
+    v14 = T6[BYTE1(v13)] ^ T5[BYTE2(v13)] ^ T4[BYTE3(v13)] ^ T3[BYTE4(v13)] ^ T2[BYTE5(v13)] ^ T1[BYTE6(v13)] ^ T7[(uint8_t)v13] ^ T0[HIBYTE(v13)] ^ v12 ^ 0xF726FFEDE89D6F8EULL;
+    skey[8] = v14;
+    skey[9] = v14;
+
+    src = skey + 7;
+    dst = skey + 10;
+    do {
+        *dst = T6[T7[(uint8_t)BYTE1(*src)]] ^ T5[T7[(uint8_t)BYTE2(*src)]] ^ T4[T7[(uint8_t)BYTE3(*src)]] ^ T3[T7[(uint8_t)BYTE4(*src)]] ^ T2[T7[(uint8_t)((unsigned __int16)WORD2(*src) >> 8)]] ^ T1[T7[(uint8_t)BYTE6(*src)]] ^ T7[T7[(uint8_t)*src]] ^ T0[T7[(uint8_t)HIBYTE(*src)]];
+        --src;
+        ++dst;
+    } while (src != skey);
+
+    skey[17] = skey[0];
+    return 0;
+}
+/////
+CFS_PREDICTION:
+predict control flow: {}
+
+CURRENT_CODE:
+int ssh1_connection_need_antispoof_prompt(void *conn)
+{
+    void *obj = *(void **)((char *)conn + 304);
+    int (*func)(void *, int) = *(int (**)(void *, int))((char *)*(void **)obj + 136);
+    return !func(obj, 0);
+}
+/////
+CFS_PREDICTION:
+predict control flow: {switch{casecasecase{}case{if (==)}}}
+
+CURRENT_CODE:
+MagickSizeType GetMagickResourceLimit(MagickResourceType resource)
+{
+  MagickSizeType limit;
+  switch (resource)
+  {
+    case 1:
+      limit = qword_60D330;
+      break;
+    case 4:
+      limit = qword_60D320;
+      break;
+    case 7:
+      limit = qword_60D358;
+      break;
+    case 8:
+      limit = qword_60D360;
+      break;
+    case 10:
+      limit = qword_60D318;
+      break;
+    case 11:
+      limit = qword_60D328;
+      break;
+    default:
+      if (resource_semaphore[resource] == (SemaphoreInfo *) NULL)
+        ActivateSemaphoreInfo(&resource_semaphore[resource]);
+      LockSemaphoreInfo(resource_semaphore[resource]);
+      switch (resource)
+      {
+        case 2:
+          limit = qword_60D348;
+          break;
+        case 3:
+          limit = qword_60D350;
+          break;
+        case 5:
+          limit = qword_60D340;
+          break;
+        case 6:
+          limit = qword_60D338;
+          break;
+        case 9:
+          limit = qword_60D368;
+          break;
+        default:
+          limit = 0;
+          break;
+      }
+      UnlockSemaphoreInfo(resource_semaphore[resource]);
+      break;
+  }
+  return limit;
+}
+/////
+CFS_PREDICTION:
+predict control flow: {if (==)if (!=)}
+
+CURRENT_CODE:
+int MimeComponentTerminus() {
+    if (!mime_semaphore)
+        ActivateSemaphoreInfo(&mime_semaphore);
+    LockSemaphoreInfo(mime_semaphore);
+    if (mime_cache)
+        mime_cache = DestroyLinkedList(mime_cache, DestroyMimeElement);
+    UnlockSemaphoreInfo(mime_semaphore);
+    return RelinquishSemaphoreInfo(&mime_semaphore);
+}
+/////
+CFS_PREDICTION:
+predict control flow: {if (==)if (!=||!=)if (){if ()}else}
+
+CURRENT_CODE:
+int mem_free(MEM *m)
+{
+    int ret = 0;
+    if (m != NULL)
+    {
+        ret = 1;
+        if (m->flag1 && m->flag2)
+        {
+            BUF_MEM *b = m->buf;
+            if (b != NULL)
+            {
+                if ((m->byte33 & 2) != 0)
+                    b->back = NULL;
+                BUF_MEM_free(b);
+                m->buf = NULL;
+            }
+        }
+    }
+    return ret;
+}
+/////
+CFS_PREDICTION:
+predict control flow: {if (<)if (>=){}for (<){if (==){}elseif (){if (!=)else}if ( <){}}}
+
+CURRENT_CODE:
+pid_t pipe_fork(int *a1, int a2)
+{
+    char v12[136];
+    unsigned __int64 v13;
+    v13 = __readfsqword(0x28u);
+    if (rpl_pipe2(a1) < 0)
+        return (pid_t)-1;
+    if (nmerge + 1 < (unsigned int)nprocs)
+    {
+        reap(-1);
+        reap_exited();
+    }
+    int v2 = a2 - 1;
+    if (a2)
+    {
+        double v10 = 0.25;
+        do
+        {
+            cs_enter((__int64)v12);
+            void *v3 = temphead;
+            temphead = 0LL;
+            pid_t v4 = fork();
+            unsigned int v11 = v4;
+            int *v5 = __errno_location();
+            int v6 = *v5;
+            if (!v4)
+            {
+                cs_leave((__int64)v12);
+                *v5 = v6;
+                close(0);
+                close(1);
+                return 0;
+            }
+            temphead = v3;
+            cs_leave((__int64)v12);
+            *v5 = v6;
+            if (v6 != 11)
+                break;
+            if (v4 >= 0)
+                break;
+            xnanosleep(v10);
+            v10 = v10 + v10;
+            reap_exited();
+            --v2;
+        }
+        while (v2 != -1);
+        if (v4 < 0)
+        {
+            int *v8 = __errno_location();
+            int v9 = *v8;
+            close(*a1);
+            close(a1[1]);
+            *v8 = v9;
+        }
+        else
+        {
+            ++nprocs;
+        }
+        return v11;
+    }
+    else
+    {
+        close(0);
+        close(1);
+        return 0;
+    }
+}
+/////
+CFS_PREDICTION:
+predict control flow: {if (!)for (<){if (!=||!=)if (==){}if (>||>)if (!||==&&!=){if ()}}while (==||==){if (>){}if (!&&==)if (){}}}
+
+CURRENT_CODE:
+bfd_boolean ihex_object_p(bfd *abfd)
+{
+  bfd_error_type err;
+  bfd_byte header[9];
+  bfd_byte record[8];
+  bfd_byte *data = NULL;
+  bfd_size_type data_alloc = 0;
+  unsigned int line_count = 1;
+  bfd_vma segment = 0;
+  bfd_vma linear = 0;
+  bfd_vma addr_offset = 0;
+  asection *section = NULL;
+  asection *old_section = NULL;
+  bfd_vma record_start;
+  unsigned int byte_count, record_type, checksum, i, j;
+  bfd_byte byte_val;
+  int seek_result;
+  char section_name[24];
+
+  if (!inited_10969)
+  {
+    inited_10969 = 1;
+    hex_init();
+  }
+  if (bfd_seek(abfd, 0, 0) != 0)
+    return FALSE;
+  if (bfd_bread(header, 9, abfd) != 9)
+  {
+    err = bfd_get_error();
+    if (err != 18)
+      return FALSE;
+    goto error;
+  }
+  if (header[0] != ':')
+  {
+error:
+    bfd_set_error(3);
+    return FALSE;
+  }
+  if (hex_value[(unsigned char)header[1]] != 99)
+  {
+    i = 2;
+    while (hex_value[(unsigned char)header[i]] != 99)
+    {
+      if (++i == 9)
+      {
+        if ((hex_value[(unsigned char)header[8]] + 16 * hex_value[(unsigned char)header[7]]) > 5)
+          break;
+        old_section = abfd->section;  /* assuming field offset */
+        if (!ihex_mkobject(abfd) || bfd_seek(abfd, 0, 0) != 0)
+        {
+          goto free_and_return;
+        }
+        abfd->data = 0;
+
+start_loop:
+        while (bfd_bread(&byte_val, 1, abfd) == 1)
+        {
+          if (byte_val != 13)
+          {
+            if (byte_val == 10)
+            {
+              ++line_count;
+            }
+            else
+            {
+              if (byte_val != ':')
+                goto bad_byte;
+              record_start = bfd_tell(abfd);
+              if (bfd_bread(record, 8, abfd) != 8)
+                goto free_data;
+              byte_val = record[0];
+              if (hex_value[(unsigned char)record[0]] == 99)
+                goto bad_byte;
+              for (i = 1; i != 8; ++i)
+              {
+                byte_val = record[i];
+                if (hex_value[(unsigned char)record[i]] == 99)
+                  goto bad_byte;
+              }
+              byte_count = hex_value[(unsigned char)record[1]] + 16 * hex_value[(unsigned char)record[0]];
+              {
+                bfd_byte nib[6];
+                nib[0] = hex_value[(unsigned char)record[2]];
+                nib[1] = hex_value[(unsigned char)record[3]];
+                nib[2] = hex_value[(unsigned char)record[4]];
+                nib[3] = hex_value[(unsigned char)record[5]];
+                nib[4] = hex_value[(unsigned char)record[6]];
+                nib[5] = hex_value[(unsigned char)record[7]];
+                record_type = nib[5] + 16 * nib[4];
+                bfd_vma addr = nib[3] + 16 * nib[2] + ((nib[1] + 16 * (unsigned int)nib[0]) << 8);
+                unsigned int data_len = 2 * byte_count + 2;
+                if (data_len >= data_alloc)
+                {
+                  data = bfd_realloc(data, data_len);
+                  if (!data)
+                    goto free_data;
+                  data_alloc = data_len;
+                }
+                if (data_len != bfd_bread(data, data_len, abfd))
+                  goto free_data;
+                if (2 * byte_count != -2)
+                {
+                  byte_val = data[0];
+                  if (hex_value[(unsigned char)data[0]] == 99)
+                  {
+bad_byte:
+                    ihex_bad_byte(abfd, line_count, byte_val, seek_result);
+                    goto free_data;
+                  }
+                  for (j = 1; (bfd_byte *)data + j != data + 2 * byte_count + 2; ++j)
+                  {
+                    byte_val = data[j];
+                    if (hex_value[(unsigned char)byte_val] == 99)
+                      goto bad_byte;
+                  }
+                }
+                checksum = addr + record_type + byte_count + ((addr) >> 8);
+                if (byte_count)
+                {
+                  for (j = 0; j != byte_count; ++j)
+                    checksum += hex_value[data[2 * j]] + 16 * hex_value[data[2 * j + 1]];
+                }
+                else
+                {
+                  j = 0;
+                }
+                bfd_byte expected = (bfd_byte)(-(signed char)checksum);
+                bfd_byte found = hex_value[data[2 * j]] + 16 * hex_value[data[2 * j + 1]];
+                if (expected != found)
+                {
+                  const char *msg = dcgettext("bfd", "%pB:%u: bad checksum in Intel Hex file (expected %u, found %u)", 5);
+                  bfd_error_handler(msg, abfd, line_count, expected, found);
+                  bfd_set_error(0x11);
+                  goto free_data;
+                }
+                switch (record_type)
+                {
+                  case 0:
+                    if (section && section->vma + section->size == addr + addr_offset + segment)
+                    {
+                      section->size += byte_count;
+                    }
+                    else
+                    {
+                      if (byte_count)
+                      {
+                        snprintf(section_name, sizeof(section_name), "TODO");
+                        char *name = bfd_alloc(abfd, strlen(section_name) + 1);
+                        if (!name)
+                          goto free_data;
+                        memcpy(name, section_name, strlen(section_name) + 1);
+                        section = bfd_make_section_with_flags(abfd, name, 259);
+                        if (!section)
+                          goto free_data;
+                        bfd_vma base = addr + addr_offset + segment;
+                        section->vma = base;
+                        section->lma = base;
+                        section->size = byte_count;
+                        section->filepos = record_start - 1;
+                      }
+                    }
+                    break;
+                  case 1:
+                    if (!abfd->start_address)
+                      abfd->start_address = addr;
+                    goto free_data;
+                  case 2:
+                    if (byte_count != 2)
+                    {
+                      const char *msg = dcgettext("bfd", "%pB:%u: bad extended address record length in Intel Hex file", 5);
+                      bfd_error_handler(msg, abfd, line_count);
+                      bfd_set_error(0x11);
+                      goto free_data;
+                    }
+                    segment = 16 * (hex_value[data[3]] + 16 * hex_value[data[2]] + ((hex_value[data[1]] + 16 * hex_value[data[0]]) << 8));
+                    section = NULL;
+                    break;
+                  case 3:
+                    if (byte_count != 4)
+                    {
+                      const char *msg = dcgettext("bfd", "%pB:%u: bad extended start address length in Intel Hex file", 5);
+                      bfd_error_handler(msg, abfd, line_count);
+                      bfd_set_error(0x11);
+                      goto free_data;
+                    }
+                    abfd->start_address += 16 * (hex_value[data[3]] + 16 * hex_value[data[2]] + ((hex_value[data[1]] + 16 * hex_value[data[0]]) << 8)) + hex_value[data[7]] + 16 * hex_value[data[6]] + ((hex_value[data[5]] + 16 * hex_value[data[4]]) << 8);
+                    section = NULL;
+                    break;
+                  case 4:
+                    if (byte_count != 2)
+                    {
+                      const char *msg = dcgettext("bfd", "%pB:%u: bad extended linear address record length in Intel Hex file", 5);
+                      bfd_error_handler(msg, abfd, line_count);
+                      bfd_set_error(0x11);
+                      goto free_data;
+                    }
+                    linear = ((hex_value[data[3]] + 16 * hex_value[data[2]] + ((hex_value[data[1]] + 16 * hex_value[data[0]]) << 8)) << 16);
+                    section = NULL;
+                    break;
+                  case 5:
+                    if (((byte_count - 2) & 0xFFFFFFFD) != 0)
+                    {
+                      const char *msg = dcgettext("bfd", "%pB:%u: bad extended linear start address length in Intel Hex file", 5);
+                      bfd_error_handler(msg, abfd, line_count);
+                      bfd_set_error(0x11);
+                      goto free_data;
+                    }
+                    if (byte_count == 2)
+                      abfd->start_address += ((hex_value[data[3]] + 16 * hex_value[data[2]] + ((hex_value[data[1]] + 16 * hex_value[data[0]]) << 8)) << 16);
+                    else
+                      abfd->start_address = ((hex_value[data[3]] + 16 * hex_value[data[2]] + ((hex_value[data[1]] + 16 * hex_value[data[0]]) << 8)) << 16) + hex_value[data[7]] + 16 * hex_value[data[6]] + ((hex_value[data[5]] + 16 * hex_value[data[4]]) << 8);
+                    section = NULL;
+                    break;
+                  default:
+                    {
+                      const char *msg = dcgettext("bfd", "%pB:%u: unrecognized ihex type %u in Intel Hex file", 5);
+                      bfd_error_handler(msg, abfd, line_count, record_type);
+                      bfd_set_error(0x11);
+                      goto free_data;
+                    }
+                }
+              }
+            }
+          }
+        }
+        if (bfd_get_error() != 18)
+          seek_result = 1;
+        if (seek_result)
+          goto free_data;
+        if (data)
+          free(data);
+        return abfd->flags;
+free_and_return:
+        if (old_section)
+          abfd->section = old_section;
+        return FALSE;
+free_data:
+        if (data)
+          free(data);
+        goto free_and_return;
+      }
+    }
+  }
+  bfd_set_error(3);
+  return FALSE;
+}
+/////
+CFS_PREDICTION:
+predict control flow: {if (!=)elseif (==)else}
+
+CURRENT_CODE:
+struct user_entry *getuidbyname(const char *src) {
+    struct user_entry *entry;
+
+    entry = user_alist;
+    while (entry) {
+        if (entry->name[0] == *src && strcmp(entry->name, src) == 0)
+            return entry;
+        entry = entry->next;
+    }
+
+    entry = nouser_alist;
+    while (entry) {
+        if (entry->name[0] == *src && strcmp(entry->name, src) == 0)
+            return 0;
+        entry = entry->next;
+    }
+
+    {
+        struct passwd *pwd = getpwnam(src);
+        size_t len = strlen(src) + 1;
+        size_t align = 8;
+        size_t alloc_size = (sizeof(struct user_entry) + len + align - 1) & ~(align - 1);
+        struct user_entry *new_entry = xmalloc(alloc_size);
+        memcpy(new_entry->name, src, len);
+        if (pwd) {
+            new_entry->uid = pwd->pw_uid;
+            new_entry->next = user_alist;
+            user_alist = new_entry;
+            return new_entry;
+        } else {
+            new_entry->next = nouser_alist;
+            nouser_alist = new_entry;
+            return 0;
+        }
+    }
+}
+/////
+CFS_PREDICTION:
+predict control flow: {if (!=)if (==)}
+
+CURRENT_CODE:
+MagickBooleanType DeleteImageProperty(Image *image,const char *property)
+{
+  MagickBooleanType
+    status;
+
+  if (image == (Image *) NULL)
+    return(MagickFalse);
+  if (image->signature != MagickCoreSignature)
+    return(MagickFalse);
+  if (image->debug != MagickFalse)
+    (void) LogMagickEvent(LogEvent,"MagickCore/property.c","DeleteImageProperty",285,"%s",image->filename);
+  status=MagickFalse;
+  if (image->properties != (SplayTreeInfo *) NULL)
+    status=DeleteNodeFromSplayTree(image->properties,property);
+  return(status);
+}
+/////
+CFS_PREDICTION:
+predict control flow: {if (==&&==)if (!=)else}
+
+CURRENT_CODE:
+void *bfd_default_reloc_type_lookup(bfd *abfd, int reloc_type)
+{
+    if (reloc_type == 586)
+    {
+        if (bfd_arch_bits_per_address(abfd) == 32)
+            return &bfd_howto_32;
+    }
+    return NULL;
+}
+/////
+CFS_PREDICTION:
+predict control flow: {if ()}
+
+CURRENT_CODE:
+int ENGINE_register_ECDH(ENGINE *e)
+{
+    if (e == NULL)
+        return 0;
+    if (e->ecdh_meth != NULL)
+        return engine_table_register(&ecdh_table, engine_unregister_all_ECDH, e, &dummy_nid_3, 1, 0);
+    return 1;
+}
+/////
+CFS_PREDICTION:
+predict control flow: {if (<){}for (<){if (>=){}}if ()}
+
+CURRENT_CODE:
+void wrapf(const char *format, ...)
+{
+    va_list ap;
+    char *s;
+    int len;
+    unsigned long canary = __readfsqword(0x28u);
+    va_start(ap, format);
+    len = rpl_vasprintf(&s, format, ap);
+    if (len < 0)
+        xalloc_die();
+    if (current_col > 0)
+    {
+        if (max_col - current_col >= len)
+        {
+            if (stdout->_IO_write_ptr >= stdout->_IO_write_end)
+                __overflow(stdout, ' ');
+            else
+                *stdout->_IO_write_ptr++ = ' ';
+            ++current_col;
+        }
+        else
+        {
+            if (stdout->_IO_write_ptr >= stdout->_IO_write_end)
+                __overflow(stdout, '\n');
+            else
+                *stdout->_IO_write_ptr++ = '\n';
+            current_col = 0;
+        }
+    }
+    fputs_unlocked(s, stdout);
+    free(s);
+    current_col += len;
+    if (__readfsqword(0x28u) != canary)
+        __stack_chk_fail();
+}
+/////
+CFS_PREDICTION:
+predict control flow: {if ()}
+
+CURRENT_CODE:
+int ENGINE_set_default_DH(ENGINE *e) {
+    if (e == NULL) return 0;
+    if (e->dh_meth != NULL)
+        return engine_table_register(&dh_table, engine_unregister_all_DH, e, &dummy_nid_2, 1, 1);
+    return 1;
+}
+/////
+CFS_PREDICTION:
+predict control flow: {if ()if (!=)if (==)}
+
+CURRENT_CODE:
+int CRYPTO_pop_info(void)
+{
+    int ret = 0;
+    if (CRYPTO_is_mem_check_on())
+    {
+        CRYPTO_mem_ctrl(3);
+        ret = (pop_info() != 0);
+        CRYPTO_mem_ctrl(2);
+    }
+    return ret;
+}
+/////
+CFS_PREDICTION:
+predict control flow: {}
+
+CURRENT_CODE:
+int curl_multi_wait(CURLM *multi_handle, struct curl_waitfd *extra_fds, int extra_nfds, int timeout_ms, int *ret)
+{
+    return Curl_multi_wait(multi_handle, extra_fds, extra_nfds, timeout_ms, ret, 0, 0);
+}
+/////
+CFS_PREDICTION:
+predict control flow: {if (==)}
+
+CURRENT_CODE:
+char *shell_quote_copy(char *buffer, const char *arg)
+{
+  if (!sh_quoting_options)
+    init_sh_quoting_options();
+  return buffer + quotearg_buffer(buffer, (size_t)-1, arg, strlen(arg), sh_quoting_options);
+}
+/////
+CFS_PREDICTION:
+predict control flow: {if (<)if (>){}if (==)elseif (!=){}while (<=)if ()}
+
+CURRENT_CODE:
+void *zlib_match(void *ctx, int distance, int len)
+{
+    unsigned char *out = *(unsigned char **)((unsigned char *)ctx + 8);
+    int remaining = len;
+    while (remaining > 0) {
+        int chunk = 258;
+        if (remaining <= 260) {
+            chunk = remaining - 3;
+            if (remaining <= 258)
+                chunk = remaining;
+        }
+        remaining -= chunk;
+        int lo = -1, hi = 29, mid;
+        do {
+            while (1) {
+                if (hi - lo <= 1)
+                    __assert_fail("j - i >= 2", "sshzlib.c", 0x1FEu, "zlib_match");
+                mid = (lo + hi) / 2;
+                int base = ((int *)lencodes)[3 * mid + 1];
+                if (base <= chunk)
+                    break;
+                hi = (lo + hi) / 2;
+            }
+            lo = (lo + hi) / 2;
+        } while (((int *)lencodes)[3 * mid + 2] < chunk);
+        int code = ((unsigned short *)lencodes)[6 * mid];
+        int extra = ((unsigned short *)lencodes)[6 * mid + 1];
+        if (code > 279)
+            outbits(out, mirrorbytes[code - 88], 8);
+        else
+            outbits(out, mirrorbytes[2 * code - 512], 7);
+        if (extra)
+            outbits(out, chunk - ((int *)lencodes)[3 * mid + 1], extra);
+        lo = -1, hi = 30;
+        do {
+            while (1) {
+                if (hi - lo <= 1)
+                    __assert_fail("j - i >= 2", "sshzlib.c", 0x222u, "zlib_match");
+                mid = (lo + hi) / 2;
+                int base = ((int *)distcodes)[3 * mid + 1];
+                if (base <= distance)
+                    break;
+                hi = (lo + hi) / 2;
+            }
+            lo = (lo + hi) / 2;
+        } while (((int *)distcodes)[3 * mid + 2] < distance);
+        code = ((short *)distcodes)[6 * mid];
+        extra = ((unsigned short *)distcodes)[6 * mid + 1];
+        outbits(out, mirrorbytes[8 * code], 5);
+        if (extra)
+            outbits(out, distance - ((int *)distcodes)[3 * mid + 1], extra);
+    }
+    return out;
+}
+/////
+CFS_PREDICTION:
+predict control flow: {if (&&!=)if ()}
+
+CURRENT_CODE:
+char *OP_MMX() {
+    int offset = dword_494DE4;
+    const char **names;
+    used_prefixes |= prefixes & 0x200;
+    names = names_mm;
+    if ((prefixes & 0x200) != 0) {
+        names = names_xmm;
+        if ((rex & 4) != 0) {
+            rex_used |= 0x44u;
+            offset = dword_494DE4 + 8;
+        }
+    }
+    return oappend(names[offset]);
+}
+/////
+CFS_PREDICTION:
+predict control flow: {if (!=)if (==){}elseif (<){}}
+
+CURRENT_CODE:
+#include <sys/stat.h>
+#include <unistd.h>
+#include <errno.h>
+#include "MagickCore/Image.h"
+#include "MagickCore/Blob.h"
+#include "MagickCore/Exception.h"
+#include "MagickCore/MagickCore.h"
+#include "MagickCore/log.h"
+
+MagickBooleanType ImageToFile(Image *image,const char *filename,ExceptionInfo *exception)
+{
+  BlobInfo
+    *blob;
+
+  int
+    fd,
+    status;
+
+  ssize_t
+    count,
+    n;
+
+  size_t
+    length,
+    total_written;
+
+  unsigned char
+    *buffer;
+
+  struct stat
+    stat_buf;
+
+  if (image == (Image *) NULL)
+    return(MagickFalse);
+  if (image->signature != MagickCoreSignature)
+    return(MagickFalse);
+  blob=image->blob;
+  if (blob == (BlobInfo *) NULL)
+    return(MagickFalse);
+  if (blob->type == UndefinedStream)
+    return(MagickFalse);
+  if (image->debug != MagickFalse)
+    (void) LogMagickEvent(LogEventType,GetMagickModule(),"%s",filename);
+  if (filename == (const char *) NULL)
+    return(MagickFalse);
+  if (*filename != '\0')
+  {
+    if (LocaleCompare(filename,"-") != 0)
+      fd=open(filename,O_WRONLY|O_CREAT|O_TRUNC,S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+    else
+      fd=fileno(stdout);
+  }
+  else
+    fd=AcquireUniqueFileResource(filename);
+  if (fd == -1)
+  {
+    ThrowMagickException(exception,GetMagickModule(),435,
+      "UnableToWriteBlob","'%s': %s",filename,strerror(errno));
+    return(MagickFalse);
+  }
+  length=81920UL;
+  if (fstat(fd,&stat_buf) == 0)
+  {
+    length=stat_buf.st_size;
+    if ((length-1) > 81919UL)
+      length=81920UL;
+  }
+  buffer=(unsigned char *) AcquireQuantumMemory(length,1);
+  if (buffer == (unsigned char *) NULL)
+  {
+    (void) close(fd);
+    ThrowMagickException(exception,GetMagickModule(),400,
+      "MemoryAllocationError","`%s'",filename);
+    return(MagickFalse);
+  }
+  while ((count=ReadBlobStream(image,length,buffer,&count)) > 0)
+  {
+    total_written=0;
+    while (total_written < (size_t) count)
+    {
+      n=write(fd,buffer+total_written,(size_t) count-total_written);
+      if (n > 0)
+        total_written+=(size_t) n;
+      else
+        if (errno != EINTR)
+          break;
+    }
+    if (total_written < (size_t) count)
+      break;
+  }
+  if (count < 0)
+  {
+    (void) close(fd);
+    RelinquishMagickMemory(buffer);
+    ThrowMagickException(exception,GetMagickModule(),435,
+      "UnableToWriteBlob","'%s': %s",filename,strerror(errno));
+    return(MagickFalse);
+  }
+  if (LocaleCompare(filename,"-") == 0)
+  {
+    RelinquishMagickMemory(buffer);
+    return(MagickTrue);
+  }
+  status=close(fd);
+  RelinquishMagickMemory(buffer);
+  if (status == -1)
+  {
+    ThrowMagickException(exception,GetMagickModule(),435,
+      "UnableToWriteBlob","'%s': %s",filename,strerror(errno));
+    return(MagickFalse);
+  }
+  return(MagickTrue);
+}
+/////
+CFS_PREDICTION:
+predict control flow: {if (==){if (!=)}if (!){}if (!&&!=){}while (){if (!||==){}}}
+
+CURRENT_CODE:
+CollSeq *sqlite3GetCollSeq(sqlite3 *db, u8 enc, CollSeq **ppColl, const char *zName)
+{
+  CollSeq *pColl;
+  char *zDup;
+
+  if ( ppColl )
+    pColl = *ppColl;
+  else
+    pColl = sqlite3FindCollSeq(db, enc, zName, 0);
+
+  if ( pColl && pColl->xDel )
+    return pColl;
+
+  if ( db->xCollNeeded )
+  {
+    zDup = sqlite3DbStrDup(db, zName);
+    if ( zDup )
+    {
+      db->xCollNeeded(db->pCollNeededArg, db, enc, zDup);
+      sqlite3DbFree(db, zDup);
+    }
+  }
+
+  if ( db->xCollNeeded2 )
+  {
+    Value *pVal = sqlite3ValueNew(db);
+    if ( pVal )
+    {
+      sqlite3ValueSetStr(pVal, -1, zName, 1, 0);
+      char *zVal = sqlite3ValueText(pVal, SQLITE_TRANSIENT);
+      if ( zVal )
+        db->xCollNeeded2(db->pCollNeededArg, db, (u8)db->nCell, zVal);
+      sqlite3ValueFree(pVal);
+    }
+  }
+
+  pColl = sqlite3FindCollSeq(db, enc, zName, 0);
+  if ( pColl == 0 )
+  {
+    sqlite3ErrorMsg(db, "no such collation sequence: %s", zName);
+    db->errCode = SQLITE_ERROR;
+    return 0;
+  }
+
+  if ( pColl->xDel == 0 )
+  {
+    CollSeq *pAlt;
+    u8 *pEnc = aEnc;
+    while ( 1 )
+    {
+      pAlt = sqlite3FindCollSeq(db, *pEnc, pColl->zName, 0);
+      if ( pAlt && pAlt->xDel )
+        break;
+      pEnc++;
+      if ( pEnc > &aEnc[sqlite3EncArraySize] )
+      {
+        sqlite3ErrorMsg(db, "no such collation sequence: %s", zName);
+        db->errCode = SQLITE_ERROR;
+        return 0;
+      }
+    }
+    pColl->enc = pAlt->enc;
+    pColl->zName = pAlt->zName;
+    pColl->type = pAlt->type;
+    pColl->xDel = pAlt->xDel;
+    pColl->pUser = 0;
+  }
+
+  return pColl;
+}
+/////
+CFS_PREDICTION:
+predict control flow: {if (==){}else{}}
+
+CURRENT_CODE:
+void ssh2_rportfwd_globreq_response(void *ssh, int *response_type, void *rpf)
+{
+    char *msg;
+
+    if (*response_type == 81) {
+        msg = dupprintf("Remote port forwarding from %s enabled",
+                        *(char **)(rpf + 32));
+        logevent_and_free(((void **)ssh)[34], msg);
+    } else {
+        msg = dupprintf("Remote port forwarding from %s refused",
+                        *(char **)(rpf + 32));
+        logevent_and_free(((void **)ssh)[34], msg);
+        if (rpf != del234(((void **)ssh)[14], rpf))
+            __assert_fail("realpf == rpf", "ssh2connection-client.c", 0xCE,
+                          "ssh2_rportfwd_globreq_response");
+        portfwdmgr_close(((void **)ssh)[15], *(void **)(rpf + 48));
+        free_rportfwd(rpf);
+    }
+}
+/////
+CFS_PREDICTION:
+predict control flow: {if (){}elseif (!){}else{if (<)if (!=){}if ()}}
+
+CURRENT_CODE:
+void add_regexp(struct regex_list *list, const char *pattern)
+{
+    size_t pattern_len;
+    char *err;
+    char *buf;
+    size_t old_len;
+    int has_prev;
+    size_t new_len;
+    size_t cap;
+    size_t insert_pos;
+
+    pattern_len = strlen(pattern) + 1;
+    err = rpl_re_compile_pattern(pattern, pattern_len - 1, list->compiled);
+    if (err) {
+        error(2, 0, "%s: %s", pattern, err);
+        return;
+    }
+    buf = list->patterns;
+    old_len = list->len;
+    has_prev = (buf != NULL);
+    list->has_pattern = has_prev;
+    new_len = pattern_len - 1 + old_len + 2 * has_prev;
+    list->len = new_len;
+    cap = list->cap;
+    if (new_len >= cap) {
+        if (cap == 0)
+            cap = 1;
+        do {
+            cap *= 2;
+        } while (new_len >= cap);
+        list->cap = cap;
+        buf = xrealloc(buf, cap);
+        list->patterns = buf;
+    }
+    if (has_prev) {
+        insert_pos = old_len + 1;
+        buf[old_len] = '\\';
+        old_len += 2;
+        buf[insert_pos] = '|';
+    }
+    memcpy(buf + old_len, pattern, pattern_len);
+}
+/////
+CFS_PREDICTION:
+predict control flow: {if (!=)if ()for (<){if (!)if (!||!||!){if ()}if (<)elseif ()else}else}
+
+CURRENT_CODE:
+int ASN1_UNIVERSALSTRING_to_string(void *a)
+{
+    if (a == 0)
+        return 0;
+
+    int type = *(int *)((unsigned char *)a + 4);
+    if (type != 28)
+        return 0;
+
+    int len = *(int *)a;
+    if (len <= 0 || (len & 3) != 0)
+        return 0;
+
+    unsigned char *data = *(unsigned char **)((unsigned char *)a + 8);
+    if (data == 0)
+        return 0;
+
+    int num_chars = len >> 2;
+    int i;
+    for (i = 0; i < num_chars; i++)
+    {
+        if (data[i * 4] != 0 || data[i * 4 + 1] != 0 || data[i * 4 + 2] != 0)
+            return 0;
+    }
+
+    unsigned char *dst = data;
+    for (i = 0; i < num_chars; i++)
+        *dst++ = data[i * 4 + 3];
+
+    *dst = 0;
+    *(int *)a = num_chars;
+    *(int *)((unsigned char *)a + 4) = ASN1_PRINTABLE_type((char *)data, num_chars);
+
+    return 1;
+}
+/////
+CFS_PREDICTION:
+predict control flow: {for (>)if (==){}for (>)if (!=){}}
+
+CURRENT_CODE:
+void mpz_goetgheluck_bin_uiui(mpz_ptr r, mp_limb_t n, mp_limb_t k)
+{
+    mp_limb_t max_limb = ~(mp_limb_t)0;
+    mp_limb_t inv_n = max_limb / n;
+    mp_limb_t n_minus_k = n - k;
+    mp_limb_t product;
+    mp_limb_t *sieve, *factors;
+    mp_size_t num_primes;
+    mp_size_t root_index, factor_count;
+    mp_limb_t temp, temp2;
+    mp_limb_t stack_sieve[((8 * ((n - 5) | 1) / 0xC0 + 38) >> 4) * 16]; // approximate size
+    mp_limb_t stack_factors[((n - 5) | 1) / 3 / root_index + 3];
+    int marker = 0;
+
+    // allocate sieve
+    {
+        mp_size_t sieve_size = ((n - 5) | 1) / 0xC0;
+        if (8 * sieve_size + 8 > 0x7F00)
+            sieve = (mp_limb_t *)__gmp_tmp_reentrant_alloc(&marker);
+        else
+            sieve = stack_sieve;
+    }
+
+    num_primes = __gmp_primesieve(sieve, n) + 1;
+
+    // determine root index
+    root_index = 8;
+    while (n > _gmp_limbroots_table[root_index - 1])
+        root_index--;
+
+    // allocate factors array
+    {
+        mp_size_t factor_needed = num_primes / root_index;
+        if (8 * factor_needed + 8 > 0x7F00)
+            factors = (mp_limb_t *)__gmp_tmp_reentrant_alloc(&marker);
+        else
+            factors = stack_factors;
+    }
+
+    factor_count = 0;
+    product = 1;
+
+    // Precompute popcounts for exponent of 2
+    {
+        // popcount of n_minus_k
+        mp_limb_t x = n_minus_k;
+        x = x - ((x >> 1) & 0x5555555555555555ULL);
+        x = (x & 0x3333333333333333ULL) + ((x >> 2) & 0x3333333333333333ULL);
+        x = (x + (x >> 4)) & 0x0F0F0F0F0F0F0F0FULL;
+        x = x + (x >> 8);
+        x = x + (x >> 16);
+        x = x + (x >> 32);
+        mp_limb_t pop_n_minus_k = x & 0xFF;
+
+        // popcount of k
+        x = k;
+        x = x - ((x >> 1) & 0x5555555555555555ULL);
+        x = (x & 0x3333333333333333ULL) + ((x >> 2) & 0x3333333333333333ULL);
+        x = (x + (x >> 4)) & 0x0F0F0F0F0F0F0F0FULL;
+        x = x + (x >> 8);
+        x = x + (x >> 16);
+        x = x + (x >> 32);
+        mp_limb_t pop_k = x & 0xFF;
+
+        // popcount of n
+        x = n;
+        x = x - ((x >> 1) & 0x5555555555555555ULL);
+        x = (x & 0x3333333333333333ULL) + ((x >> 2) & 0x3333333333333333ULL);
+        x = (x + (x >> 4)) & 0x0F0F0F0F0F0F0F0FULL;
+        x = x + (x >> 8);
+        x = x + (x >> 16);
+        x = x + (x >> 32);
+        mp_limb_t pop_n = x & 0xFF;
+
+        mp_limb_t exponent2 = pop_n_minus_k + pop_k - pop_n;
+        product = (mp_limb_t)1 << exponent2;
+    }
+
+    // Handle prime 3 using base-3 representation
+    {
+        mp_limb_t a = k, b = n;
+        int carry = 0;
+        do
+        {
+            mp_limb_t qa = a / 3, ra = a % 3 + carry;
+            mp_limb_t qb = b / 3, rb = b % 3;
+            carry = (ra > rb) ? 1 : 0;
+            if (carry)
+                product *= 3;
+            a = qa;
+            b = qb;
+        } while (b > 2);
+    }
+
+    // Determine limit for prime sieve loop
+    mp_limb_t sqrt_n;
+    {
+        unsigned long bit;
+        _BitScanReverse64(&bit, n);
+        sqrt_n = ((((mp_limb_t)1 << ((bit + 1) >> 1)) + (n >> ((bit + 1) >> 1))) >> 1);
+        sqrt_n = ((sqrt_n - 5) | 1) / 3;
+    }
+
+    // Main loop over primes up to sqrt(n)
+    {
+        mp_limb_t mask = 1;
+        mp_size_t idx = 0;
+        mp_limb_t p_index = 0;
+        mp_limb_t a = k, b = n;
+        mp_limb_t current_product = product;
+        mp_limb_t factor_list[1000]; // placeholder, actual size determined earlier
+
+        while (1)
+        {
+            p_index++;
+            if (!(sieve[idx] & mask))
+            {
+                mp_limb_t p = 3 * p_index + (p_index & 1) + 1;
+                if (current_product > inv_n)
+                {
+                    factors[factor_count++] = current_product;
+                    current_product = 1;
+                }
+                mp_limb_t carry = 0;
+                mp_limb_t aa = a, bb = b;
+                do
+                {
+                    mp_limb_t qa = aa / p, ra = aa % p + carry;
+                    mp_limb_t qb = bb / p, rb = bb % p;
+                    carry = (ra > rb) ? 1 : 0;
+                    if (carry)
+                        current_product *= p;
+                    aa = qa;
+                    bb = qb;
+                } while (bb >= p);
+            }
+            mask = (mask << 1) | (mask >> 63);
+            idx += (mask & 1);
+            if (p_index > sqrt_n)
+                break;
+        }
+        product = current_product;
+    }
+
+    // Second loop for primes between sqrt(n) and n
+    {
+        mp_limb_t p = 3 * (p_index + 1) + 6; // starting prime after sqrt_n
+        mp_limb_t mask = 1;
+        mp_size_t idx = 0;
+        mp_limb_t limit = ((n - 5) | 1) / 3;
+        mp_limb_t a = n, b = k;
+        while (1)
+        {
+            p_index++;
+            if (!(sieve[idx] & mask))
+            {
+                mp_limb_t q = p + (p_index & 1) + 1;
+                if (a % q < b % q)
+                {
+                    if (product <= inv_n * 2)
+                        product *= q;
+                    else
+                    {
+                        factors[factor_count++] = product;
+                        product = q;
+                    }
+                }
+            }
+            mask = (mask << 1) | (mask >> 63);
+            idx += (mask & 1);
+            p += 3;
+            if (p_index > limit)
+                break;
+        }
+    }
+
+    // Third loop for primes between n/2 and n
+    {
+        mp_limb_t limit2 = ((n_minus_k - 5) | 1) / 3;
+        mp_limb_t p = 3 * (limit2 + 1) + 6;
+        mp_limb_t mask = 1;
+        mp_size_t idx = 0;
+        mp_limb_t a = n, b = k;
+        while (1)
+        {
+            p_index++;
+            if (!(sieve[idx] & mask))
+            {
+                mp_limb_t q = p + (p_index & 1) + 1;
+                if (product <= inv_n)
+                    product *= q;
+                else
+                {
+                    factors[factor_count++] = product;
+                    product = q;
+                }
+            }
+            mask = (mask << 1) | (mask >> 63);
+            idx += (mask & 1);
+            p += 3;
+            if (p_index > limit2)
+                break;
+        }
+    }
+
+    // Finalize product
+    if (factor_count)
+    {
+        factors[factor_count] = product;
+        __gmpz_prodlimbs(r, factors, factor_count + 1);
+    }
+    else
+    {
+        if (r->_mp_size <= 0)
+        {
+            r->_mp_d = (mp_limb_t *)__gmpz_realloc(r, 1);
+        }
+        r->_mp_d[0] = product;
+        r->_mp_size = 1;
+    }
+
+    if (marker)
+        __gmp_tmp_reentrant_free(marker);
+}
