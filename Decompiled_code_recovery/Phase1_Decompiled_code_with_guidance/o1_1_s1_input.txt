@@ -1,0 +1,4483 @@
+__int64 __fastcall UI_add_info_string(__int64 a1, __int64 a2)
+{
+return general_allocate_string(a1, a2, 0, 4, 0, 0LL, 0, 0, 0LL);
+}
+/////
+__int64 __fastcall vdbePmaReaderIncrMergeInit(__int64 a1, int a2)
+{
+__int64 v2;
+__int64 v3;
+__int64 v4;
+__int64 result;
+int v6;
+v2 = *(_QWORD *)(a1 + 72); // Guidance: ['Initialize usableSize before dependent calculations']
+v3 = *(_QWORD *)v2; // Guidance: ['Remove duplicate condition check']
+v4 = *(_QWORD *)(*(_QWORD *)(*(_QWORD *)v2 + 16LL) + 32LL);
+result = vdbeMergeEngineInit(*(_QWORD *)v2, *(_QWORD *)(v2 + 8), a2);
+if ( !(_DWORD)result ) // Guidance: ['Audit all preconditions before early exit', 'Release temporary resources before error returns']
+{
+v6 = *(_DWORD *)(v2 + 24);
+if ( *(_DWORD *)(v2 + 32) )
+{
+result = vdbeSorterOpenTempFile(v4, v6, (__int64 **)(v2 + 40));
+if ( (_DWORD)result )
+return result;
+result = vdbeSorterOpenTempFile(v4, v6, (__int64 **)(v2 + 56));
+if ( (_DWORD)result )
+return result;
+}
+else
+{
+if ( !*(_QWORD *)(v3 + 88) ) // Guidance: ['Verify function pointer validity before invocation']
+{
+result = vdbeSorterOpenTempFile(v4, *(_QWORD *)(v3 + 96), (__int64 **)(v3 + 88)); // Guidance: ['Validate file descriptor validity before file operations', 'Ensure arithmetic overflow checks for size calculations']
+*(_QWORD *)(v3 + 96) = 0LL;
+if ( (_DWORD)result )
+return result;
+}
+*(_QWORD *)(v2 + 56) = *(_QWORD *)(v3 + 88);
+*(_QWORD *)(v2 + 16) = *(_QWORD *)(v3 + 96);
+*(_QWORD *)(v3 + 96) += v6;
+}
+result = *(unsigned int *)(v2 + 32); // Guidance: ['Add null-check for function pointer', 'Validate parameters before invocation']
+if ( (_DWORD)result )
+result = vdbeIncrPopulate(v2);
+if ( !(_DWORD)result && a2 != 1 )
+result = vdbePmaReaderNext(a1);
+}
+return result;
+}
+/////
+__int64 __fastcall Curl_mime_size(__int64 a1) // Guidance: ['Validate return type consistency', 'Ensure pointer validity before return']
+{
+__int64 v1;
+__int64 v2;
+__int64 v4;
+__int64 v5;
+unsigned __int64 v6;
+__int64 i;
+__int64 v8;
+__int64 v9;
+__int64 v10;
+__int64 v11;
+__int64 v12;
+__int64 v13;
+if ( *(_DWORD *)(a1 + 24) == 4 ) // Guidance: ['Use boolean context for state flags']
+{
+v4 = *(_QWORD *)(a1 + 64);
+v5 = 0LL;
+if ( v4 ) // Guidance: ['Validate parent pointers before accessing nested structure members', 'Ensure null checks precede dependent operations']
+{
+v6 = strlen((const char *)(v4 + 32)) + 1;
+v5 = v6 + 5; // Guidance: ['Merge redundant assignments to avoid repeated computation']
+for ( i = *(_QWORD *)(v4 + 16);i;i = *(_QWORD *)(i + 16) )
+{
+v8 = Curl_mime_size(i);
+if ( v8 < 0 ) // Guidance: ['Isolate locale-dependent code paths']
+{
+v5 = v8;
+}
+else if ( v5 >= 0 )
+{
+v5 += v6 + 5 + v8;
+}
+}
+}
+*(_QWORD *)(a1 + 120) = v5; // Guidance: ['Separate modification from return values', 'Use temporary variables for bitwise operations']
+}
+v1 = *(_QWORD *)(a1 + 160); // Guidance: ['Ensure single NULL check']
+if ( v1 )
+v2 = (*(__int64 (__fastcall **)(__int64))(v1 + 16))(a1); // Guidance: ['Use fixed-size read for type fields regardless of ELF class']
+else
+v2 = *(_QWORD *)(a1 + 120);
+if ( v2 >= 0 && (*(_BYTE *)(a1 + 128) & 2) == 0 )
+{
+v9 = *(_QWORD *)(a1 + 80);
+if ( v9 )
+{
+v10 = 0LL; // Guidance: ['Use symbolic constants for magic number returns']
+do // Guidance: ['Validate multi-variable loop initialization alignment', 'Check pointer assignment consistency']
+{
+v10 += strlen(*(const char **)v9) + 2;
+v9 = *(_QWORD *)(v9 + 8);
+}
+while ( v9 );
+}
+else
+{
+v10 = 0LL;
+}
+v11 = v2 + v10;
+v12 = *(_QWORD *)(a1 + 88);
+if ( v12 )
+{
+v13 = 0LL;
+do
+{
+if ( !match_header((char **)v12, "Content-Type", 12LL) )
+v13 += strlen(*(const char **)v12) + 2;
+v12 = *(_QWORD *)(v12 + 8);
+}
+while ( v12 );
+}
+else
+{
+v13 = 0LL;
+}
+v2 = v11 + v13 + 2;
+}
+return v2;
+}
+/////
+_DWORD *__fastcall MHD_create_response_from_fd(__int64 a1, int a2) // Guidance: ['Ensure return type matches all possible execution paths', 'Validate input parameters early']
+{
+return MHD_create_response_from_fd_at_offset64(a1, a2, 0LL);
+}
+/////
+size_t __fastcall lf_copy(__int64 a1, __int64 a2, FILE *a3)
+{
+__int64 v3;
+const void *v5;
+size_t result;
+_BYTE *v7;
+v3 = a2;
+v5 = *(const void **)(a1 + 8);
+while ( v3 ) // Guidance: ["Initialize 'number_lines' to 1 only once"]
+{
+v7 = rawmemchr(*(const void **)(a1 + 8), 10);
+*(_QWORD *)(a1 + 8) = v7;
+if ( v7 == *(_BYTE **)(a1 + 24) ) // Guidance: ['Centralize connection state validation', 'Implement state transition guards']
+{
+ck_fwrite(v5, v7 - (_BYTE *)v5, a3);
+result = lf_refill(a1);
+if ( !result ) // Guidance: ['Establish explicit parameter-to-struct member validation chains', 'Implement intermediate validation variables for handler assignments']
+return result;
+v5 = *(const void **)(a1 + 8);
+}
+else
+{
+--v3;
+*(_QWORD *)(a1 + 8) = v7 + 1;
+}
+}
+return ck_fwrite(v5, *(_QWORD *)(a1 + 8) - (_QWORD)v5, a3);
+}
+/////
+const unsigned __int16 *__fastcall sprintc(char *a1, char a2) // Guidance: ['Ensure return value accurately represents output length', 'Validate input/output buffer ownership']
+{
+char *v2;
+char v3;
+const unsigned __int16 *result;
+v2 = a1; // Guidance: ['Ensure atomic modification of state', 'Check for underflow conditions']
+v3 = a2;
+result = *__ctype_b_loc(); // Guidance: ['Apply unsigned cast for character classification inputs']
+if ( (result[(unsigned __int8)a2] & 0x4000) == 0 ) // Guidance: ['Verify buffer size matches stream requirements']
+{
+if ( a2 < 0 )
+{
+*a1 = 77;
+a1[1] = 45; // Guidance: ['Use symbolic constants for magic numbers', 'Document state transition rationale']
+v3 = a2 + 0x80;
+v2 = a1 + 2;
+}
+if ( (unsigned __int8)v3 <= 0x1Fu )
+{
+*v2 = 94;
+v3 += 64;
+++v2; // Guidance: ['Ensure loop increment is correctly positioned.', 'Avoid post-increment if pre-increment is semantically equivalent.']
+}
+else if ( v3 == 127 )
+{
+*v2++ = 94;
+v3 = 63; // Guidance: ['Implement state transition validation', 'Use enum types for type flags']
+}
+}
+*v2 = v3;
+v2[1] = 0;
+return result;
+}
+/////
+__int64 __fastcall gmp_snprintf_reps(__int64 a1, int a2, unsigned int a3)
+{
+unsigned __int64 v4;
+unsigned __int64 v5;
+size_t v6;
+v4 = *(_QWORD *)(a1 + 8);
+if ( v4 > 1 ) // Guidance: ['Validate parent pointers before accessing nested structure members', 'Ensure null checks precede dependent operations']
+{
+v5 = v4 - 1;
+v6 = (int)a3;
+if ( v5 <= (int)a3 ) // Guidance: ['Enforce buffer boundaries using min/max operations', 'Clamp transfer sizes to destination buffer limits']
+v6 = v5;
+memset(*(void **)a1, a2, v6); // Guidance: ['Initialize data structures before conditional modifications']
+*(_QWORD *)a1 += v6; // Guidance: ['Ensure complete state restoration', 'Verify saved state consistency']
+*(_QWORD *)(a1 + 8) -= v6;
+}
+return a3;
+}
+/////
+__int64 __fastcall bfd_arch_get_compatible(__int64 a1, __int64 a2, __int64 a3, __int64 a4)
+{
+__int64 v4;
+__int64 v5;
+__int64 v6;
+__int64 result;
+__int64 v8;
+v4 = a2;
+v5 = *(_QWORD *)(a1 + 192); // Guidance: ['Separate modification from return values', 'Use temporary variables for bitwise operations']
+if ( *(_DWORD *)(v5 + 12) ) // Guidance: ['Verify condition direction and variable usage in checks']
+{
+v6 = *(_QWORD *)(a2 + 192); // Guidance: ['Use atomic operations for flag updates', 'Return previous state']
+if ( *(_DWORD *)(v6 + 12) ) // Guidance: ['Synchronize lock acquisition with resource access patterns']
+return (*(__int64 (__fastcall **)(_QWORD, __int64, __int64, __int64, __int64))(v5 + 48))( // Guidance: ['Validate callback function pointers before invocation', 'Implement callback exception boundaries']
+*(_QWORD *)(a1 + 192),
+v6,
+a3,
+a4,
+v4); // Guidance: ['Verify function pointer initialization', 'Confirm parameter forwarding consistency']
+v8 = a1;
+a1 = v4;
+v4 = v8;
+}
+if ( (_DWORD)a3 || (*(_BYTE *)(a1 + 77) & 0x30) == 16 || !strcmp(**(const char ***)(a1 + 8), "binary") )
+result = *(_QWORD *)(v4 + 192);
+else
+result = 0LL; // Guidance: ['Return Param_0->value when Param_0 is not NULL']
+return result;
+}
+/////
+__int64 __fastcall process_dir(int a1, int a2, __int64 a3) // Guidance: ['Ensure return value matches semantic expectations', 'Validate input parameters before usage']
+{
+unsigned __int8 v4;
+unsigned int v5;
+v4 = make_dir_parents(
+a1,
+a2,
+(unsigned int)&make_ancestor,
+a3,
+dir_mode,
+(unsigned int)&announce_mkdir,
+dir_mode_bits,
+owner_id,
+group_id,
+0) ^ 1;
+v5 = v4;
+if ( !v4 && *(_BYTE *)(a3 + 33) ) // Guidance: ['Add missing semicolon after M_check_autoarg call', 'Check return value of M_check_autoarg and handle errors']
+*__errno_location() = 95; // Guidance: ['Standardize error message formatting', 'Ensure resource cleanup before error reporting']
+return v5;
+}
+/////
+__int64 __fastcall MHD_post_process(__int64 a1, __int64 a2, unsigned __int64 a3) // Guidance: ['Ensure return type matches all possible execution paths', 'Validate input parameters early']
+{
+__int64 result;
+int v7;
+int v8;
+unsigned __int64 v9;
+char v10;
+__int64 v11;
+size_t v12;
+unsigned __int64 v13;
+unsigned int v14;
+__int64 v15;
+char *v16;
+char *v17;
+char *v18;
+void *v19;
+const void *v20;
+size_t v21;
+size_t v22;
+char *dest;
+unsigned int v24;
+__int64 v25[9];
+v25[1] = __readfsqword(0x28u);
+result = 1LL;
+if ( !a3 )
+return result;
+result = 0LL;
+if ( !a1 ) // Guidance: ['Prioritize input validation', 'Use defensive programming for pointer parameters']
+return result;
+v24 = MHD_str_equal_caseless_n_("application/x-www-form-urlencoded", *(_QWORD *)(a1 + 24), 33LL);
+if ( v24 ) // Guidance: ['Use bitwise flags for multi-condition checks', 'Centralize validation predicates']
+return post_process_urlencoded(a1, a2, a3);
+v7 = MHD_str_equal_caseless_n_("multipart/form-data", *(_QWORD *)(a1 + 24), 19LL);
+result = 0LL;
+if ( !v7 ) // Guidance: ['Add explicit null checks for pointer variables', 'Handle null cases with error logging']
+return result;
+dest = (char *)(a1 + 160);
+v25[0] = 0LL;
+v8 = 1; // Guidance: ['Pair state setters with protocol phase checks', 'Prevent invalid state transitions via preconditions']
+v9 = 0LL;
+while ( 1 ) // Guidance: ['Enhance loop condition robustness against null dereference', 'Ensure loop termination under all input conditions']
+{
+if ( a3 <= v9 && (!*(_QWORD *)(a1 + 96) || !v8) )
+return 1; // Guidance: ['Ensure state cleanup precedes critical returns']
+v11 = *(_QWORD *)(a1 + 96);
+v12 = a3 - v9;
+if ( a3 - v9 > *(_QWORD *)(a1 + 88) - v11 )
+v12 = *(_QWORD *)(a1 + 88) - v11;
+memcpy(&dest[v11], (const void *)(a2 + v9), v12); // Guidance: ['Ensure source/destination alignment', 'Validate residual data length']
+v9 += v12; // Guidance: ['Reuse cached multiplicative results across multiple conditions']
+v13 = *(_QWORD *)(a1 + 96) + v12; // Guidance: ['Validate offset against section size before pointer manipulation', 'Check for negative offsets']
+*(_QWORD *)(a1 + 96) = v13;
+if ( v8 == 0 && v12 == 0 && a3 > v9 )
+{
+*(_DWORD *)(a1 + 140) = 0;
+return v24;
+}
+v14 = *(_DWORD *)(a1 + 144);
+if ( v14 != 2 )
+break; // Guidance: ['Implement partial write rollback mechanisms', 'Add diagnostic logging for unexpected null returns']
+LABEL_13:
+v10 = *(_BYTE *)(a1 + 160);
+if ( v10 == 13 )
+{
+if ( v13 > 1 && *(_BYTE *)(a1 + 161) == 10 )
+{
+*(_DWORD *)(a1 + 144) = 0;
+v25[0] += 2LL;
+v8 = v24;
+}
+else
+{
+*(_DWORD *)(a1 + 144) = 1;
+++v25[0];
+v8 = v24;
+}
+}
+else
+{
+if ( v10 != 10 )
+{
+*(_DWORD *)(a1 + 144) = 0;
+*(_DWORD *)(a1 + 140) = 0;
+return v24;
+}
+++v25[0];
+*(_DWORD *)(a1 + 144) = 0;
+v8 = v24;
+}
+LABEL_16:
+if ( v25[0] )
+{
+v21 = *(_QWORD *)(a1 + 96) - v25[0];
+memmove(dest, &dest[v25[0]], v21);
+*(_QWORD *)(a1 + 96) = v21;
+v25[0] = 0LL;
+v8 = 1;
+}
+}
+if ( v14 <= 2 )
+{
+if ( v14 != 1 )
+goto LABEL_40;
+if ( *(_BYTE *)(a1 + 160) == 10 )
+{
+++v25[0];
+*(_DWORD *)(a1 + 144) = 0;
+v8 = v24;
+goto LABEL_16;
+}
+goto LABEL_11;
+}
+if ( v14 == 3 )
+{
+LABEL_11:
+if ( *(_BYTE *)(a1 + 160) == 45 )
+{
+++v25[0];
+*(_DWORD *)(a1 + 144) = 4;
+v8 = v24;
+goto LABEL_16;
+}
+*(_DWORD *)(a1 + 144) = 2;
+goto LABEL_13;
+}
+if ( v14 == 4 )
+{
+if ( *(_BYTE *)(a1 + 160) != 45 )
+{
+*(_DWORD *)(a1 + 140) = 0;
+return v24;
+}
+++v25[0];
+*(_DWORD *)(a1 + 144) = 2;
+*(_DWORD *)(a1 + 140) = *(_DWORD *)(a1 + 148);
+v8 = v24;
+goto LABEL_16;
+}
+LABEL_40:
+switch ( *(_DWORD *)(a1 + 140) )
+{
+case 0:
+return v24;
+case 1:
+*(_DWORD *)(a1 + 140) = 0;
+return v24;
+case 2:
+find_boundary(a1, *(const void **)(a1 + 32), *(_QWORD *)(a1 + 120), v25, 7, 1);
+v8 = v24;
+goto LABEL_16;
+case 3:
+if ( !(unsigned int)find_boundary(a1, *(const void **)(a1 + 32), *(_QWORD *)(a1 + 120), v25, 7, 1) )
+{
+if ( *(_DWORD *)(a1 + 140) )
+goto LABEL_46;
+return 0;
+}
+v8 = v24;
+goto LABEL_16;
+case 7:
+*(_BYTE *)(a1 + 136) = 1;
+if ( !(unsigned int)process_multipart_headers(a1, v25, 8) )
+{
+if ( !*(_DWORD *)(a1 + 140) )
+return 0;
+goto LABEL_46;
+}
+v8 = 1;
+goto LABEL_16;
+case 8:
+v15 = *(_QWORD *)(a1 + 56);
+if ( v15 && (unsigned int)MHD_str_equal_caseless_n_(v15, "multipart/mixed", 15LL) )
+{
+v16 = *(char **)(a1 + 56);
+v17 = strstr(v16, "boundary=");
+*(_QWORD *)(a1 + 40) = v17;
+if ( !v17 )
+{
+*(_DWORD *)(a1 + 140) = 0;
+return v24;
+}
+v18 = strdup(v17 + 9);
+*(_QWORD *)(a1 + 40) = v18;
+if ( !v18 )
+{
+*(_DWORD *)(a1 + 140) = 0;
+return v24;
+}
+free(v16); // Guidance: ['Implement ownership tracking for dynamic resources', 'Use after-free detection mechanisms']
+*(_QWORD *)(a1 + 56) = 0LL;
+*(_QWORD *)(a1 + 128) = strlen(*(const char **)(a1 + 40)); // Guidance: ['删除冗余赋值行']
+*(_DWORD *)(a1 + 140) = 11;
+v8 = 1;
+}
+else
+{
+*(_DWORD *)(a1 + 140) = 9;
+*(_QWORD *)(a1 + 112) = 0LL;
+v8 = 1;
+}
+goto LABEL_16;
+case 9:
+v8 = process_value_to_boundary(a1, v25, *(const void **)(a1 + 32), *(_QWORD *)(a1 + 120), 10, 1);
+if ( v8 )
+{
+v8 = v24;
+}
+else if ( !*(_DWORD *)(a1 + 140) )
+{
+return 0;
+}
+goto LABEL_16;
+case 0xA:
+*(_DWORD *)(a1 + 152) = 0;
+free_unmarked(a1);
+v19 = *(void **)(a1 + 40);
+if ( v19 )
+{
+free(v19);
+*(_QWORD *)(a1 + 40) = 0LL;
+}
+*(_DWORD *)(a1 + 140) = 7;
+v8 = 1;
+goto LABEL_16;
+case 0xB:
+v20 = *(const void **)(a1 + 40);
+if ( !v20 )
+{
+*(_DWORD *)(a1 + 140) = 0;
+return v24;
+}
+if ( (unsigned int)find_boundary(a1, v20, *(_QWORD *)(a1 + 128), v25, 12, 3) )
+{
+v8 = v24;
+goto LABEL_16;
+}
+if ( !*(_DWORD *)(a1 + 140) )
+return 0;
+LABEL_46:
+if ( v25[0] )
+{
+v22 = *(_QWORD *)(a1 + 96) - v25[0];
+memmove(dest, &dest[v25[0]], v22);
+*(_QWORD *)(a1 + 96) = v22;
+}
+if ( a3 <= v9 )
+return 1;
+*(_DWORD *)(a1 + 140) = 0;
+return v24;
+case 0xC:
+*(_DWORD *)(a1 + 152) = 0;
+if ( *(_QWORD *)(a1 + 48) )
+*(_DWORD *)(a1 + 152) = 1;
+if ( *(_QWORD *)(a1 + 56) )
+*(_DWORD *)(a1 + 152) |= 2u;
+if ( *(_QWORD *)(a1 + 64) )
+*(_DWORD *)(a1 + 152) |= 4u;
+if ( *(_QWORD *)(a1 + 72) )
+*(_DWORD *)(a1 + 152) |= 8u;
+*(_DWORD *)(a1 + 140) = 13;
+v8 = 1;
+goto LABEL_16;
+case 0xD:
+*(_QWORD *)(a1 + 112) = 0LL;
+if ( !(unsigned int)process_multipart_headers(a1, v25, 14) )
+{
+if ( *(_DWORD *)(a1 + 140) )
+goto LABEL_46;
+return 0;
+}
+v8 = 1;
+goto LABEL_16;
+case 0xE:
+v8 = process_value_to_boundary(a1, v25, *(const void **)(a1 + 40), *(_QWORD *)(a1 + 128), 15, 3);
+if ( v8 )
+{
+v8 = v24;
+}
+else if ( !*(_DWORD *)(a1 + 140) )
+{
+return 0;
+}
+goto LABEL_16;
+case 0xF:
+free_unmarked(a1);
+*(_DWORD *)(a1 + 140) = 13;
+v8 = 1;
+goto LABEL_16;
+default:
+mhd_panic(mhd_panic_cls, "postprocessor.c", 1338LL, 0LL);
+v8 = v24;
+goto LABEL_16;
+}
+}
+/////
+__int64 __fastcall gz_decomp(__int64 a1)
+{
+int v1;
+int v2;
+__int64 result;
+unsigned int v4;
+const char *v5;
+v1 = *(_DWORD *)(a1 + 152); // Guidance: ['Confirm function return type matches variable declaration', 'Handle null/invalid returns']
+v2 = 0;
+while ( 1 )
+{
+if ( !*(_DWORD *)(a1 + 128) ) // Guidance: ['修正条件判断以正确控制流程']
+{
+result = gz_avail(a1);
+if ( (_DWORD)result == -1 )
+return result;
+if ( !*(_DWORD *)(a1 + 128) ) // Guidance: ['修正条件判断以正确控制流程']
+{
+gz_error(a1, -5, "unexpected end of file");
+LABEL_11:
+v4 = v1 - *(_DWORD *)(a1 + 152);
+*(_DWORD *)a1 = v4;
+*(_QWORD *)(a1 + 8) = *(_QWORD *)(a1 + 144) - v4;
+result = 0LL;
+if ( v2 == 1 )
+*(_DWORD *)(a1 + 68) = 0;
+return result;
+}
+}
+v2 = inflate(a1 + 120, 0LL);
+if ( ((v2 + 2) & 0xFFFFFFFB) == 0 )
+{
+gz_error(a1, -2, "internal error: inflate stream corrupt");
+return 0xFFFFFFFFLL;
+}
+if ( v2 == -4 )
+{
+gz_error(a1, -4, "out of memory");
+return 0xFFFFFFFFLL;
+}
+if ( v2 == -3 )
+break;
+if ( !*(_DWORD *)(a1 + 152) || v2 == 1 )
+goto LABEL_11;
+}
+v5 = *(const char **)(a1 + 168);
+if ( !v5 )
+v5 = "compressed data error";
+gz_error(a1, -3, v5);
+return 0xFFFFFFFFLL;
+}
+/////
+__int64 __fastcall EVP_PKEY_assign(__int64 a1, int a2, __int64 a3)
+{
+__int64 result;
+result = EVP_PKEY_set_type(a1, a2);
+if ( (_DWORD)result ) // Guidance: ['Verify early exit condition logic', 'Check null/non-zero evaluation']
+{
+*(_QWORD *)(a1 + 32) = a3; // Guidance: ['Ensure lifetime management for callback parameters']
+result = a3 != 0; // Guidance: ['Check pointer validity before assignment', 'Validate outl initialization']
+}
+return result; // Guidance: ['Ensure error propagation is consistent']
+}
+/////
+_BYTE *__fastcall quotearg_alloc(__int64 a1, unsigned __int64 a2, __int64 *a3)
+{
+return quotearg_alloc_mem(a1, a2, 0LL, a3);
+}
+/////
+__int64 __fastcall Curl_resolv(__int64 a1, const char *a2, int a3, __int64 a4, _QWORD *a5, int a6) // Guidance: ['Validate parameter usage consistency', 'Ensure explicit handling of all declared parameters']
+{
+__int64 v8;
+unsigned int v9;
+char v11;
+__int64 v12;
+int v13;
+int v14;
+char v15[4];
+__int64 v16;
+char buf[24];
+unsigned __int64 v18;
+v11 = a4; // Guidance: ['Verify parameter order in multi-argument functions', 'Confirm units consistency in offset calculations']
+v18 = __readfsqword(0x28u);
+v16 = 0LL;
+v8 = *(_QWORD *)a1;
+*a5 = 0LL;
+*(_BYTE *)(a1 + 1543) &= 0xDFu; // Guidance: ['Synchronize state changes with mutex protection.']
+if ( *(_QWORD *)(v8 + 208) ) // Guidance: ['Use explicit comparisons for condition clarity.']
+Curl_share_lock(v8, 3LL, 2LL); // Guidance: ['Maintain lock pairing validation']
+v16 = fetch_addr((__int64 *)a1, a2, a3, a4, (int)a5, a6);
+if ( v16 )
+{
+Curl_infof(v8, "Hostname %s was found in DNS cache\n", a2);
+++*(_QWORD *)(v16 + 16);
+v9 = 0;
+if ( !*(_QWORD *)(v8 + 208) ) // Guidance: ['Use explicit comparisons for condition clarity.']
+goto LABEL_6;
+}
+else
+{
+v9 = -1;
+if ( !*(_QWORD *)(v8 + 208) )
+goto LABEL_24; // Guidance: ['Initialize variables with meaningful defaults', 'Avoid hard-coded magic numbers']
+}
+Curl_share_unlock(v8, 3LL);
+LABEL_6:
+if ( !v16 )
+{
+LABEL_24:
+v14 = 0;
+if ( *(_QWORD *)(v8 + 3968) )
+{
+Curl_set_in_callback(v8, 1);
+v13 = (*(__int64 (__fastcall **)(_QWORD, _QWORD, _QWORD))(v8 + 3968))(
+*(_QWORD *)(v8 + 4944), // Guidance: ['Atomicize state flag modifications', 'Synchronize multi-flag operations']
+0LL,
+*(_QWORD *)(v8 + 3976));
+Curl_set_in_callback(v8, 0);
+if ( v13 )
+return (unsigned int)-1; // Guidance: ['Standardize error return values', 'Ensure resource cleanup before exit']
+}
+if ( (inet_pton(2, a2, v15) <= 0 || (v12 = Curl_ip2addr(2, (__int64)v15, (__int64)a2, a3)) == 0)
+&& (inet_pton(10, a2, buf) <= 0 || (v12 = Curl_ip2addr(10, (__int64)buf, (__int64)a2, a3)) == 0) )
+{
+if ( !(unsigned __int8)Curl_ipvalid(a1) )
+return (unsigned int)-1; // Guidance: ['Standardize error return values', 'Ensure resource cleanup before exit']
+if ( v11 && *(char *)(v8 + 4038) < 0 )
+v12 = Curl_doh(a1, a2, a3, &v14);
+else
+v12 = Curl_getaddrinfo(a1, (__int64)a2, a3, &v14);
+if ( !v12 )
+{
+if ( !v14 )
+goto LABEL_7;
+if ( !(unsigned int)Curl_resolv_check(a1, &v16) )
+{
+v9 = v16 == 0;
+goto LABEL_7;
+}
+return (unsigned int)-1;
+}
+}
+if ( *(_QWORD *)(v8 + 208) )
+Curl_share_lock(v8, 3LL, 2LL);
+v16 = Curl_cache_addr(v8, v12, a2, a3);
+if ( *(_QWORD *)(v8 + 208) )
+Curl_share_unlock(v8, 3LL);
+if ( v16 )
+v9 = 0;
+else
+Curl_freeaddrinfo(v12);
+}
+LABEL_7:
+*a5 = v16;
+return v9;
+}
+/////
+void __fastcall get_sesslist(__int64 a1, char a2)
+{
+__int64 v2;
+__int64 v3;
+const char *v4;
+const char *v5;
+_QWORD *v6;
+const char *v7;
+int v8;
+const char *v9;
+if ( a2 ) // Guidance: ['Verify block size compatibility with operational mode']
+{
+v2 = strbuf_new();
+v3 = enum_settings_start();
+if ( v3 ) // Guidance: ['Ensure error code matches semantic context']
+{
+while ( (unsigned __int8)enum_settings_next(v3, v2) )
+BinarySink_put_byte((__int64 (__fastcall **)(_QWORD, char *, __int64))(v2 + 24), 0); // Guidance: ['Encrypt sensitive data before serialization', 'Validate buffer ownership']
+enum_settings_finish(v3);
+}
+BinarySink_put_byte((__int64 (__fastcall **)(_QWORD, char *, __int64))(v2 + 24), 0); // Guidance: ['Encrypt sensitive data before serialization', 'Validate buffer ownership']
+v4 = (const char *)strbuf_to_str(v2);
+*(_QWORD *)(a1 + 16) = v4;
+*(_DWORD *)a1 = 1; // Guidance: ['Use symbolic constant for invalid descriptor', 'Add sanity checks before assignment']
+if ( *v4 )
+{
+do // Guidance: ['Validate multi-variable loop initialization alignment', 'Check pointer assignment consistency']
+{
+if ( strcmp(v4, "Default Settings") )
+++*(_DWORD *)a1; // Guidance: ['Use symbolic constant for invalid descriptor', 'Add sanity checks before assignment']
+if ( *v4 )
+{
+do // Guidance: ['Validate multi-variable loop initialization alignment', 'Check pointer assignment consistency']
+++v4;
+while ( *v4 );
+v5 = v4;
+}
+else
+{
+v5 = v4;
+}
+v4 = v5 + 1;
+}
+while ( v5[1] );
+}
+v6 = (_QWORD *)safemalloc(*(_DWORD *)a1 + 1, 8uLL, 0LL);
+*(_QWORD *)(a1 + 8) = v6;
+*v6 = "Default Settings";
+v7 = *(const char **)(a1 + 16);
+if ( *v7 )
+{
+v8 = 1;
+do
+{
+if ( strcmp(v7, "Default Settings") )
+*(_QWORD *)(*(_QWORD *)(a1 + 8) + 8LL * v8++) = v7;
+if ( *v7 )
+{
+do
+++v7;
+while ( *v7 );
+v9 = v7;
+}
+else
+{
+v9 = v7;
+}
+v7 = v9 + 1;
+}
+while ( v9[1] );
+}
+else
+{
+v8 = 1;
+}
+qsort(*(void **)(a1 + 8), v8, 8uLL, sessioncmp);
+}
+else
+{
+safefree(*(void **)(a1 + 16));
+safefree(*(void **)(a1 + 8));
+*(_QWORD *)(a1 + 16) = 0LL;
+*(_QWORD *)(a1 + 8) = 0LL;
+}
+}
+/////
+__int64 __fastcall tftp_connect(__int64 a1, _BYTE *a2)
+{
+__int64 v3;
+__int64 v4;
+__int64 v5;
+__int64 result;
+int v7;
+int v8;
+__int64 v9;
+__int64 v10;
+int *v11;
+const char *v12;
+char v13[264];
+unsigned __int64 v14;
+v14 = __readfsqword(0x28u);
+v3 = Curl_ccalloc(1LL, 368LL); // Guidance: ['Check allocation failure immediately', 'Free allocated resources on all error paths']
+*(_QWORD *)(a1 + 1776) = v3;
+if ( !v3 ) // Guidance: ['Check pointer validity before dereferencing', 'Enforce null-check guards for socket operations']
+return 27LL;
+v4 = v3;
+v5 = *(_QWORD *)(*(_QWORD *)a1 + 1960LL);
+if ( v5 ) // Guidance: ['Enforce strict memory allocation validation', 'Implement early returns for allocation failures']
+{
+result = 71LL; // Guidance: ['Consolidate duplicate return paths']
+if ( (unsigned int)(v5 - 8) > 0xFFB0 )
+return result;
+v7 = *(_QWORD *)(*(_QWORD *)a1 + 1960LL); // Guidance: ['Check nested pointer dereferences', 'Verify protocol object type']
+v8 = 512;
+if ( (int)v5 >= 512 )
+v8 = *(_QWORD *)(*(_QWORD *)a1 + 1960LL);
+}
+else
+{
+v7 = 512; // Guidance: ['Verify iteration count matches cryptographic requirements', 'Check for side-channel vulnerabilities']
+v8 = 512;
+}
+if ( !*(_QWORD *)(v4 + 352) )
+{
+v9 = Curl_ccalloc(1LL, v8 + 4); // Guidance: ['Verify allocation size calculation.', 'Check for null after allocation.']
+*(_QWORD *)(v4 + 352) = v9; // Guidance: ['Validate flag dependencies before member assignment', 'Ensure dimension updates occur in atomic conditional blocks']
+if ( !v9 )
+return 27LL;
+}
+if ( !*(_QWORD *)(v4 + 360) )
+{
+v10 = Curl_ccalloc(1LL, v8 + 4);
+*(_QWORD *)(v4 + 360) = v10;
+if ( !v10 )
+return 27LL;
+}
+Curl_conncontrol(a1, 1);
+*(_QWORD *)(v4 + 16) = a1;
+*(_DWORD *)(v4 + 24) = *(_DWORD *)(a1 + 1240);
+*(_DWORD *)v4 = 0;
+*(_DWORD *)(v4 + 8) = -100;
+*(_DWORD *)(v4 + 340) = 512;
+*(_DWORD *)(v4 + 344) = v7;
+*(_WORD *)(v4 + 72) = *(_DWORD *)(*(_QWORD *)(a1 + 736) + 4LL);
+tftp_set_timeouts((unsigned int *)v4);
+if ( *(char *)(a1 + 1542) >= 0 )
+{
+if ( bind(*(_DWORD *)(v4 + 24), (const struct sockaddr *)(v4 + 72), *(_DWORD *)(*(_QWORD *)(a1 + 736) + 16LL)) )
+{
+v11 = __errno_location(); // Guidance: ['Cache error messages to avoid reentrancy issues', 'Use thread-safe error reporting']
+v12 = Curl_strerror(*v11, v13, 256LL);
+Curl_failf(*(_QWORD *)a1, (__int64)"bind() failed;%s", v12);
+return 7LL; // Guidance: ['Eliminate duplicate condition checks']
+}
+*(_BYTE *)(a1 + 1542) |= 0x80u;
+}
+Curl_pgrsStartNow(*(_QWORD *)a1);
+*a2 = 1;
+return 0LL; // Guidance: ['Clarify NULL return semantics in documentation (success vs. error).']
+}
+/////
+// FUNCTION MHD_response_execute_upgrade_ NOT AVAILABLE
+
+/////
+void __fastcall delete_callbacks_for_context(__int64 a1)
+{
+_QWORD *v2;
+__int64 v3;
+__int64 v4;
+__int64 v5;
+v2 = 0LL;
+v3 = 0LL;
+while ( 1 ) // Guidance: ['Ensure loop termination conditions prevent infinite cycles']
+{
+v4 = cbhead;
+if ( !cbhead )
+break;
+cbhead = *(_QWORD *)cbhead;
+v5 = *(_QWORD *)(v4 + 16);
+if ( v5 == a1 || *(__int64 (__fastcall **)(__int64))(v4 + 8) == run_idempotent_callback && *(_QWORD *)(v5 + 8) == a1 )
+{
+safefree(v4); // Guidance: ['Release resources in reverse allocation order before error returns']
+}
+else if ( v3 )
+{
+*v2 = v4;
+v2 = (_QWORD *)v4; // Guidance: ['Ensure atomic status operations', 'Document metric semantics']
+}
+else
+{
+v2 = (_QWORD *)v4; // Guidance: ['Ensure atomic status operations', 'Document metric semantics']
+v3 = v4;
+}
+}
+cbhead = v3;
+cbtail = (__int64)v2;
+if ( v2 ) // Guidance: ['Prioritize primary comparison keys first', 'Ensure symmetrical comparison branches']
+*v2 = 0LL;
+}
+/////
+__int64 __fastcall BN_mul_word(__int64 a1, unsigned __int64 a2) // Guidance: ['Validate return paths for all conditional branches']
+{
+int v2;
+__int64 result;
+unsigned __int64 v4;
+int v5;
+bool v6;
+unsigned __int64 *v7;
+int v8;
+v2 = *(_DWORD *)(a1 + 8);
+result = 1LL;
+if ( v2 ) // Guidance: ['Prioritize primary comparison keys first', 'Ensure symmetrical comparison branches']
+{
+if ( a2 )
+{
+v4 = bn_mul_words(*(_QWORD **)a1, *(unsigned __int64 **)a1, v2, a2);
+result = 1LL;
+if ( v4 ) // Guidance: ['Validate parent pointers before accessing nested structure members', 'Ensure null checks precede dependent operations']
+{
+v5 = *(_DWORD *)(a1 + 8) + 1; // Guidance: ['Save original state to temporary variable before modification']
+v6 = a1 == 0;
+if ( v5 > *(_DWORD *)(a1 + 12) )
+v6 = bn_expand2(a1, v5) == 0;
+result = 0LL; // Guidance: ['Confirm success return code consistency']
+if ( !v6 )
+{
+v7 = *(unsigned __int64 **)a1;
+v8 = *(_DWORD *)(a1 + 8); // Guidance: ['Preserve original state before modification', 'Use temporary variables for conditional state transitions']
+*(_DWORD *)(a1 + 8) = v8 + 1;
+v7[v8] = v4;
+result = 1LL;
+}
+}
+}
+else
+{
+BN_set_word(a1, 0LL);
+result = 1LL;
+}
+}
+return result;
+}
+/////
+int __fastcall vdbeRecordCompareString(signed int a1, unsigned __int8 *a2, __int64 a3)
+{
+int v4;
+__int64 v5;
+int v6;
+int v7;
+int v8;
+int result;
+int v10;
+int v11;
+unsigned __int64 v12;
+v12 = __readfsqword(0x28u);
+v11 = a2[1]; // Guidance: ['Perform deep copy or validate source struct validity before assignment']
+if ( v11 > 127 )
+sqlite3GetVarint32(a2 + 1, &v11);
+if ( v11 <= 11 ) // Guidance: ['Add range validation for decoding output length', 'Explicitly handle negative error codes']
+return *(char *)(a3 + 20); // Guidance: ['Ensure structure memory alignment', 'Verify parent-child object relationships']
+if ( (v11 & 1) == 0 ) // Guidance: ['Use explicit error code constants', 'Avoid ambiguous condition checks']
+return *(char *)(a3 + 21); // Guidance: ['Ensure structure memory alignment', 'Verify parent-child object relationships']
+v4 = (v11 - 12) / 2; // Guidance: ['Validate division operands', 'Handle integer division truncation']
+if ( v4 + *a2 > a1 )
+{
+*(_BYTE *)(a3 + 19) = sqlite3CorruptError((int)&loc_14275);
+result = 0;
+}
+else
+{
+v5 = *(_QWORD *)(a3 + 8);
+v6 = *(_DWORD *)(v5 + 12); // Guidance: ['Separate channel configuration blocks with independent condition checks']
+v7 = (v11 - 12) / 2; // Guidance: ['Add zero-division guards', 'Use const qualifiers for immutable values']
+if ( v6 <= v4 )
+v7 = *(_DWORD *)(v5 + 12);
+v8 = memcmp(&a2[*a2], *(const void **)(v5 + 16), v7);
+if ( v8 <= 0 ) // Guidance: ['Add bounds checking for arithmetic operations', 'Use integer-safe casting for size calculations']
+{
+if ( v8 < 0 ) // Guidance: ['Add bounds checking for arithmetic operations', 'Use integer-safe casting for size calculations']
+{
+result = *(char *)(a3 + 20);
+}
+else
+{
+v10 = v4 - v6;
+if ( v10 )
+{
+if ( v10 <= 0 )
+result = *(char *)(a3 + 20);
+else
+result = *(char *)(a3 + 21);
+}
+else if ( *(_WORD *)(a3 + 16) > 1u )
+{
+result = sqlite3VdbeRecordCompareWithSkip(a1, a2, (__int64 *)a3, 1); // Guidance: ['Validate parameter order and completeness', 'Confirm function signature alignment']
+}
+else
+{
+result = *(char *)(a3 + 18);
+*(_BYTE *)(a3 + 22) = 1;
+}
+}
+}
+else
+{
+result = *(char *)(a3 + 21);
+}
+}
+return result;
+}
+/////
+__int64 __fastcall engine_unlocked_init(__int64 a1)
+{
+__int64 (*v1)(void);
+__int64 result;
+if ( *(_DWORD *)(a1 + 176) ) // Guidance: ['Replace (int)len < 0 with len > INT_MAX']
+{
+result = 1LL; // Guidance: ['Ensure error handling consistency', 'Validate parameter validity']
+goto LABEL_6;
+}
+v1 = *(__int64 (**)(void))(a1 + 112); // Guidance: ['Add null-check for function pointer', 'Validate parameters before invocation']
+if ( !v1 )
+{
+result = 1LL; // Guidance: ['Ensure error handling consistency', 'Validate parameter validity']
+goto LABEL_6;
+}
+result = v1(); // Guidance: ['maintain_null_check_order', 'prevent_dangling_references']
+if ( (_DWORD)result ) // Guidance: ['Check allowed values for enumerated parameters', 'Adjust conditions to match valid configuration options']
+{
+LABEL_6: // Guidance: ['Use compile-time debug flags', 'Protect debug prints with conditional compilation']
+++*(_DWORD *)(a1 + 172); // Guidance: ['Ensure atomic operations for shared state modifications']
+++*(_DWORD *)(a1 + 176); // Guidance: ['Ensure atomic state updates to prevent redundant increments']
+}
+return result;
+}
+/////
+__int64 __fastcall CloneImageProfiles(__int64 a1, __int64 a2) // Guidance: ['Ensure proper resource deallocation on error paths', 'Validate input parameters before resource allocation']
+{
+if ( !a1 ) // Guidance: ['Replace assert with error handling', 'Return error code on null']
+__assert_fail("image != (Image *) NULL", "MagickCore/profile.c", 0x9Bu, "CloneImageProfiles"); // Guidance: ['Ensure type consistency in function arguments', 'Verify null checks on input parameters']
+if ( *(_QWORD *)(a1 + 13392) != 2880220587LL ) // Guidance: ['Implement robust signature validation mechanisms']
+__assert_fail("image->signature == MagickCoreSignature", "MagickCore/profile.c", 0x9Cu, "CloneImageProfiles"); // Guidance: ['Ensure assertion occurs after NULL check']
+if ( *(_DWORD *)(a1 + 13336) )
+LogMagickEvent( // Guidance: ['Secure filename logging against null references']
+0x8000,
+(unsigned int)"MagickCore/profile.c",
+(unsigned int)"CloneImageProfiles",
+158,
+(unsigned int)"%s",
+a1 + 1016);
+if ( !a2 )
+__assert_fail("clone_image != (const Image *) NULL", "MagickCore/profile.c", 0x9Fu, "CloneImageProfiles");
+if ( *(_QWORD *)(a2 + 13392) != 2880220587LL )
+__assert_fail("clone_image->signature == MagickCoreSignature", "MagickCore/profile.c", 0xA0u, "CloneImageProfiles");
+if ( *(_QWORD *)(a2 + 536) )
+{
+if ( *(_QWORD *)(a1 + 536) )
+DestroyImageProfiles(a1);
+*(_QWORD *)(a1 + 536) = CloneSplayTree(*(_QWORD *)(a2 + 536), ConstantString, CloneStringInfo);
+}
+return 1LL; // Guidance: ['Validate all initialization steps before returning success', 'Return error codes for partial failures']
+}
+/////
+void __fastcall print_normal_script(__int64 a1)
+{
+print_script(a1, find_change, (void (__fastcall *)(__int64))print_normal_hunk);
+}
+/////
+_BOOL8 __fastcall SetImageExtent(__int64 a1, __int64 a2, __int64 a3, __int64 a4, double a5, double a6, double a7, double a8) // Guidance: ['Verify return value semantic consistency', 'Ensure error propagation matches original logic']
+{
+_BOOL8 result;
+if ( a2 && a3 ) // Guidance: ['Validate input parameters before usage']
+{
+*(_QWORD *)(a1 + 32) = a2; // Guidance: ['Check for overflow in next increment.', 'Validate len before updating next.']
+*(_QWORD *)(a1 + 40) = a3;
+if ( !*(_QWORD *)(a1 + 48) )
+{
+*(_QWORD *)(a1 + 48) = 8LL; // Guidance: ['Centralize state reset logic', 'Use atomic updates for shared state']
+ThrowMagickException( // Guidance: ['Propagate exceptions consistently after critical checks']
+a4,
+(unsigned int)"MagickCore/image.c",
+(unsigned int)"SetImageExtent",
+2647,
+465,
+(unsigned int)"ImageDepthNotSupported",
+"`%s'",
+(const char *)(a1 + 1016));
+}
+if ( *(_QWORD *)(a1 + 48) > 0x40uLL ) // Guidance: ['Verify integer width handling', 'Check comparison operator semantics']
+{
+*(_QWORD *)(a1 + 48) = 64LL;
+ThrowMagickException( // Guidance: ['Propagate exceptions consistently after critical checks']
+a4,
+(unsigned int)"MagickCore/image.c",
+(unsigned int)"SetImageExtent",
+2653,
+465,
+(unsigned int)"ImageDepthNotSupported",
+"`%s'",
+(const char *)(a1 + 1016));
+}
+result = SyncImagePixelCache((void *)a1, a4, a5, a6, a7, a8);
+}
+else
+{
+ThrowMagickException(
+a4,
+(unsigned int)"MagickCore/image.c",
+(unsigned int)"SetImageExtent",
+2641,
+465,
+(unsigned int)"NegativeOrZeroImageSize",
+"`%s'",
+(const char *)(a1 + 1016));
+result = 0LL; // Guidance: ['Return Param_0->value when Param_0 is not NULL']
+}
+return result;
+}
+/////
+__int64 __fastcall vdbeSorterFlushThread(__int64 a1)
+{
+__int64 result;
+LODWORD(result) = vdbeSorterListToPMA(a1, (__int64 *)(a1 + 32));
+*(_DWORD *)(a1 + 8) = 1; // Guidance: ['Validate pointer validity before assignment', 'Ensure flags initialization aligns with state machine logic']
+return (int)result;
+}
+/////
+__int64 __fastcall sqlite3GenerateIndexKey(__int64 a1, __int64 a2, unsigned int a3, unsigned int a4, int a5, unsigned int *a6, double a7, __int64 a8, int a9)
+{
+__int64 v12;
+int v13;
+unsigned int v14;
+unsigned int v15;
+__int64 v16;
+unsigned int v17;
+__int16 v18;
+int v19;
+__int16 v20;
+__int64 v22;
+int v24;
+v12 = *(_QWORD *)(a1 + 16); // Guidance: ['Check pointer validity before dereference', 'Handle potential null pointers']
+if ( a6 ) // Guidance: ['Validate parameter ranges early', 'Use type-safe comparisons']
+{
+if ( *(_QWORD *)(a2 + 72) ) // Guidance: ['Check conditional hierarchy', 'Ensure mutually exclusive branches']
+{
+v13 = *(_DWORD *)(a1 + 68) - 1; // Guidance: ['Validate boolean context usage for bitfield/flags', 'Check NULL/zero equivalence for pointer/integer types']
+*(_DWORD *)(a1 + 68) = v13;
+*a6 = v13;
+*(_DWORD *)(a1 + 64) = a3 + 1;
+sqlite3ExprIfFalseDup((__int64 *)a1, *(_QWORD *)(a2 + 72), *a6, 0x10u, a7); // Guidance: ['Ensure single conditional execution before comparison']
+*(_DWORD *)(a1 + 64) = 0;
+a8 = 0LL;
+}
+else
+{
+*a6 = 0;
+}
+}
+if ( a5 && (*(_BYTE *)(a2 + 99) & 8) != 0 )
+{
+v24 = *(unsigned __int16 *)(a2 + 94);
+v14 = sqlite3GetTempRange((_DWORD *)a1, v24);
+}
+else
+{
+v24 = *(unsigned __int16 *)(a2 + 96);
+v14 = sqlite3GetTempRange((_DWORD *)a1, v24);
+}
+v15 = v14;
+if ( a8 )
+{
+if ( v14 == a9 )
+{
+if ( *(_QWORD *)(a8 + 72) )
+a8 = 0LL;
+}
+else
+{
+a8 = 0LL;
+}
+}
+if ( v24 > 0 )
+{
+v16 = 0LL;
+do // Guidance: ['Validate multi-variable loop initialization alignment', 'Check pointer assignment consistency']
+{
+if ( !a8
+|| (v20 = *(_WORD *)(*(_QWORD *)(a8 + 8) + 2 * v16), *(_WORD *)(*(_QWORD *)(a2 + 8) + 2 * v16) != v20) // Guidance: ['Optimize element shift with memmove', 'Verify loop termination condition']
+|| v20 == -2 )
+{
+v17 = v15 + v16;
+v18 = *(_WORD *)(*(_QWORD *)(a2 + 8) + 2 * v16);
+if ( v18 == -2 )
+{
+*(_DWORD *)(a1 + 64) = a3 + 1;
+sqlite3ExprCodeCopy((__int64 *)a1, *(_QWORD *)(*(_QWORD *)(a2 + 80) + 24LL * (int)v16 + 8), v17); // Guidance: ["Ensure KeyInfo matches pKey2's structure", 'Check r2 memory allocation before unpacking']
+*(_DWORD *)(a1 + 64) = 0;
+}
+else
+{
+sqlite3ExprCodeGetColumnOfTable(*(_QWORD ***)(a1 + 16), *(_QWORD *)(a2 + 24), a3, v18, v17, a7);
+}
+v19 = *(_DWORD *)(v12 + 144);
+if ( v19 > 0 && *(_BYTE *)(*(_QWORD *)(v12 + 136) + 24LL * v19 - 24) == 83 )
+sqlite3VdbeChangeToNoop(v12, v19 - 1);
+}
+++v16;
+}
+while ( v16 != (unsigned int)(v24 - 1) + 1LL );
+}
+if ( a4 )
+{
+sqlite3VdbeAddOp3(v12, 91, v15, v24, a4);
+if ( *(_QWORD *)(*(_QWORD *)(a2 + 24) + 24LL) )
+{
+v22 = sqlite3IndexAffinityStr(*(_QWORD *)a1, a2);
+sqlite3VdbeChangeP4((__int64 *)v12, -1, v22, 0);
+}
+}
+sqlite3ReleaseTempRange(a1, v15, v24);
+return v15; // Guidance: ['Change return type to match gz_write', 'Add overflow check before cast']
+}
+/////
+unsigned __int8 **__fastcall sqlite3BinaryCompareCollSeq(__int64 a1, unsigned __int8 *a2, unsigned __int8 *a3) // Guidance: ['Ensure return type matches all exit paths', 'Validate pointer dereference safety']
+{
+unsigned __int8 **result;
+if ( (a2[5] & 1) != 0 )
+return sqlite3ExprCollSeq(a1, a2);
+if ( a3 && (a3[5] & 1) != 0 ) // Guidance: ['Use explicit bitmask checks', 'Document flag semantics']
+return sqlite3ExprCollSeq(a1, a3); // Guidance: ['Verify affinity calculation correctness', 'Check type conversion requirements']
+result = sqlite3ExprCollSeq(a1, a2); // Guidance: ['Verify affinity calculation correctness', 'Check type conversion requirements']
+if ( !result ) // Guidance: ['Establish explicit parameter-to-struct member validation chains', 'Implement intermediate validation variables for handler assignments']
+result = sqlite3ExprCollSeq(a1, a3);
+return result;
+}
+/////
+__int64 __fastcall CharcoalImage(__int64 a1, __int64 a2, double a3, double a4) // Guidance: ['Ensure function parameters match original signature with const correctness', 'Validate pointer parameters before usage']
+{
+__int64 v4;
+__int64 v5;
+__int64 v6;
+if ( !a1 ) // Guidance: ['Replace assert with error handling', 'Return error code on null']
+__assert_fail("image != (Image *) NULL", "MagickCore/visual-effects.c", 0x1DAu, "CharcoalImage"); // Guidance: ['Ensure all input parameters have validity checks before usage', 'Use early returns after failed assertions to prevent undefined behavior']
+if ( *(_QWORD *)(a1 + 13392) != 2880220587LL ) // Guidance: ['Implement robust signature validation mechanisms']
+__assert_fail("image->signature == MagickCoreSignature", "MagickCore/visual-effects.c", 0x1DBu, "CharcoalImage"); // Guidance: ['Ensure assertion occurs after NULL check']
+if ( *(_DWORD *)(a1 + 13336) )
+LogMagickEvent( // Guidance: ['Secure filename logging against null references']
+0x8000,
+(unsigned int)"MagickCore/visual-effects.c",
+(unsigned int)"CharcoalImage",
+477,
+(unsigned int)"%s",
+a1 + 1016);
+if ( !a2 )
+__assert_fail("exception != (ExceptionInfo *) NULL", "MagickCore/visual-effects.c", 0x1DEu, "CharcoalImage");
+if ( *(_QWORD *)(a2 + 48) != 2880220587LL )
+__assert_fail("exception->signature == MagickCoreSignature", "MagickCore/visual-effects.c", 0x1DFu, "CharcoalImage");
+v4 = EdgeImage(a1, a2, a3);
+v5 = v4;
+if ( !v4 )
+return 0LL;
+*(_DWORD *)(v4 + 828) = 0; // Guidance: ['Explicitly manage alpha state transitions']
+if ( (unsigned int)ClampImage(v4, a2) )
+{
+v6 = BlurImage(v5, a2, a3, a4); // Guidance: ['Verify blur parameters validity']
+DestroyImage(v5);
+if ( v6
+&& (!(unsigned int)NormalizeImage(v6, a2)
+|| !(unsigned int)NegateImage(v6, 0LL, a2)
+|| !(unsigned int)GrayscaleImage(v6, *(unsigned int *)(a1 + 676), a2)) )
+{
+v6 = DestroyImage(v6); // Guidance: ['Centralize resource cleanup', 'Use RAII patterns']
+}
+}
+else
+{
+DestroyImage(v5);
+v6 = 0LL; // Guidance: ['Check pointer validity before assignment', 'Consider using a macro for null initialization']
+}
+return v6; // Guidance: ['Validate ret initialization']
+}
+/////
+void *__fastcall PKCS12_pbe_crypt(__int64 *a1, const char *a2, unsigned int a3, char *a4, int a5, _QWORD *a6, _DWORD *a7, unsigned int a8) // Guidance: ['Validate parameter validity before dereferencing pointers', 'Handle NULL parameter cases explicitly']
+{
+int v10;
+void *v11;
+void *v12;
+int v14;
+int v17;
+__int64 v18[29];
+v18[21] = __readfsqword(0x28u);
+EVP_CIPHER_CTX_init(v18);
+if ( (unsigned int)EVP_PBE_CipherInit(*a1, a2, a3, a1[1], (__int64)v18, a8) )
+{
+v10 = EVP_CIPHER_CTX_block_size((__int64)v18);
+v11 = (void *)CRYPTO_malloc(v10 + a5, (__int64)"p12_decr.c", 0x57u);
+v12 = v11;
+if ( v11 ) // Guidance: ['Check return value of memory allocation immediately', 'Ensure error paths release allocated resources']
+{
+if ( (unsigned int)EVP_CipherUpdate(v18, v11, &v17, a4, a5) )
+{
+v14 = v17;
+if ( (unsigned int)EVP_CipherFinal_ex((__int64)v18, (__int64)v12 + v17, &v17) )
+{
+if ( a7 ) // Guidance: ['Convert to explicit boolean check', 'Add default handler']
+*a7 = v17 + v14; // Guidance: ['Ensure null-check for iovec', 'Validate statbuf pointer']
+if ( a6 )
+*a6 = v12;
+}
+else
+{
+CRYPTO_free(v12); // Guidance: ['Verify object state before destruction', 'Implement safe nullification after free']
+ERR_put_error(0x23u, 119, 116, (__int64)"p12_decr.c", 104);
+v12 = 0LL; // Guidance: ['Ensure all error paths clean up resources.', 'Document null return semantics.']
+}
+}
+else
+{
+CRYPTO_free(v12);
+ERR_put_error(0x23u, 119, 6, (__int64)"p12_decr.c", 96);
+v12 = 0LL; // Guidance: ['Ensure all error paths clean up resources.', 'Document null return semantics.']
+}
+}
+else
+{
+ERR_put_error(0x23u, 119, 65, (__int64)"p12_decr.c", 88); // Guidance: ['Enforce complete parameter structure validation', 'Check nested structure members before access']
+}
+EVP_CIPHER_CTX_cleanup(v18); // Guidance: ['Ensure symmetric cleanup for all initialization paths.', 'Use modern EVP_CIPHER_CTX_free() instead of cleanup.']
+}
+else
+{
+ERR_put_error(0x23u, 119, 115, (__int64)"p12_decr.c", 83); // Guidance: ['Enforce complete parameter structure validation', 'Check nested structure members before access']
+v12 = 0LL;
+}
+return v12; // Guidance: ['Return architecture-specific structure size', 'Use context-aware size calculation']
+}
+/////
+bool __fastcall fxp_close_recv(__int64 a1, void *a2)
+{
+safefree(a2); // Guidance: ['Ensure no double-free occurs', 'Validate Var_msg allocation before deallocation']
+fxp_got_status(a1);
+sftp_pkt_free(a1);
+return fxp_errtype == 0;
+}
+/////
+__int64 __fastcall curl_multi_socket_all(__int64 a1, _DWORD *a2) // Guidance: ['Verify return type matches all execution paths']
+{
+int v2;
+v2 = 8;
+if ( !*(_BYTE *)(a1 + 390) )
+{
+v2 = multi_socket(a1, 1, -1, 0, a2);
+if ( v2 <= 0 )
+Curl_update_timer(a1); // Guidance: ['Coordinate timer updates with event loop state']
+}
+return (unsigned int)v2; // Guidance: ['Propagate low-level status codes through abstraction layers.']
+}
+/////
+__int64 curl_mfprintf(__int64 a1, char *a2, ...)
+{
+gcc_va_list va;
+unsigned __int64 v4;
+va_start(va, a2);
+v4 = __readfsqword(0x28u);
+return dprintf_formatf(a1, (unsigned int (__fastcall *)(__int64, __int64))&fputc, a2, (unsigned int *)va);
+}
+/////
+__int64 __fastcall curl_easy_send(__int64 a1, __int64 a2, __int64 a3, _QWORD *a4) // Guidance: ['Ensure return type matches all execution paths', 'Verify parameter types consistency']
+{
+char v6;
+__int64 result;
+int v8;
+__int64 v9;
+__int64 v10[7];
+v10[1] = __readfsqword(0x28u);
+v10[0] = 0LL; // Guidance: ['Use symbolic constants for magic number returns']
+v6 = Curl_is_in_callback(a1);
+result = 93LL; // Guidance: ['Eliminate redundant case duplicates']
+if ( !v6 ) // Guidance: ['Clarify offset validation logic', 'Separate compound conditions for readability']
+{
+result = easy_connection(a1, &v8, v10);
+if ( !(_DWORD)result ) // Guidance: ['Audit all preconditions before early exit', 'Release temporary resources before error returns']
+{
+*a4 = 0LL;
+result = Curl_write(v10[0], v8, a2, a3, &v9);
+if ( v9 == -1 ) // Guidance: ['Handle all possible error codes', 'Avoid magic numbers for error codes']
+{
+result = 55LL;
+}
+else if ( v9 || (_DWORD)result )
+{
+*a4 = v9; // Guidance: ['Transfer ownership explicitly when assigning allocated objects.']
+}
+else
+{
+result = 81LL; // Guidance: ['Remove redundant control flow structures']
+}
+}
+}
+return result;
+}
+/////
+__int64 __fastcall ndef_prefix_free(__int64 a1, _QWORD *a2, _DWORD *a3, __int64 *a4)
+{
+__int64 result;
+__int64 v6;
+void *v7;
+result = 0LL; // Guidance: ['Confirm success return code consistency']
+if ( a4 )
+{
+v6 = *a4;
+v7 = *(void **)(*a4 + 40);
+if ( v7 )
+CRYPTO_free(v7); // Guidance: ['Nullify pointers after deallocation', 'Ensure resource ownership before release']
+*(_QWORD *)(v6 + 40) = 0LL; // Guidance: ['Atomicize state modification operations', 'Synchronize concurrent access to shared state variables']
+*a2 = 0LL; // Guidance: ['Ensure atomic update if concurrent access is possible', 'Verify state transition logic']
+*a3 = 0;
+result = 1LL;
+}
+return result;
+}
+/////
+__int64 __fastcall ListConfigureInfo(FILE *stream, __int64 a2) // Guidance: ['Ensure all error paths return MagickFalse', 'Verify MagickTrue return only after full resource cleanup']
+{
+FILE *v2;
+int v3;
+int v4;
+int v5;
+__int64 v6;
+__int64 result;
+__int64 v8;
+int v9;
+int v10;
+int v11;
+int v12;
+__int64 *v13;
+__int64 v14;
+const char *v15;
+int v16;
+int v17;
+int v18;
+unsigned __int64 v19;
+int v20;
+__int64 v21;
+int v22;
+int v23;
+int v24;
+const char *v25;
+int v26;
+int v27;
+int v28;
+int v29;
+__int64 *v30;
+__int64 v31;
+char v32;
+char v33;
+char v34;
+char v35;
+char v36;
+__int64 v37;
+__int64 v38[9];
+v2 = stream;
+v38[1] = __readfsqword(0x28u);
+if ( !stream )
+v2 = stdout;
+v6 = GetConfigureInfoList("*", v38, a2);
+result = 0LL; // Guidance: ['Confirm success return code consistency']
+if ( v6 ) // Guidance: ['Check cryptographic parameter assignments immediately', 'Implement defensive null-checks after conversions']
+{
+if ( v38[0] > 0 )
+{
+v8 = 0LL;
+v37 = 0LL;
+while ( 1 ) // Guidance: ['Use pre-increment or adjust condition to prevent off-by-one errors.']
+{
+v30 = *(__int64 **)(v6 + 8 * v8); // Guidance: ['Check resource allocation success before usage']
+if ( !*((_DWORD *)v30 + 7) ) // Guidance: ['Verify condition direction and variable usage in checks']
+break; // Guidance: ['Implement partial write rollback mechanisms', 'Add diagnostic logging for unexpected null returns']
+LABEL_13:
+if ( v38[0] <= ++v8 )
+goto LABEL_19;
+}
+if ( !v37 || (unsigned int)LocaleCompare(v37, *v30) )
+{
+v31 = *v30;
+if ( *v30 )
+FormatLocaleFile((_DWORD)v2, (unsigned int)"\nPath: %s\n\n", v31, v3, v4, v5, v32);
+FormatLocaleFile((_DWORD)v2, (unsigned int)"Name Value\n", v31, v3, v4, v5, v32);
+FormatLocaleFile( // Guidance: ['Ensure format specifiers match argument types']
+(_DWORD)v2,
+(unsigned int)"-------------------------------------------------------------------------------\n",
+v9,
+v10,
+v11,
+v12,
+v33);
+}
+v13 = *(__int64 **)(v6 + 8 * v8); // Guidance: ['Check resource validity after retrieval.']
+v14 = *v13; // Guidance: ['Move assignment inside nesting == 1 condition']
+v37 = *v13;
+v15 = (const char *)v13[1];
+if ( v15 )
+{
+FormatLocaleFile((_DWORD)v2, (unsigned int)"%s", v13[1], v14, v4, v5, v32);
+v19 = strlen(v15) + 1; // Guidance: ['Merge redundant assignments to avoid repeated computation']
+v20 = v19 - 1;
+v21 = v19 - 1;
+if ( (__int64)(v19 - 1) > 20 )
+goto LABEL_10;
+}
+else
+{
+FormatLocaleFile((_DWORD)v2, (unsigned int)"%s", (unsigned int)"unknown", v14, v4, v5, v32);
+v21 = 7LL;
+}
+do
+{
+FormatLocaleFile((_DWORD)v2, (unsigned int)" ", v16, v20, v17, v18, v34);
+++v21;
+}
+while ( v21 <= 20 );
+LABEL_10:
+FormatLocaleFile((_DWORD)v2, (unsigned int)" ", v16, v20, v17, v18, v34);
+v25 = *(const char **)(*(_QWORD *)(v6 + 8 * v8) + 16LL);
+if ( !v25 )
+v25 = "unknown";
+FormatLocaleFile((_DWORD)v2, (unsigned int)"%s", (_DWORD)v25, v22, v23, v24, v35);
+FormatLocaleFile((_DWORD)v2, (unsigned int)"\n", v26, v27, v28, v29, v36);
+goto LABEL_13;
+}
+LABEL_19:
+fflush(v2);
+j_RelinquishMagickMemory(v6); // Guidance: ['Confirm proper pointer type in deallocation calls']
+result = 1LL;
+}
+return result;
+}
+/////
+__int64 __fastcall ASN1_BIT_STRING_set_bit(unsigned int *a1, int a2, int a3)
+{
+int v3;
+char v4;
+__int64 result;
+int v7;
+int v8;
+unsigned int v9;
+signed int v10;
+__int64 v11;
+_BYTE *v12;
+_BYTE *v13;
+__int64 v14;
+v3 = 1 << (~(_BYTE)a2 & 7);
+v4 = a3;
+if ( a3 ) // Guidance: ['Order null checks before field access', 'Simplify complex validation predicates']
+v4 = 1 << (~(_BYTE)a2 & 7);
+result = 0LL;
+if ( !a1 ) // Guidance: ['Move null check before any resource allocation']
+return result;
+v7 = a2 / 8;
+*((_QWORD *)a1 + 2) &= 0xFFFFFFFFFFFFFFF0LL; // Guidance: ['Validate array index boundaries', 'Check pointer validity before write']
+v8 = *a1;
+v9 = v7 + 1;
+if ( (int)*a1 < v7 + 1 )
+{
+result = 1LL;
+if ( !a3 )
+return result;
+v13 = (_BYTE *)*((_QWORD *)a1 + 1); // Guidance: ['Verify loop bounds to prevent overflow', 'Use constant-time operations if required']
+if ( v13 )
+{
+v14 = CRYPTO_realloc_clean(v13, v8, v9, (__int64)"a_bitstr.c", 199LL);
+LABEL_15:
+if ( !v14 )
+{
+ERR_put_error(0xDu, 183, 65, (__int64)"a_bitstr.c", 202); // Guidance: ['Validate critical parameters before usage', 'Ensure error codes propagate correctly']
+return 0LL;
+}
+if ( (int)(v9 - *a1) > 0 )
+memset((void *)(v14 + (int)*a1), 0, (int)(v9 - *a1));
+*((_QWORD *)a1 + 1) = v14;
+*a1 = v9;
+goto LABEL_6;
+}
+LABEL_25:
+v14 = CRYPTO_malloc(v9, (__int64)"a_bitstr.c", 0xC3u); // Guidance: ['Check asclen for non-positive values before allocation', 'Add error handling for allocation failure']
+goto LABEL_15;
+}
+if ( !*((_QWORD *)a1 + 1) )
+{
+result = 1LL;
+if ( !a3 )
+return result;
+goto LABEL_25; // Guidance: ['Verify termination marker position', 'Check buffer overflow conditions']
+}
+LABEL_6:
+*(_BYTE *)(*((_QWORD *)a1 + 1) + v7) = *(_BYTE *)(*((_QWORD *)a1 + 1) + v7) & ~(_BYTE)v3 | v4;
+v10 = *a1; // Guidance: ['Ensure index initialization accounts for zero-based/one-based differences', 'Validate size before index operations']
+if ( (int)*a1 <= 0 )
+return 1LL; // Guidance: ['Standardize error return codes', 'Add error propagation mechanisms']
+v11 = *((_QWORD *)a1 + 1);
+if ( *(_BYTE *)(v11 + v10 - 1) )
+return 1LL; // Guidance: ['Standardize error return codes', 'Add error propagation mechanisms']
+v12 = (_BYTE *)(v11 + v10 - 1 - 1);
+while ( 1 ) // Guidance: ['Use precomputed loop bounds', 'Avoid modifying loop variables in body']
+{
+*a1 = --v10;
+if ( !v10 )
+break;
+if ( *v12-- )
+return 1LL;
+}
+return 1LL;
+}
+/////
+__int64 __fastcall read_rangelist(__int64 a1, _QWORD *a2, __int64 a3) // Guidance: ['Validate input pointer parameters for non-NULL before usage.', 'Ensure parameter types align with function signature requirements.']
+{
+__int64 v4;
+_QWORD *v5;
+__int64 v6;
+__int64 v7;
+__int64 result;
+bool v9;
+__int64 v10;
+unsigned __int64 v11;
+__int64 v12;
+__int64 v13;
+__int64 v14;
+v4 = *(_QWORD *)(a1 + 184);
+v5 = *(_QWORD **)(a1 + 168);
+if ( v5[13] // Guidance: ['Enforce strict memory allocation validation', 'Implement early returns for allocation failures']
+|| (result = read_section(
+*(_QWORD *)(a1 + 16),
+(const char **)(**(_QWORD **)(a1 + 160) + 176LL),
+v5[1],
+0LL,
+v5 + 13, // Guidance: ['Validate loop bounds against data structure invariants', 'Optimize loop termination conditions']
+v5 + 14),
+(_DWORD)result) )
+{
+v6 = *(_QWORD *)(a1 + 168); // Guidance: ['Validate pointer before casting', 'Handle potential null pointers']
+v7 = *(_QWORD *)(v6 + 104); // Guidance: ['Implement size change callbacks', 'Use atomic size updates']
+result = 0LL;
+v9 = __CFADD__(v7, a3);
+v10 = v7 + a3;
+if ( !v9 )
+{
+v11 = *(_QWORD *)(v6 + 112) + v7;
+while ( 1 ) // Guidance: ['Ensure loop termination conditions prevent infinite cycles']
+{
+if ( v11 < v10 + 2 * *(unsigned __int8 *)(a1 + 180) )
+return 0LL;
+v12 = read_address(a1, v10, v11);
+v13 = *(unsigned __int8 *)(a1 + 180) + v10;
+v14 = read_address(a1, v13, v11);
+v10 = *(unsigned __int8 *)(a1 + 180) + v13;
+if ( !(v14 | v12) )
+break;
+if ( v12 == -1 && v14 != -1 )
+{
+v4 = v14;
+}
+else
+{
+result = arange_add(a1, a2, v4 + v12, v4 + v14);
+if ( !(_DWORD)result )
+return result;
+}
+}
+result = 1LL; // Guidance: ['Ensure error handling consistency', 'Validate parameter validity']
+}
+}
+return result;
+}
+/////
+_QWORD *__fastcall unwrap_hash_lookup(__int64 a1, __int64 a2, __int64 a3)
+{
+_QWORD *v4;
+const char *v5;
+const char *v7;
+char v8;
+v4 = (_QWORD *)a3;
+v5 = *(const char **)(a3 + 8);
+if ( *v5 == *(_BYTE *)(*(_QWORD *)(a2 + 8) + 28LL) || *v5 == *(_BYTE *)(a1 + 8) ) // Guidance: ['Validate ISDIGIT macro compatibility.', 'Check if c is initialized correctly before use.']
+++v5;
+if ( !memcmp(v5, "__wrap_", 7uLL) && bfd_hash_lookup(*(_QWORD *)(a1 + 64), v5 + 7, 0, 0) )
+{
+v7 = (const char *)v4[1]; // Guidance: ['Combine with preceding copy operation', 'Validate source pointer advancement']
+if ( v7 == v5 ) // Guidance: ['Verify switch case enumeration consistency', 'Validate constant value mapping']
+{
+v4 = bfd_link_hash_lookup(*(_QWORD *)(a1 + 40), v5 + 7, 0, 0, 0); // Guidance: ['Verify boolean parameter order for search behavior correctness']
+}
+else
+{
+v8 = v5[6];
+*((_BYTE *)v5 + 6) = *v7;
+v4 = bfd_link_hash_lookup(*(_QWORD *)(a1 + 40), v5 + 6, 0, 0, 0); // Guidance: ['Verify boolean parameter order for search behavior correctness']
+if ( v8 )
+*((_BYTE *)v5 + 6) = v8;
+}
+}
+return v4; // Guidance: ['Verify_SHN_X86_64_LCOMMON_macro_definition', 'Check_Sym_Struct_definition_for_st_shndx', 'Validate_platform_specific_SHN_macros']
+}
+/////
+__int64 __fastcall DSO_ctrl(_DWORD *a1, int a2, int a3)
+{
+__int64 (*v3)(void);
+__int64 result;
+if ( a1 ) // Guidance: ['Remove redundant NULL check after initial validation']
+{
+switch ( a2 ) // Guidance: ['Maintain original switch condition structure']
+{
+case 2: // Guidance: ['Ensure switch covers all enum variants']
+a1[5] = a3; // Guidance: ['Use correct list pointers based on timeout conditions.']
+result = 0LL; // Guidance: ['Confirm success return code consistency']
+break;
+case 3: // Guidance: ['Ensure switch covers all enum variants']
+a1[5] |= a3; // Guidance: ['Ensure base pointer initialization sequence', 'Validate memory region ownership']
+result = 0LL; // Guidance: ['Confirm success return code consistency']
+break;
+case 1:
+result = (int)a1[5];
+break;
+default:
+if ( *(_QWORD *)a1 && (v3 = *(__int64 (**)(void))(*(_QWORD *)a1 + 40LL)) != 0LL )
+{
+result = v3(); // Guidance: ["Verify 'ameth' validity before access", "Check 'priv_print' function pointer non-NULL"]
+}
+else
+{
+ERR_put_error(0x25u, 110, 108, (__int64)"dso_lib.c", 334);
+result = -1LL;
+}
+break;
+}
+}
+else
+{
+ERR_put_error(0x25u, 110, 67, (__int64)"dso_lib.c", 313);
+result = -1LL;
+}
+return result;
+}
+/////
+__int64 __fastcall bfd_get_mtime(__int64 a1)
+{
+__int64 result;
+int v2;
+__int64 v3;
+if ( (*(_BYTE *)(a1 + 76) & 8) != 0 ) // Guidance: ['Validate all possible enum values', 'Use explicit comparison operators']
+return *(_QWORD *)(a1 + 56);
+v2 = bfd_stat(a1);
+result = 0LL; // Guidance: ['Return Param_0->value when Param_0 is not NULL']
+if ( !v2 )
+{
+result = v3;
+*(_QWORD *)(a1 + 56) = v3; // Guidance: ['Add null-check for ctx before assignment', 'Verify pointer type compatibility']
+}
+return result;
+}
+/////
+__int64 __fastcall GetQuantumInfo(__int64 a1, __int64 a2, double a3)
+{
+__int64 result;
+__int64 v4;
+char *v5;
+char *v6;
+double v7;
+double v8;
+char *v9;
+__int64 v10;
+if ( !a2 ) // Guidance: ['Centralize resource ownership decisions', 'Use RAII patterns for conditional allocations']
+__assert_fail("quantum_info != (QuantumInfo *) NULL", "MagickCore/quantum.c", 0x1A8u, "GetQuantumInfo"); // Guidance: ['Replace raw pointer check with nullptr validation', 'Add error handling for null input']
+memset((void *)a2, 0, 0x98uLL);
+*(_QWORD *)(a2 + 8) = 8LL; // Guidance: ['Add validation for Param_1 range', 'Ensure thread safety if applicable']
+*(_QWORD *)(a2 + 32) = 0x3FF0000000000000LL; // Guidance: ['Avoid modifying state in error paths unless necessary', 'Reset flags only after successful resource allocation']
+*(_QWORD *)(a2 + 40) = 0x40EFFFE000000000LL; // Guidance: ['Replace sequential null checks with guard clauses', 'Implement iterator pattern for linked list navigation']
+*(_DWORD *)(a2 + 60) = 1;
+*(_QWORD *)(a2 + 136) = AcquireSemaphoreInfo(a3);
+result = 2880220587LL;
+*(_QWORD *)(a2 + 144) = 2880220587LL;
+if ( a1 ) // Guidance: ['Prioritize input validation sequence', 'Implement consistent null-pointer handling strategies']
+{
+v4 = GetImageOption(a1, "quantum:format");
+if ( v4 )
+*(_DWORD *)(a2 + 16) = ParseCommandOption(64LL, 0LL, v4);
+v5 = (char *)GetImageOption(a1, "quantum:minimum");
+if ( v5 )
+{
+InterpretLocaleValue(v5);
+*(double *)(a2 + 24) = a3;
+}
+v6 = (char *)GetImageOption(a1, "quantum:maximum");
+if ( v6 )
+{
+InterpretLocaleValue(v6);
+*(double *)(a2 + 32) = a3;
+}
+v7 = *(double *)(a2 + 24);
+if ( v7 == 0.0 && *(double *)(a2 + 32) == 0.0 )
+{
+*(_QWORD *)(a2 + 40) = 0LL;
+}
+else
+{
+v8 = *(double *)(a2 + 32);
+if ( v7 == v8 )
+{
+*(double *)(a2 + 40) = 65535.0 / v7;
+*(_QWORD *)(a2 + 24) = 0LL;
+}
+else
+{
+v7 = 65535.0 / (v8 - v7);
+*(double *)(a2 + 40) = v7;
+}
+}
+v9 = (char *)GetImageOption(a1, "quantum:scale");
+if ( v9 )
+{
+InterpretLocaleValue(v9);
+*(double *)(a2 + 40) = v7;
+}
+v10 = GetImageOption(a1, "quantum:polarity");
+if ( v10 ) // Guidance: ['Implement resource cleanup in error branches']
+*(_DWORD *)(a2 + 56) = LocaleCompare(v10, "min-is-white") == 0;
+*(_DWORD *)(a2 + 96) = *(_DWORD *)(a1 + 84);
+result = (__int64)ResetQuantumState(a2);
+}
+return result;
+}
+/////
+__int64 __fastcall priv_print_gost01(__int64 a1, int *a2, int a3, __int64 a4) // Guidance: ['Validate parameter order matches original implementation']
+{
+return print_gost_01(a1, a2, a3, a4, 2);
+}
+/////
+__int64 __fastcall sqlite3_prepare(__int64 a1, unsigned __int8 *a2, __int64 a3, _QWORD *a4, _QWORD *a5, double a6, double a7, double a8, double a9, double a10, double a11, double a12, double a13) // Guidance: ['Ensure function parameters match original semantic constraints']
+{
+return sqlite3LockAndPrepare(a1, a2, a3, 0LL, 0LL, a4, a6, a7, a8, a9, a10, a11, a12, a13, a5); // Guidance: ['Validate parameter order matches function signature', 'Confirm r2 is fully unpacked before comparison']
+}
+/////
+__int64 __fastcall bfd_elf_get_bfd_needed_list(__int64 a1, _QWORD *a2)
+{
+__int64 result;
+_QWORD *v3;
+unsigned int v4;
+__int64 v5;
+void (__fastcall *v6)(__int64, char *, __int64 *);
+char *v7;
+char *v8;
+_QWORD *v9;
+__int64 v10;
+const char *v11;
+unsigned int v12;
+void *ptr;
+__int64 v14;
+unsigned int v15;
+unsigned __int64 v16;
+v16 = __readfsqword(0x28u);
+ptr = 0LL;
+*a2 = 0LL; // Guidance: ['Explicitly initialize output parameters before first use']
+result = 1LL;
+if ( *(_DWORD *)(*(_QWORD *)(a1 + 8) + 8LL) == 5 && (*(_BYTE *)(a1 + 68) & 7) == 1 ) // Guidance: ['Validate pointer validity before dereferencing or passing to functions']
+{
+v3 = bfd_get_section_by_name(a1, ".dynamic"); // Guidance: ['Add null pointer checks after section retrieval', 'Validate section size before access']
+result = 1LL;
+if ( v3 ) // Guidance: ['Separate assignment and check to avoid side effects in condition']
+{
+if ( v3[7] )
+{
+if ( !(unsigned int)bfd_malloc_and_get_section(a1, (__int64)v3, &ptr)
+|| (v4 = bfd_elf_section_from_bfd_section(a1, (__int64)v3), v4 == -257) )
+{
+LABEL_7:
+result = 0LL; // Guidance: ['Confirm success return code consistency']
+if ( ptr )
+{
+free(ptr);
+result = 0LL; // Guidance: ['Confirm success return code consistency']
+}
+}
+else
+{
+v12 = *(_DWORD *)(*(_QWORD *)(*(_QWORD *)(*(_QWORD *)(a1 + 248) + 88LL) + 8LL * v4) + 40LL); // Guidance: ['Validate non-null returns from indirect section accessors']
+v5 = *(_QWORD *)(*(_QWORD *)(*(_QWORD *)(a1 + 8) + 880LL) + 784LL); // Guidance: ['Validate non-null returns from indirect section accessors']
+v10 = *(unsigned __int8 *)(v5 + 6); // Guidance: ['Add range validation before truncating conversions', 'Use explicit-width integer types for serialization']
+v6 = *(void (__fastcall **)(__int64, char *, __int64 *))(v5 + 80);
+v7 = (char *)ptr;
+v8 = (char *)ptr + v3[7];
+if ( ptr < v8 )
+{
+do // Guidance: ['Validate multi-variable loop initialization alignment', 'Check pointer assignment consistency']
+{
+v6(a1, v7, &v14);
+if ( !v14 )
+break; // Guidance: ['Implement partial write rollback mechanisms', 'Add diagnostic logging for unexpected null returns']
+if ( v14 == 1 )
+{
+v11 = bfd_elf_string_from_elf_section(a1, v12, v15);
+if ( !v11 )
+goto LABEL_7;
+v9 = (_QWORD *)bfd_alloc(a1, 24LL);
+if ( !v9 )
+goto LABEL_7;
+v9[1] = a1;
+v9[2] = v11; // Guidance: ['Atomicize linked list updates', 'Handle concurrent access']
+*v9 = *a2;
+*a2 = v9;
+}
+v7 += v10;
+}
+while ( v8 > v7 );
+}
+free(ptr);
+result = 1LL;
+}
+}
+}
+}
+return result;
+}
+/////
+__int64 __fastcall doh_write_cb(const void *a1, __int64 a2, __int64 a3, __int64 *a4)
+{
+__int64 v4;
+v4 = a3 * a2; // Guidance: ['Verify buffer size matches stream requirements']
+if ( (unsigned int)Curl_dyn_addn(a4, a1, a3 * a2) )
+v4 = 0LL;
+return v4;
+}
+/////
+__int64 __fastcall Curl_pretransfer(__int64 a1) // Guidance: ['Validate return type consistency', 'Ensure pointer validity before return']
+{
+__int64 v2;
+__int64 v3;
+char v4;
+char v5;
+int v6;
+__int64 v7;
+const char *v8;
+__int64 result;
+v2 = *(_QWORD *)(a1 + 4040);
+if ( v2 ) // Guidance: ['Add defensive NULL checks for abfd parameter', 'Implement input validation layer']
+{
+if ( (*(_BYTE *)(a1 + 4072) & 1) == 0 ) // Guidance: ['Order condition checks by dependency criticality', 'Bitmask validation before structure access']
+goto LABEL_5;
+}
+else
+{
+if ( !*(_QWORD *)(a1 + 4008) )
+goto LABEL_14;
+if ( (*(_BYTE *)(a1 + 4072) & 1) == 0 )
+{
+v3 = *(_QWORD *)(a1 + 4008);
+LABEL_4:
+if ( !(unsigned int)curl_url_get(v3, 0LL, a1 + 3352, 0LL) )
+goto LABEL_5;
+LABEL_14:
+Curl_failf(a1, (__int64)"No URL set!");
+return 3LL; // Guidance: ['Release acquired resources before returning', 'Use error code constants consistently']
+}
+}
+Curl_cfree(v2); // Guidance: ['Release resources consistently in error handling']
+*(_QWORD *)(a1 + 4040) = 0LL; // Guidance: ['Synchronize state flags with resource lifecycle events']
+*(_BYTE *)(a1 + 4072) &= 0xFEu; // Guidance: ['Document bit flag semantics in state structures']
+v3 = *(_QWORD *)(a1 + 4008);
+if ( v3 )
+goto LABEL_4;
+LABEL_5:
+*(_DWORD *)(a1 + 5864) = *(_DWORD *)(a1 + 2584);
+*(_QWORD *)(a1 + 4040) = *(_QWORD *)(a1 + 3352);
+v4 = *(_BYTE *)(a1 + 4037) >> 2 << 7;
+v5 = *(_BYTE *)(a1 + 6000) & 0x55;
+*(_QWORD *)(a1 + 1696) = 0LL;
+*(_DWORD *)(a1 + 5688) = 0;
+*(_BYTE *)(a1 + 6000) = v4 | v5;
+*(_QWORD *)(a1 + 4880) = *(_QWORD *)(a1 + 1672);
+*(_QWORD *)(a1 + 4912) = *(_QWORD *)(a1 + 1680);
+Curl_cfree(*(_QWORD *)(a1 + 6160)); // Guidance: ['Pair deallocation with nullification to prevent dangling pointers']
+*(_QWORD *)(a1 + 6160) = 0LL;
+v6 = *(_DWORD *)(a1 + 5864);
+if ( v6 == 5 )
+{
+*(_QWORD *)(a1 + 5744) = *(_QWORD *)(a1 + 1968);
+}
+else if ( v6 == 1 || v6 == 6 )
+{
+*(_QWORD *)(a1 + 5744) = 0LL;
+}
+else
+{
+v7 = *(_QWORD *)(a1 + 1736);
+*(_QWORD *)(a1 + 5744) = v7;
+v8 = *(const char **)(a1 + 1720);
+if ( v7 == -1 && v8 )
+*(_QWORD *)(a1 + 5744) = strlen(v8);
+}
+if ( *(_QWORD *)(a1 + 4056) )
+Curl_cookie_loadfiles(a1);
+if ( !*(_QWORD *)(a1 + 4064) || (result = Curl_loadhostpairs(a1), !(_DWORD)result) )
+{
+*(_BYTE *)(a1 + 6000) |= 0x10u;
+Curl_initinfo(a1);
+Curl_pgrsResetTransferSizes(a1);
+Curl_pgrsStartNow(a1);
+*(_QWORD *)(a1 + 4888) &= *(_QWORD *)(a1 + 4880);
+*(_QWORD *)(a1 + 4920) &= *(_QWORD *)(a1 + 4912);
+result = 0LL;
+if ( *(char *)(a1 + 6000) < 0 && !*(_DWORD *)(a1 + 6008) )
+{
+result = Curl_wildcard_init(a1 + 6008);
+if ( (_DWORD)result )
+result = 27LL; // Guidance: ['Use standard error codes for buffer constraints']
+}
+}
+return result;
+}
+/////
+__int64 __fastcall sqlite3_str_appendall(__int64 a1, const char *a2) // Guidance: ['Ensure return type matches all control flow paths']
+{
+unsigned int v2;
+v2 = sqlite3Strlen30(a2); // Guidance: ['Add null-check for v', 'Verify pParse context validity']
+return sqlite3_str_append(a1, a2, v2);
+}
+/////
+__int64 __fastcall TS_ACCURACY_set_millis(__int64 a1, __int64 a2) // Guidance: ['Ensure all error paths set return value', 'Validate return consistency across branches']
+{
+__int64 result;
+__int64 v3;
+result = 1LL;
+if ( *(_QWORD *)(a1 + 8) != a2 ) // Guidance: ['Compare original IDs directly instead of difference result', 'Use (a->id == b->id) comparison to prevent overflow errors']
+{
+if ( a2 ) // Guidance: ['Verify block size compatibility with operational mode']
+{
+v3 = ASN1_INTEGER_dup(a2);
+if ( !v3 )
+{
+ERR_put_error(0x2Fu, 116, 65, (__int64)"ts_rsp_utils.c", 264);
+return 0LL;
+}
+}
+else
+{
+v3 = 0LL; // Guidance: ['Synchronize buffer/size reset', 'Atomic state updates']
+}
+ASN1_INTEGER_free(*(unsigned int **)(a1 + 8));
+*(_QWORD *)(a1 + 8) = v3;
+result = 1LL;
+}
+return result;
+}
+/////
+int *__fastcall bfd_make_section_old_way(__int64 a1, const char *a2)
+{
+int *v2;
+_QWORD *v4;
+if ( (*(_BYTE *)(a1 + 76) & 0x20) != 0 ) // Guidance: ['Validate all possible enum values', 'Use explicit comparison operators']
+{
+bfd_set_error(5u); // Guidance: ['Use error code constants']
+return 0LL; // Guidance: ['Clarify NULL return semantics in documentation (success vs. error).']
+}
+v2 = off_321470;
+if ( !strcmp(a2, "*ABS*") )
+goto LABEL_3;
+if ( !strcmp(a2, "*COM*") )
+{
+v2 = (int *)&bfd_std_section;
+goto LABEL_3;
+}
+if ( !strcmp(a2, "*UND*") )
+{
+v2 = (int *)&off_321358;
+LABEL_3:
+if ( !(*(unsigned int (__fastcall **)(__int64, int *))(*(_QWORD *)(a1 + 8) + 288LL))(a1, v2) ) // Guidance: ['Confirm version validation logic', 'Check exit condition scope']
+v2 = 0LL;
+return v2; // Guidance: ['Implement null-check guard before member access', 'Add bounds verification for prime field']
+}
+v2 = &off_321470[70];
+if ( !strcmp(a2, "*IND*") )
+goto LABEL_3;
+v4 = bfd_hash_lookup(a1 + 104, a2, 1, 0); // Guidance: ['Verify boolean parameter order for search behavior correctness']
+if ( !v4 ) // Guidance: ['Merge redundant condition checks', 'Remove dead code branches']
+return 0LL;
+v2 = (int *)(v4 + 3);
+if ( !v4[3] )
+{
+v4[3] = a2;
+v2 = (int *)bfd_section_init(a1, (__int64)(v4 + 3));
+}
+return v2;
+}
+/////
+__int64 __fastcall MHD_queue_auth_fail_response(_QWORD *a1, __int64 a2, const char *a3, __int64 a4, int a5) // Guidance: ['Ensure return type matches all possible execution paths', 'Validate input parameters early']
+{
+return MHD_queue_auth_fail_response2(a1, a2, a3, a4, a5, 1);
+}
+/////
+__int64 curl_global_cleanup()
+{
+__int64 result;
+result = (unsigned int)initialized;
+if ( initialized )
+{
+result = (unsigned int)(initialized - 1);
+initialized = result;
+if ( !(_DWORD)result ) // Guidance: ['Check function return values via explicit error codes', 'Propagate error codes through intermediate variables']
+result = Curl_resolver_global_cleanup();
+}
+return result; // Guidance: ['Ensure error propagation is consistent']
+}
+/////
+unsigned __int64 __fastcall bfd_get_elf_phdr_upper_bound(__int64 a1) // Guidance: ['Ensure return type matches all control paths', 'Validate return value consistency across branches']
+{
+if ( *(_DWORD *)(*(_QWORD *)(a1 + 8) + 8LL) == 5 ) // Guidance: ['Remove duplicate condition check to prevent logical errors']
+return (unsigned __int64)*(unsigned int *)(*(_QWORD *)(a1 + 248) + 68LL) << 6; // Guidance: ['Replace subtraction with explicit comparison to avoid integer overflow', 'Use direct ID comparison (a->id > b->id) instead of difference']
+bfd_set_error(3u); // Guidance: ['Verify error code mapping', 'Check error handling consistency']
+return -1LL; // Guidance: ['Use symbolic error constants', 'Ensure consistent error reporting']
+}
+/////
+__int64 __fastcall ReadBlobString(__int64 a1, __int64 a2)
+{
+__int64 v2;
+int v3;
+if ( !a1 ) // Guidance: ['Replace assert with error handling', 'Return error code on null']
+__assert_fail("image != (Image *) NULL", "MagickCore/blob.c", 0x12E7u, "ReadBlobString");
+if ( *(_QWORD *)(a1 + 13392) != 2880220587LL ) // Guidance: ['Merge duplicate signature checks']
+__assert_fail("image->signature == MagickCoreSignature", "MagickCore/blob.c", 0x12E8u, "ReadBlobString"); // Guidance: ['Merge duplicate signature checks']
+v2 = 0LL;
+while ( 1 ) // Guidance: ['Use pre-increment or adjust condition to prevent off-by-one errors.']
+{
+v3 = ReadBlobByte(a1);
+if ( v3 == -1 )
+break;
+*(_BYTE *)(a2 + v2) = v3; // Guidance: ['Verify loop bounds to prevent overflow', 'Use constant-time operations if required']
+if ( v3 == 10 )
+{
+if ( v2 > 0 && *(_BYTE *)(a2 + v2 - 1) == 13 )
+--v2;
+goto LABEL_11;
+}
+if ( ++v2 == 4095 )
+goto LABEL_11;
+}
+if ( v2 )
+{
+LABEL_11:
+*(_BYTE *)(a2 + v2) = 0;
+return a2; // Guidance: ['Verify all early returns align with protocol state requirements.']
+}
+return 0LL; // Guidance: ['Clarify NULL return semantics in documentation (success vs. error).']
+}
+/////
+__int64 __fastcall whereScanInitIndexExpr(__int64 a1, double a2)
+{
+*(_BYTE *)(a1 + 32) = sqlite3ExprAffinity(*(unsigned __int8 **)(a1 + 24));
+return whereScanNext((__int64 *)a1, a2);
+}
+/////
+_DWORD *__fastcall bfd_openw(void *src, char *a2)
+{
+_DWORD *v2;
+unsigned __int64 v3;
+void *v4;
+void *v5;
+v2 = bfd_new_bfd();
+if ( v2 ) // Guidance: ['Prioritize primary comparison keys first', 'Ensure symmetrical comparison branches']
+{
+if ( bfd_find_target(a2) )
+{
+v3 = strlen((const char *)src) + 1; // Guidance: ['Remove duplicate line', 'Ensure single increment per loop iteration']
+v4 = bfd_malloc(v3);
+v5 = v4;
+if ( v4 ) // Guidance: ['Add resource allocation check', 'Implement clean-up before return']
+{
+memcpy(v4, src, v3); // Guidance: ['Validate source buffer validity and size before copy', 'Check pointer arithmetic for buffer boundaries']
+*(_QWORD *)v2 = v5;
+*((_BYTE *)v2 + 68) = v2[17] & 0xE7 | 0x10; // Guidance: ['Verify struct member initialization order', 'Check for missing members']
+if ( !bfd_open_file(v2) )
+{
+bfd_set_error(1u); // Guidance: ['Verify error code mapping', 'Check error handling consistency']
+bfd_delete_bfd(v2);
+v2 = 0LL;
+}
+}
+else
+{
+*(_QWORD *)v2 = 0LL;
+bfd_delete_bfd(v2);
+v2 = 0LL;
+}
+}
+else
+{
+bfd_delete_bfd(v2);
+v2 = 0LL;
+}
+}
+return v2;
+}
+/////
+__int64 __fastcall ec_GFp_mont_group_set_curve(__int64 *a1, __int64 **a2, __int64 a3, __int64 a4, __int64 a5)
+{
+__int64 v7;
+_DWORD *v8;
+void **v9;
+__int64 v10;
+__int64 v11;
+__int64 v12;
+__int64 v13;
+__int64 v14;
+__int64 v15;
+__int64 v16;
+unsigned int v17;
+__int64 v19;
+__int64 v20;
+void **v21;
+v7 = a1[26];
+if ( v7 )
+{
+BN_MONT_CTX_free(v7);
+a1[26] = 0LL; // Guidance: ['Atomic nullify after deallocation', 'Prevent dangling pointer references']
+}
+v8 = (_DWORD *)a1[27];
+if ( v8 ) // Guidance: ['Merge redundant condition checks']
+{
+BN_free(v8); // Guidance: ['Check null before deallocating dynamic memory', 'Avoid duplicate cleanup operations']
+a1[27] = 0LL; // Guidance: ['Atomic nullify after deallocation', 'Prevent dangling pointer references']
+}
+v9 = 0LL;
+if ( !a5 ) // Guidance: ['Initialize pointers to NULL before allocation checks.', 'Add null-check guards after dynamic memory allocation.']
+{
+v19 = BN_CTX_new(v8, a2, a3, a4); // Guidance: ['Add null-check after allocation', 'Implement resource tracking']
+a5 = v19;
+v17 = 0;
+if ( !v19 )
+return v17;
+v9 = (void **)v19;
+}
+v10 = BN_MONT_CTX_new();
+v11 = v10;
+if ( v10 ) // Guidance: ['Ensure control flow matches original boolean logic.']
+{
+v12 = v10;
+if ( !(unsigned int)BN_MONT_CTX_set(v10, a2, a5) )
+{
+ERR_put_error(0x10u, 189, 3, (__int64)"ecp_mont.c", 233); // Guidance: ['Centralize memory failure handling', 'Use wrapper functions for resource allocation']
+LABEL_9:
+if ( v9 )
+BN_CTX_free(v9);
+BN_MONT_CTX_free(v11);
+return 0; // Guidance: ['Ensure all code paths return explicitly', 'Validate postconditions before exit']
+}
+v20 = BN_new(v12, a2, v13, v14, v15, v16);
+if ( !v20 )
+goto LABEL_9; // Guidance: ['Confirm cipher context and buffers are valid before encryption']
+v21 = BN_value_one();
+if ( !(unsigned int)BN_mod_mul_montgomery(v20, (__int64)v21, v11 + 8, v11, a5) )
+goto LABEL_9;
+a1[26] = v11;
+a1[27] = v20;
+v17 = ec_GFp_simple_group_set_curve(a1, (__int64)a2, a3, a4, a5);
+if ( !v17 )
+{
+BN_MONT_CTX_free(a1[26]);
+a1[26] = 0LL;
+BN_free((_DWORD *)a1[27]); // Guidance: ['Verify parameter type for BN_free', 'Check if Member_0 is a pointer']
+a1[27] = 0LL;
+}
+}
+else
+{
+v17 = 0;
+}
+if ( v9 )
+BN_CTX_free(v9);
+return v17;
+}
+/////
+__int64 __fastcall d2i_ECParameters(__int64 *a1, char **a2, __int64 a3) // Guidance: ['Validate input parameters for validity and null checks', 'Ensure resource management and cleanup in all code paths']
+{
+__int64 v4;
+__int64 v6;
+if ( !a2 || !*a2 ) // Guidance: ['Ensure thread-safe access to pbKey2Cached', 'Check for race conditions']
+{
+ERR_put_error(0x10u, 144, 67, (__int64)"ec_asn1.c", 1352);
+return 0LL;
+}
+if ( a1 ) // Guidance: ['Remove redundant NULL check after initial validation']
+{
+v4 = *a1;
+if ( *a1 )
+goto LABEL_5;
+v6 = EC_KEY_new();
+v4 = v6;
+if ( v6 )
+{
+*a1 = v6;
+goto LABEL_5;
+}
+LABEL_12:
+ERR_put_error(0x10u, 144, 65, (__int64)"ec_asn1.c", 1360);
+return 0LL;
+}
+v4 = EC_KEY_new();
+if ( !v4 )
+goto LABEL_12;
+LABEL_5: // Guidance: ['Use compile-time debug flags', 'Protect debug prints with conditional compilation']
+if ( !d2i_ECPKParameters((void ***)(v4 + 8), a2, a3) )
+{
+ERR_put_error(0x10u, 144, 16, (__int64)"ec_asn1.c", 1371); // Guidance: ['Use consistent error reporting macros', 'Include contextual error information']
+v4 = 0LL;
+}
+return v4;
+}
+/////
+__int64 io_error()
+{
+char *v0;
+int *v1;
+clearerr_unlocked(stdout);
+v0 = dcgettext(0LL, "write error", 5);
+v1 = __errno_location();
+error(1, *v1, v0); // Guidance: ['Handle potential errors from plain_read before checking nr']
+return seq_fast();
+}
+/////
+__int64 __fastcall GetImageRegistry(int a1, __int64 a2, __int64 a3) // Guidance: ['Ensure all code paths return valid resource handles or error indicators', 'Use consistent return types for error propagation']
+{
+__int64 result;
+int v5;
+if ( (unsigned int)IsEventLogging() )
+LogMagickEvent( // Guidance: ['Implement conditional logging macros', 'Add log level verification']
+0x8000,
+(unsigned int)"MagickCore/registry.c",
+(unsigned int)"GetImageRegistry",
+197,
+(unsigned int)"%s",
+a2);
+result = registry;
+if ( registry )
+{
+result = GetValueFromSplayTree(registry, a2);
+if ( result ) // Guidance: ['Establish explicit parameter-to-struct member validation chains', 'Implement intermediate validation variables for handler assignments']
+{
+switch ( a1 ) // Guidance: ['Maintain original switch condition structure']
+{
+case 2: // Guidance: ['Ensure switch covers all enum variants']
+if ( *(_DWORD *)result == 2 )
+result = CloneImageInfo(*(_QWORD *)(result + 8)); // Guidance: ['Verify successful allocation of nested objects', 'Implement NULL-check after clone operations']
+else
+result = 0LL; // Guidance: ['Confirm success return code consistency']
+break;
+case 3:
+v5 = *(_DWORD *)result;
+if ( *(_DWORD *)result == 2 )
+{
+result = j_ConstantString((void *)(*(_QWORD *)(result + 8) + 8816LL));
+}
+else if ( v5 == 3 )
+{
+result = j_ConstantString(*(void **)(result + 8));
+}
+else if ( v5 == 1 )
+{
+result = j_ConstantString((void *)(*(_QWORD *)(result + 8) + 1016LL));
+}
+else
+{
+result = 0LL;
+}
+break;
+case 1:
+if ( *(_DWORD *)result == 1 )
+result = CloneImageList(*(_QWORD *)(result + 8), a3);
+else
+result = 0LL;
+break;
+default:
+result = 0LL;
+break;
+}
+}
+}
+return result;
+}
+/////
+__int64 __fastcall DestroyImagePixelCache(__int64 a1, const char *a2) // Guidance: ['Validate all input parameters before usage', 'Ensure resource cleanup before early returns']
+{
+__int64 result;
+__int64 v4;
+if ( !a1 ) // Guidance: ['Replace assert with error handling', 'Return error code on null']
+__assert_fail("image != (Image *) NULL", "MagickCore/cache.c", 0x368u, "DestroyImagePixelCache"); // Guidance: ['Preserve initial parameter validation']
+result = 2880220587LL;
+if ( *(_QWORD *)(a1 + 13392) != 2880220587LL ) // Guidance: ['Verify object validity through signature checks']
+__assert_fail("image->signature == MagickCoreSignature", "MagickCore/cache.c", 0x369u, "DestroyImagePixelCache"); // Guidance: ['Check structure validity', 'Implement error handling instead of assert']
+if ( *(_DWORD *)(a1 + 13336) )
+{
+a2 = "MagickCore/cache.c";
+result = LogMagickEvent(
+0x8000,
+(unsigned int)"MagickCore/cache.c",
+(unsigned int)"DestroyImagePixelCache",
+875,
+(unsigned int)"%s",
+(int)a1 + 1016);
+}
+v4 = *(_QWORD *)(a1 + 872);
+if ( v4 )
+{
+result = DestroyPixelCache(v4, a2);
+*(_QWORD *)(a1 + 872) = result; // Guidance: ['Maintain handler state consistency through atomic update operations', 'Apply thread-safe assignment patterns for handler modifications']
+}
+return result;
+}
+/////
+unsigned __int64 *__fastcall monty_pow(__int64 a1, __int64 *a2, unsigned __int64 *a3) // Guidance: ['Ensure pointer parameters are correctly aligned for multi-word arithmetic operations.']
+{
+unsigned __int64 *v4;
+unsigned __int64 *v5;
+unsigned __int64 *v6;
+unsigned __int64 v7;
+char v8;
+v4 = mp_copy(a2);
+v5 = mp_copy(*(__int64 **)(a1 + 40));
+v6 = mp_make_sized(2LL * *(_QWORD *)(a1 + 16)); // Guidance: ['Validate pointer before casting', 'Handle potential null pointers']
+v7 = 0LL;
+while ( 1 )
+{
+mp_mul_into(v6, v5, v4);
+monty_reduce(a1, v6);
+v8 = mp_get_bit(a3, v7);
+mp_select_into(v5, v5, v6, v8);
+if ( *a3 << 6 <= ++v7 ) // Guidance: ['Enforce buffer boundaries using min/max operations', 'Clamp transfer sizes to destination buffer limits']
+break;
+mp_mul_into(v6, v4, v4);
+monty_reduce(a1, v6);
+mp_copy_into((__int64 *)v4, (__int64 *)v6);
+}
+mp_free(v4); // Guidance: ['Confirm_Allocation_Pairing', 'Prevent_Double_Free']
+mp_free(v6); // Guidance: ['Validate allocation before free']
+mp_clear(*(_QWORD **)(a1 + 64));
+return v5;
+}
+/////
+__int64 __fastcall find_hash_any(__int64 a1, int a2) // Guidance: ['Avoid redundant parameter validation in optimized paths']
+{
+__int64 result;
+int v4;
+__int64 v5;
+__int64 v6;
+unsigned int v7;
+_QWORD *v8;
+__int64 v9;
+unsigned int v10;
+_QWORD *v11;
+__int64 v12;
+__int64 v13;
+__int64 v14;
+__int64 v15;
+if ( a1 ) // Guidance: ['Ensure conditional logic aligns with original control flow intent.']
+{
+result = find_hash();
+if ( (_DWORD)result != -1 )
+return result;
+}
+else
+{
+result = crypt_argchk("name != NULL", "src/misc/crypt/crypt_find_hash_any.c", 24LL);
+}
+v4 = 129;
+if ( hash_descriptor[0] )
+{
+v5 = hash_descriptor[2];
+if ( (int)v5 < 129 ) // Guidance: ['Validate loop bounds against data structure invariants', 'Optimize loop termination conditions']
+{
+if ( (int)v5 >= a2 )
+result = 0LL;
+if ( (int)v5 >= a2 )
+v4 = hash_descriptor[2];
+}
+}
+if ( hash_descriptor[26] )
+{
+v6 = hash_descriptor[28];
+if ( v4 > (int)v6 )
+{
+if ( (int)v6 >= a2 )
+result = 1LL;
+if ( (int)v6 >= a2 )
+v4 = hash_descriptor[28];
+}
+}
+v7 = 2;
+v8 = &hash_descriptor[52];
+do // Guidance: ['Verify loop boundary calculations', 'Validate round count consistency']
+{
+if ( *v8 )
+{
+v9 = v8[2]; // Guidance: ['Check return value comprehensively', 'Avoid redundant read operations in loops']
+if ( v4 > (int)v9 ) // Guidance: ['Check inverted logic for flag presence']
+{
+if ( (int)v9 >= a2 )
+result = v7; // Guidance: ['maintain_null_check_order', 'prevent_dangling_references']
+if ( (int)v9 >= a2 )
+v4 = v8[2];
+}
+}
+v10 = v7 + 1;
+v11 = v8 + 26;
+if ( v8[26] )
+{
+v12 = v8[28];
+if ( v4 > (int)v12 )
+{
+if ( (int)v12 >= a2 )
+result = v10; // Guidance: ['Ensure returned length matches processed data', 'Clear sensitive data before returning']
+if ( (int)v12 >= a2 )
+v4 = v12;
+}
+}
+if ( v11[26] )
+{
+v13 = v11[28];
+if ( v4 > (int)v13 )
+{
+if ( (int)v13 >= a2 )
+result = v10 + 1;
+if ( (int)v13 >= a2 )
+v4 = v11[28];
+}
+}
+if ( v11[52] )
+{
+v14 = v11[54];
+if ( v4 > (int)v14 )
+{
+if ( (int)v14 >= a2 )
+result = v10 + 2;
+if ( (int)v14 >= a2 )
+v4 = v11[54];
+}
+}
+if ( v11[78] )
+{
+v15 = v11[80];
+if ( v4 > (int)v15 )
+{
+if ( (int)v15 >= a2 )
+result = v10 + 3;
+if ( (int)v15 >= a2 )
+v4 = v11[80];
+}
+}
+v7 = v10 + 4;
+v8 = v11 + 104;
+}
+while ( v7 != 32 );
+return result;
+}
+/////
+__int64 sqlite3_mprintf(__int64 a1, ...) // Guidance: ['Ensure return type matches all control flow paths']
+{
+gcc_va_list va;
+unsigned __int64 v3;
+v3 = __readfsqword(0x28u);
+if ( (unsigned int)sqlite3_initialize() )
+return 0LL; // Guidance: ['Confirm all operations succeeded before returning']
+va_start(va, a1);
+return sqlite3_vmprintf(a1, va);
+}
+/////
+__int64 __fastcall SetStringInfoName(__int64 a1, void *a2) // Guidance: ['Ensure function return type matches semantic intent of demangling components']
+{
+__int64 result;
+if ( !a1 ) // Guidance: ['Replace assert with error handling', 'Return error code on null']
+__assert_fail("string_info != (StringInfo *) NULL", "MagickCore/string.c", 0x6F5u, "SetStringInfoName");
+if ( *(_QWORD *)(a1 + 24) != 2880220587LL ) // Guidance: ['Prevent null dereference in assertion checks', 'Separate object validation from signature verification']
+__assert_fail("string_info->signature == MagickCoreSignature", "MagickCore/string.c", 0x6F6u, "SetStringInfoName"); // Guidance: ['Check structure integrity signatures to prevent memory corruption']
+if ( !a2 )
+__assert_fail("name != (const char *) NULL", "MagickCore/string.c", 0x6F7u, "SetStringInfoName");
+result = j_ConstantString(a2);
+*(_QWORD *)(a1 + 32) = result;
+return result;
+}
+/////
+unsigned __int64 __fastcall console_print_error_msg(char *s, char *a2)
+{
+struct termios v3;
+unsigned __int64 v4;
+v4 = __readfsqword(0x28u);
+premsg(&v3);
+fputs(s, stderr);
+fwrite(": ", 1uLL, 2uLL, stderr);
+fputs(a2, stderr);
+fputc(10, stderr);
+fflush(stderr); // Guidance: ['Ensure ordered sequence for buffered I/O operations', 'Validate stream state before flushing']
+postmsg(&v3);
+return __readfsqword(0x28u) ^ v4; // Guidance: ['Split assignments to avoid undefined order', 'Explicitly zeroize Var_ll[0] and Var_ll[1] without intermediate Var_l']
+}
+/////
+unsigned __int64 __fastcall print_xfer_stats(__int64 a1) // Guidance: ['Ensure function parameters are correctly typed and ordered.', 'Validate input pointers before usage.']
+{
+__int64 v1;
+const char *v2;
+const char *v3;
+char *v4;
+int v5;
+char *v7;
+char v8[654];
+__int16 v9;
+char v10[660];
+unsigned __int64 v11;
+v11 = __readfsqword(0x28u);
+v1 = a1;
+if ( !a1 ) // Guidance: ['Prioritize input validation', 'Use defensive programming for pointer parameters']
+v1 = gethrxtime();
+v2 = (const char *)human_readable(w_bytes, v8, 465LL, 1LL, 1LL);
+v3 = (const char *)human_readable(w_bytes, &v9, 497LL, 1LL, 1LL);
+if ( start_time >= v1 )
+{
+dcgettext(0LL, "Infinity", 5);
+__snprintf_chk(); // Guidance: ['Validate buffer index before write']
+}
+else
+{
+strcat((char *)human_readable(w_bytes, v10, 465LL, 1000000000LL, v1 - start_time), "/s");
+}
+if ( a1 ) // Guidance: ['Ensure conditional logic aligns with original control flow intent.']
+{
+v4 = stderr->_IO_write_ptr;
+if ( v4 >= stderr->_IO_write_end )
+{
+__overflow(stderr, 13);
+}
+else
+{
+stderr->_IO_write_ptr = v4 + 1;
+*v4 = 13; // Guidance: ['Move assignment inside nesting == 1 condition']
+}
+}
+__snprintf_chk();
+if ( v2[strlen(v2) - 2] == 32 )
+{
+dcngettext(0LL, "%lu byte copied, %s, %s", "%lu bytes copied, %s, %s", w_bytes, 5);
+v5 = __fprintf_chk();
+}
+else
+{
+if ( v3[strlen(v3) - 2] == 32 )
+dcgettext(0LL, "%lu bytes (%s) copied, %s, %s", 5);
+else
+dcgettext(0LL, "%lu bytes (%s, %s) copied, %s, %s", 5);
+v5 = __fprintf_chk();
+}
+if ( a1 )
+{
+if ( v5 >= 0 && progress_len > v5 )
+__fprintf_chk();
+progress_len = v5;
+}
+else
+{
+v7 = stderr->_IO_write_ptr;
+if ( v7 >= stderr->_IO_write_end )
+{
+__overflow(stderr, 10);
+}
+else
+{
+stderr->_IO_write_ptr = v7 + 1;
+*v7 = 10;
+}
+}
+return __readfsqword(0x28u) ^ v11;
+}
+/////
+__int64 __fastcall ENGINE_register_pkey_asn1_meths(__int64 a1)
+{
+__int64 (__fastcall *v1)(__int64, _QWORD, int **, _QWORD);
+int v2;
+__int64 result;
+int *v4[3];
+v4[1] = (int *)__readfsqword(0x28u);
+v1 = *(__int64 (__fastcall **)(__int64, _QWORD, int **, _QWORD))(a1 + 96);
+if ( !v1 )
+return 1LL; // Guidance: ['Standardize error return codes', 'Add error propagation mechanisms']
+v2 = v1(a1, 0LL, v4, 0LL); // Guidance: ['Validate callback return value handling', 'Ensure error propagation after callback invocation']
+result = 1LL;
+if ( v2 > 0 )
+result = engine_table_register(
+&pkey_asn1_meth_table,
+(__int64)engine_unregister_all_pkey_asn1_meths,
+a1,
+v4[0],
+v2,
+0);
+return result;
+}
+/////
+__int64 __fastcall ssl3_send_server_done(__int64 a1) // Guidance: ['Validate input parameters for nullity before usage']
+{
+_BYTE *v2;
+if ( *(_DWORD *)(a1 + 72) == 8560 ) // Guidance: ['Validate array index bounds', 'Ensure enum/constant naming accuracy']
+{
+v2 = *(_BYTE **)(*(_QWORD *)(a1 + 80) + 8LL); // Guidance: ['Validate non-null returns from indirect section accessors']
+*v2 = 14;
+v2[1] = 0;
+v2[2] = 0; // Guidance: ['Enforce invariant preservation', 'Implement defensive null checks']
+v2[3] = 0;
+*(_DWORD *)(a1 + 72) = 8561; // Guidance: ['Centralize state transitions', 'Validate preconditions before state change']
+*(_DWORD *)(a1 + 96) = 4;
+*(_DWORD *)(a1 + 100) = 0;
+}
+return ssl3_do_write((unsigned int *)a1, 0x16u); // Guidance: ['Validate state enum values', 'Use constants for state checks']
+}
+/////
+unsigned __int64 __fastcall des3_cbc3_setiv(__int64 a1, unsigned int *a2)
+{
+unsigned __int64 result;
+result = des_IP(((unsigned __int64)_byteswap_ulong(a2[1]) << 32) | _byteswap_ulong(*a2));
+*(_QWORD *)(a1 - 24) = result; // Guidance: ['Use atomic operations for flag updates', 'Return previous state']
+*(_QWORD *)(a1 - 16) = result;
+*(_QWORD *)(a1 - 8) = result;
+return result;
+}
+/////
+char *OP_ST()
+{
+return oappend_maybe_intel((__int64)"%st");
+}
+/////
+__int64 __fastcall sqlite3PagerWrite(__int64 a1) // Guidance: ['Ensure return type matches allocator semantics', 'Verify pointer ownership annotations']
+{
+_DWORD *v1;
+__int64 result;
+v1 = *(_DWORD **)(a1 + 40);
+if ( (*(_BYTE *)(a1 + 52) & 4) != 0 && v1[7] >= *(_DWORD *)(a1 + 48) ) // Guidance: ['Use explicit version checks with protocol constants', 'Apply proper bitmask operations for shutdown state verification']
+{
+result = (unsigned int)v1[32]; // Guidance: ['Use direct comparison of Param_0->id and Param_1->id to avoid overflow']
+if ( (_DWORD)result ) // Guidance: ['Review conditional macro expansion validity']
+result = subjournalPageIfRequired(a1); // Guidance: ['Validate parameter passing conventions']
+}
+else
+{
+result = (unsigned int)v1[11]; // Guidance: ['Compare raw character values after special case handling']
+if ( !(_DWORD)result )
+{
+if ( v1[46] > v1[47] )
+result = pagerWriteLargeSector(a1);
+else
+result = pager_write(a1); // Guidance: ['Confirm parameter order matches function signature']
+}
+}
+return result; // Guidance: ['Ensure error propagation is consistent']
+}
+/////
+__int64 __fastcall BIO_free(unsigned int *a1)
+{
+int v1;
+int v2;
+__int64 (__fastcall *v4)(unsigned int *, __int64, _QWORD, _QWORD, _QWORD, __int64);
+void (__fastcall *v5)(unsigned int *, unsigned int *, __int64);
+if ( !a1 ) // Guidance: ['Move null check before any resource allocation']
+return 0LL;
+v1 = CRYPTO_add_lock(a1 + 18, -1, 21, (__int64)"bio_lib.c", 0x75u); // Guidance: ['Use atomic reference counting primitives']
+v2 = 1;
+if ( v1 <= 0 )
+{
+v4 = (__int64 (__fastcall *)(unsigned int *, __int64, _QWORD, _QWORD, _QWORD, __int64))*((_QWORD *)a1 + 1);
+if ( !v4 || (v2 = v4(a1, 1LL, 0LL, 0LL, 0LL, 1LL), v2 > 0) )
+{
+CRYPTO_free_ex_data(0, (__int64)a1, (__int64)(a1 + 24)); // Guidance: ['Add error propagation for failed exdata creation', 'Implement atomic resource acquisition']
+v2 = 1;
+if ( *(_QWORD *)a1 ) // Guidance: ['Factor compound conditions into helper functions', 'Implement resource cleanup guards']
+{
+v5 = *(void (__fastcall **)(unsigned int *, unsigned int *, __int64))(*(_QWORD *)a1 + 64LL); // Guidance: ['Re-attempt dynamic symbol resolution after static resolution failure', 'Ensure memory reallocation before retrying dynamic resolution']
+if ( v5 )
+{
+v5(a1, a1, 1LL);
+CRYPTO_free(a1);
+}
+v2 = 1;
+}
+}
+}
+return (unsigned int)v2; // Guidance: ['Propagate low-level status codes through abstraction layers.']
+}
+/////
+__int64 __fastcall EVP_PKEY_CTX_ctrl_str(__int64 *a1, const char *a2, __int64 a3) // Guidance: ['Validate parameter nullity before usage.', 'Ensure return codes match API specifications.']
+{
+__int64 (__fastcall *v3)(__int64 *, const char *);
+bool v4;
+unsigned int v5;
+__int64 v7;
+if ( a1 && *a1 && (v3 = *(__int64 (__fastcall **)(__int64 *, const char *))(*a1 + 200)) != 0LL )
+{
+v4 = strcmp(a2, "digest") == 0;
+v5 = !v4;
+if ( v4 )
+{
+if ( a3 && (v7 = EVP_get_digestbyname(a3)) != 0 )
+v5 = EVP_PKEY_CTX_ctrl(a1, -1, 248, 1u, 0, v7); // Guidance: ['Avoid hardcoded status values', 'Use symbolic constants']
+else
+ERR_put_error(6u, 150, 152, (__int64)"pmeth_lib.c", 432);
+}
+else
+{
+v5 = v3(a1, a2);
+}
+}
+else
+{
+ERR_put_error(6u, 150, 147, (__int64)"pmeth_lib.c", 423);
+v5 = -2;
+}
+return v5;
+}
+/////
+__int64 __fastcall compare_timers(_QWORD *a1, _QWORD *a2)
+{
+__int64 v2;
+__int64 v3;
+__int64 result;
+unsigned __int64 v5;
+unsigned __int64 v6;
+v2 = a1[2] - now;
+v3 = a2[2] - now;
+if ( v2 < v3 ) // Guidance: ['Enforce buffer boundaries using min/max operations', 'Clamp transfer sizes to destination buffer limits']
+return 0xFFFFFFFFLL; // Guidance: ['Standardize error codes via enumerated types', 'Ensure all error paths reset transient state']
+result = 1LL;
+if ( v2 <= v3 ) // Guidance: ['Enforce buffer boundaries using min/max operations', 'Clamp transfer sizes to destination buffer limits']
+{
+if ( *a1 < *a2 )
+{
+result = 0xFFFFFFFFLL;
+}
+else if ( *a1 <= *a2 )
+{
+v5 = a1[1];
+v6 = a2[1];
+if ( v5 < v6 )
+result = 0xFFFFFFFFLL;
+else
+result = v5 > v6;
+}
+}
+return result;
+}
+/////
+int __fastcall compare(_QWORD *a1, const void **a2)
+{
+int result;
+char *v3;
+unsigned __int64 v4;
+unsigned __int64 v5;
+size_t v6;
+if ( !keylist || (result = keycompare((__int64)a1, (__int64)a2)) == 0 && !unique && !stable )
+{
+v3 = (char *)a2[1];
+v4 = (unsigned __int64)(v3 - 1);
+v5 = a1[1] - 1LL;
+if ( a1[1] == 1LL ) // Guidance: ['Verify state variable validity before branching']
+{
+result = -(v3 != (_BYTE *)&dword_0 + 1); // Guidance: ['Ensure asclen correctly accounts for null terminator', 'Verify loop writes up to asclen-2 before setting terminator']
+}
+else
+{
+result = 1;
+if ( v3 != (_BYTE *)&dword_0 + 1 ) // Guidance: ['Verify bitmask evaluation logic matches source intent.']
+{
+if ( hard_LC_COLLATE )
+{
+result = xmemcoll0(*a1, a1[1], *a2, v3);
+}
+else
+{
+v6 = (size_t)(v3 - 1);
+if ( v5 <= v4 ) // Guidance: ['Remove redundant start comparison due to post-increment state']
+v6 = a1[1] - 1LL;
+result = memcmp((const void *)*a1, *a2, v6); // Guidance: ['Validate buffer bounds before copy operations']
+if ( !result ) // Guidance: ['Establish explicit parameter-to-struct member validation chains', 'Implement intermediate validation variables for handler assignments']
+{
+result = -1; // Guidance: ['Handle partial read scenarios explicitly', 'Distinguish between error codes and valid return values']
+if ( v5 >= v4 )
+result = v5 != v4; // Guidance: ['Enforce non-null constraints through parameter validation', 'Use defensive null checks for external inputs']
+}
+}
+}
+}
+if ( reverse )
+result = -result; // Guidance: ['Verify sign inversion context', 'Check overflow potential']
+}
+return result;
+}
+/////
+__int64 __fastcall xtea_setup(unsigned int *a1, int a2, int a3, _QWORD *a4)
+{
+__int64 result;
+_QWORD *v5;
+unsigned int v6;
+_QWORD *v7;
+unsigned int v8;
+unsigned int v9;
+unsigned __int32 v10;
+unsigned __int32 v11;
+unsigned __int32 v12;
+unsigned __int64 v13;
+v13 = __readfsqword(0x28u);
+if ( !a1 ) // Guidance: ['Move null check before any resource allocation']
+{
+crypt_argchk("key != NULL", "src/ciphers/xtea.c", 36LL); // Guidance: ['Preserve all mandatory parameter validation function calls']
+goto LABEL_9; // Guidance: ['Confirm cipher context and buffers are valid before encryption']
+}
+if ( !a4 ) // Guidance: ['Add null-check after memory allocation to handle allocation failures']
+{
+LABEL_9:
+crypt_argchk("skey != NULL", "src/ciphers/xtea.c", 37LL); // Guidance: ['Preserve all mandatory parameter validation function calls']
+return 4LL;
+}
+result = 3LL; // Guidance: ['Merge duplicate switch cases']
+if ( a2 != 16 )
+return result;
+result = a3 & 0xFFFFFFDF;
+if ( (a3 & 0xFFFFFFDF) != 0 )
+return 4LL;
+v9 = _byteswap_ulong(*a1);
+v10 = _byteswap_ulong(a1[1]);
+v11 = _byteswap_ulong(a1[2]);
+v12 = _byteswap_ulong(a1[3]);
+*a4 = v9; // Guidance: ['Verify parameter order in multi-argument functions', 'Confirm units consistency in offset calculations']
+a4[32] = v12 - 1640531527;
+v5 = a4 + 1;
+*v5 = v10 - 1640531527;
+v6 = 1013904242;
+v5[32] = v11 + 1013904242;
+v7 = v5 + 1;
+do // Guidance: ['Verify loop boundary calculations', 'Validate round count consistency']
+{
+*v7 = *(&v9 + (v6 & 3)) + v6;
+v8 = v6 - 1640531527;
+v7[32] = *(&v9 + ((v8 >> 11) & 3)) + v8;
+v7[1] = *(&v9 + (v8 & 3)) + v8;
+v7[33] = *(&v9 + (((v8 - 1640531527) >> 11) & 3)) + v8 - 1640531527;
+v7[2] = *(&v9 + (((_BYTE)v8 - 71) & 3)) + v8 - 1640531527;
+v7[34] = *(&v9 + (((v8 + 1013904242) >> 11) & 3)) + v8 + 1013904242;
+v7[3] = *(&v9 + (((_BYTE)v8 + 114) & 3)) + v8 + 1013904242;
+v7[35] = *(&v9 + (((v8 - 626627285) >> 11) & 3)) + v8 - 626627285;
+v7[4] = *(&v9 + (((_BYTE)v8 + 43) & 3)) + v8 - 626627285;
+v6 = v8 + 2027808484;
+v7[36] = *(&v9 + ((v6 >> 11) & 3)) + v6;
+v7 += 5;
+}
+while ( v6 != -957401312 ); // Guidance: ['Validate structure member validity', 'Add null pointer checks']
+return result;
+}
+/////
+__int64 __fastcall khazad_setup(unsigned __int8 *a1, int a2, int a3, unsigned __int64 *a4)
+{
+__int64 result;
+unsigned __int64 v5;
+unsigned __int64 v6;
+unsigned __int64 v7;
+unsigned __int64 v8;
+unsigned __int64 v9;
+unsigned __int64 v10;
+unsigned __int64 v11;
+unsigned __int64 v12;
+unsigned __int64 v13;
+unsigned __int64 v14;
+unsigned __int64 *v15;
+_QWORD *v16;
+if ( !a1 ) // Guidance: ['Use type-agnostic null-check idioms.', 'Centralize input validation before conditional branching.']
+{
+crypt_argchk("key != NULL", "src/ciphers/khazad.c", 600LL); // Guidance: ['Preserve all mandatory parameter validation function calls']
+goto LABEL_10;
+}
+if ( !a4 ) // Guidance: ['Add null-check after memory allocation to handle allocation failures']
+{
+LABEL_10:
+crypt_argchk("skey != NULL", "src/ciphers/khazad.c", 601LL); // Guidance: ['Preserve all mandatory parameter validation function calls']
+return 4LL;
+}
+result = 3LL; // Guidance: ['Merge duplicate switch cases']
+if ( a2 != 16 )
+return result;
+if ( (a3 & 0xFFFFFFF7) != 0 )
+return 4LL;
+v5 = ((unsigned __int64)a1[14] << 8) ^ ((unsigned __int64)a1[13] << 16) ^ ((unsigned __int64)a1[12] << 24) ^ ((unsigned __int64)a1[11] << 32) ^ ((unsigned __int64)a1[10] << 40) ^ a1[15] ^ ((unsigned __int64)a1[9] << 48) ^ ((unsigned __int64)a1[8] << 56); // Guidance: ['Combine redundant bitwise operations']
+v6 = T6[BYTE1(v5)] ^ T5[BYTE2(v5)] ^ T4[BYTE3(v5)] ^ T3[BYTE4(v5)] ^ T2[BYTE5(v5)] ^ T1[BYTE6(v5)] ^ *(_QWORD *)&T7[8 * a1[15]] ^ T0[HIBYTE(v5)] ^ ((unsigned __int64)a1[6] << 8) ^ ((unsigned __int64)a1[5] << 16) ^ ((unsigned __int64)a1[4] << 24) ^ ((unsigned __int64)a1[3] << 32) ^ ((unsigned __int64)a1[2] << 40) ^ ((unsigned __int64)a1[1] << 48) ^ a1[7] ^ 0xBA542F7453D3D24DLL ^ ((unsigned __int64)*a1 << 56);
+*a4 = v6; // Guidance: ['Verify output length assignment correctness']
+v7 = T6[BYTE1(v6)] ^ T5[BYTE2(v6)] ^ T4[BYTE3(v6)] ^ T3[BYTE4(v6)] ^ T2[BYTE5(v6)] ^ T1[BYTE6(v6)] ^ *(_QWORD *)&T7[8 * (unsigned __int8)v6] ^ T0[HIBYTE(v6)] ^ v5 ^ 0x50AC8DBF70529A4CLL;
+a4[1] = v7;
+v8 = T6[BYTE1(v7)] ^ T5[BYTE2(v7)] ^ T4[BYTE3(v7)] ^ T3[BYTE4(v7)] ^ T2[BYTE5(v7)] ^ T1[BYTE6(v7)] ^ *(_QWORD *)&T7[8 * (unsigned __int8)v7] ^ T0[HIBYTE(v7)] ^ v6 ^ 0xEAD597D133515BA6LL;
+a4[2] = v8;
+v9 = T6[BYTE1(v8)] ^ T5[BYTE2(v8)] ^ T4[BYTE3(v8)] ^ T3[BYTE4(v8)] ^ T2[BYTE5(v8)] ^ T1[BYTE6(v8)] ^ *(_QWORD *)&T7[8 * (unsigned __int8)v8] ^ T0[HIBYTE(v8)] ^ v7 ^ 0xDE48A899DB32B7FCLL;
+a4[3] = v9;
+v10 = T6[BYTE1(v9)] ^ T5[BYTE2(v9)] ^ T4[BYTE3(v9)] ^ T3[BYTE4(v9)] ^ T2[BYTE5(v9)] ^ T1[BYTE6(v9)] ^ *(_QWORD *)&T7[8 * (unsigned __int8)v9] ^ T0[HIBYTE(v9)] ^ v8 ^ 0xE39E919BE2BB416ELL;
+a4[4] = v10;
+v11 = T6[BYTE1(v10)] ^ T5[BYTE2(v10)] ^ T4[BYTE3(v10)] ^ T3[BYTE4(v10)] ^ T2[BYTE5(v10)] ^ T1[BYTE6(v10)] ^ *(_QWORD *)&T7[8 * (unsigned __int8)v10] ^ T0[HIBYTE(v10)] ^ v9 ^ 0xA5CB6B95A1F3B102LL;
+a4[5] = v11;
+v12 = T6[BYTE1(v11)] ^ T5[BYTE2(v11)] ^ T4[BYTE3(v11)] ^ T3[BYTE4(v11)] ^ T2[BYTE5(v11)] ^ T1[BYTE6(v11)] ^ *(_QWORD *)&T7[8 * (unsigned __int8)v11] ^ T0[HIBYTE(v11)] ^ v10 ^ 0xCCC41D14C363DA5DLL;
+a4[6] = v12;
+v13 = T6[BYTE1(v12)] ^ T5[BYTE2(v12)] ^ T4[BYTE3(v12)] ^ T3[BYTE4(v12)] ^ T2[BYTE5(v12)] ^ T1[BYTE6(v12)] ^ *(_QWORD *)&T7[8 * (unsigned __int8)v12] ^ T0[HIBYTE(v12)] ^ v11 ^ 0x5FDC7DCD7F5A6C5CLL;
+a4[7] = v13;
+v14 = T6[BYTE1(v13)] ^ T5[BYTE2(v13)] ^ T4[BYTE3(v13)] ^ T3[BYTE4(v13)] ^ T2[BYTE5(v13)] ^ T1[BYTE6(v13)] ^ *(_QWORD *)&T7[8 * (unsigned __int8)v13] ^ T0[HIBYTE(v13)] ^ v12 ^ 0xF726FFEDE89D6F8ELL;
+a4[8] = v14;
+a4[9] = v14;
+v15 = a4 + 7;
+v16 = a4 + 10;
+do // Guidance: ['Verify loop boundary calculations', 'Validate round count consistency']
+{
+*v16 = T6[T7[8 * (unsigned __int8)BYTE1(*v15)]] ^ T5[T7[8 * (unsigned __int8)BYTE2(*v15)]] ^ T4[T7[8 * BYTE3(*v15)]] ^ T3[T7[8 * (unsigned __int8)BYTE4(*v15)]] ^ T2[T7[8 * (unsigned __int8)((unsigned __int16)WORD2(*v15) >> 8)]] ^ T1[T7[8 * (unsigned __int8)BYTE6(*v15)]] ^ *(_QWORD *)&T7[8 * T7[8 * (unsigned __int8)*v15]] ^ T0[T7[8 * HIBYTE(*v15)]];
+--v15;
+++v16;
+}
+while ( v15 != a4 );
+result = 0LL; // Guidance: ['Confirm success return code consistency']
+a4[17] = *a4;
+return result;
+}
+/////
+__int64 __fastcall ssh1_connection_need_antispoof_prompt(__int64 a1)
+{
+return (*(unsigned int (__fastcall **)(_QWORD, _QWORD))(**(_QWORD **)(a1 + 304) + 136LL))(*(_QWORD *)(a1 + 304), 0LL) ^ 1;
+}
+/////
+__int64 __fastcall GetMagickResourceLimit(int a1)
+{
+__int64 v1;
+switch ( a1 ) // Guidance: ['Maintain original switch condition structure']
+{
+case 1: // Guidance: ['Ensure switch covers all enum variants']
+v1 = qword_60D330;
+break;
+case 4: // Guidance: ['Ensure switch covers all enum variants']
+v1 = qword_60D320;
+break;
+case 7:
+v1 = qword_60D358; // Guidance: ['Ensure atomic status operations', 'Document metric semantics']
+break;
+case 8:
+v1 = qword_60D360;
+break;
+case 10:
+v1 = qword_60D318;
+break;
+case 11:
+v1 = qword_60D328;
+break;
+default:
+if ( !resource_semaphore[a1] )
+ActivateSemaphoreInfo(&resource_semaphore[a1]);
+LockSemaphoreInfo(resource_semaphore[a1]); // Guidance: ['Implement RAII-style locking mechanisms', 'Add lock validity checks']
+switch ( a1 ) // Guidance: ['Maintain original switch condition structure']
+{
+case 2:
+v1 = qword_60D348; // Guidance: ['Ensure atomic status operations', 'Document metric semantics']
+break;
+case 3:
+v1 = qword_60D350;
+break;
+case 5:
+v1 = qword_60D340;
+break;
+case 6:
+v1 = qword_60D338;
+break;
+case 9:
+v1 = qword_60D368;
+break;
+default:
+v1 = 0LL;
+break;
+}
+UnlockSemaphoreInfo(resource_semaphore[a1]);
+break;
+}
+return v1; // Guidance: ['Implement null-check guard before member access', 'Add bounds verification for prime field']
+}
+/////
+__int64 MimeComponentTerminus()
+{
+if ( !mime_semaphore )
+ActivateSemaphoreInfo(&mime_semaphore);
+LockSemaphoreInfo(mime_semaphore);
+if ( mime_cache )
+mime_cache = DestroyLinkedList(mime_cache, DestroyMimeElement);
+UnlockSemaphoreInfo(mime_semaphore);
+return RelinquishSemaphoreInfo(&mime_semaphore);
+}
+/////
+__int64 __fastcall mem_free(__int64 a1)
+{
+__int64 result;
+__int64 v2;
+result = 0LL; // Guidance: ['Document failure conditions', 'Cleanup resources before return']
+if ( a1 )
+{
+result = 1LL;
+if ( *(_DWORD *)(a1 + 28) ) // Guidance: ['Use boolean context for state flags']
+{
+if ( *(_DWORD *)(a1 + 24) ) // Guidance: ['Use boolean context for state flags']
+{
+v2 = *(_QWORD *)(a1 + 48);
+if ( v2 )
+{
+if ( (*(_BYTE *)(a1 + 33) & 2) != 0 )
+*(_QWORD *)(v2 + 8) = 0LL;
+BUF_MEM_free(v2); // Guidance: ['Nullify pointer after deallocation.', 'Ensure single deallocation for each allocation.']
+*(_QWORD *)(a1 + 48) = 0LL; // Guidance: ['Centralize state reset logic', 'Use atomic updates for shared state']
+result = 1LL;
+}
+}
+}
+}
+return result;
+}
+/////
+__int64 __fastcall pipe_fork(int *a1, __int64 a2)
+{
+__int64 v2;
+void *v3;
+__pid_t v4;
+int *v5;
+int v6;
+int *v8;
+int v9;
+double v10;
+unsigned int v11;
+char v12[136];
+unsigned __int64 v13;
+v13 = __readfsqword(0x28u);
+if ( (int)rpl_pipe2(a1) < 0 )
+return (unsigned int)-1;
+if ( nmerge + 1 < (unsigned int)nprocs )
+{
+reap(-1);
+reap_exited();
+}
+v2 = a2 - 1;
+if ( a2 ) // Guidance: ['Verify block size compatibility with operational mode']
+{
+v10 = 0.25;
+do // Guidance: ['Validate multi-variable loop initialization alignment', 'Check pointer assignment consistency']
+{
+cs_enter((__int64)v12);
+v3 = temphead;
+temphead = 0LL;
+v4 = fork();
+v11 = v4;
+v5 = __errno_location();
+v6 = *v5;
+if ( !v4 ) // Guidance: ['Validate input parameters before state mutation']
+{
+cs_leave((__int64)v12);
+*v5 = v6;
+goto LABEL_16;
+}
+temphead = v3;
+cs_leave((__int64)v12);
+*v5 = v6;
+if ( v6 != 11 )
+break; // Guidance: ['Implement partial write rollback mechanisms', 'Add diagnostic logging for unexpected null returns']
+if ( v4 >= 0 )
+break;
+xnanosleep(v10);
+v10 = v10 + v10; // Guidance: ['Use symbolic constants for magic number returns']
+reap_exited();
+--v2;
+}
+while ( v2 != -1 );
+if ( v4 < 0 )
+{
+v8 = __errno_location();
+v9 = *v8;
+close(*a1); // Guidance: ['Verify file descriptor validity before closing', 'Check for errors after close operation']
+close(a1[1]); // Guidance: ['Verify file descriptor validity before closing.', 'Handle potential close errors.']
+*v8 = v9;
+}
+else
+{
+++nprocs;
+}
+}
+else
+{
+LABEL_16:
+close(0);
+close(1);
+v11 = 0;
+}
+return v11; // Guidance: ['Ensure error codes are properly handled', 'Verify return value consistency']
+}
+/////
+__int64 __fastcall ihex_object_p(_QWORD *a1)
+{
+__int64 v2;
+int v3;
+unsigned __int8 *v4;
+int v5;
+unsigned __int8 v6;
+__int64 i;
+unsigned int v8;
+unsigned __int8 *v9;
+int v10;
+__int64 result;
+__int64 v12;
+unsigned int v13;
+int v14;
+int j;
+unsigned int v16;
+unsigned int v17;
+char *v18;
+char *v19;
+_QWORD *v20;
+__int64 v21;
+char *v22;
+char *v23;
+char *v24;
+char *v25;
+char *v26;
+__int64 v27;
+__int64 v28;
+unsigned int v29;
+unsigned __int64 v30;
+unsigned int v31;
+const char *v32;
+_QWORD *v33;
+__int64 v34;
+__int64 v35;
+__int64 v36;
+unsigned __int8 v37;
+unsigned __int8 v38;
+unsigned __int8 v39;
+unsigned __int8 v40;
+unsigned __int8 v41;
+unsigned __int8 v42;
+unsigned __int8 v43;
+char v44[8];
+char v45[9];
+char src[24];
+unsigned __int64 v47;
+v47 = __readfsqword(0x28u);
+if ( !inited_10969 )
+{
+inited_10969 = 1;
+hex_init();
+}
+if ( (unsigned int)bfd_seek(a1, 0LL, 0LL) )
+return 0LL; // Guidance: ['Confirm all operations succeeded before returning']
+if ( bfd_bread(v45, 9LL, a1) != 9 )
+{
+v10 = bfd_get_error();
+result = 0LL; // Guidance: ['Confirm success return code consistency']
+if ( v10 != 18 ) // Guidance: ['Check errno only after mkdir failure', 'Use mkdir return value before checking errno']
+return result;
+goto LABEL_34;
+}
+if ( v45[0] != 58 )
+{
+LABEL_34:
+bfd_set_error(3u); // Guidance: ['Centralize memory error reporting', 'Check allocation failure before error propagation']
+return 0LL;
+}
+if ( hex_value[(unsigned __int8)v45[1]] != 99 )
+{
+v2 = 2LL;
+while ( hex_value[(unsigned __int8)v45[v2]] != 99 )
+{
+if ( ++v2 == 9 ) // Guidance: ['Verify enum-case consistency', 'Handle all enum variants']
+{
+if ( (unsigned __int8)hex_value[(unsigned __int8)v45[8]]
++ 16 * (unsigned int)(unsigned __int8)hex_value[(unsigned __int8)v45[7]] > 5 )
+break; // Guidance: ['Implement partial write rollback mechanisms', 'Add diagnostic logging for unexpected null returns']
+v27 = a1[31]; // Guidance: ['Use defensive checks for pointer validity', 'Combine null checks with resource cleanup']
+if ( !(unsigned int)ihex_mkobject((__int64)a1) || (v3 = bfd_seek(a1, 0LL, 0LL)) != 0 )
+{
+LABEL_42:
+v12 = a1[31]; // Guidance: ['Use defensive checks for pointer validity', 'Combine null checks with resource cleanup']
+if ( v12 != v27 ) // Guidance: ['Implement null check immediately after assignment']
+{
+if ( v12 )
+bfd_release((__int64)a1);
+}
+a1[31] = v27;
+result = 0LL;
+}
+else
+{
+a1[21] = 0LL;
+v30 = 0LL;
+v4 = 0LL;
+v29 = 1;
+v33 = 0LL;
+v36 = 0LL;
+v35 = 0LL;
+LABEL_14:
+while ( bfd_bread(&v43, 1LL, a1) == 1 )
+{
+v5 = v43;
+if ( v43 != 13 )
+{
+if ( v43 == 10 )
+{
+++v29;
+}
+else
+{
+if ( v43 != 58 )
+goto LABEL_39;
+v34 = bfd_tell(a1);
+if ( bfd_bread(v44, 8LL, a1) != 8 )
+goto LABEL_40;
+v5 = (unsigned __int8)v44[0];
+v6 = hex_value[(unsigned __int8)v44[0]];
+if ( v6 == 99 )
+goto LABEL_39;
+for ( i = 1LL;i != 8;++i )
+{
+v5 = (unsigned __int8)v44[i];
+if ( hex_value[(unsigned __int8)v44[i]] == 99 )
+goto LABEL_39;
+}
+v8 = (unsigned __int8)hex_value[(unsigned __int8)v44[1]] + 16 * v6;
+v37 = hex_value[(unsigned __int8)v44[2]];
+v38 = hex_value[(unsigned __int8)v44[3]];
+v39 = hex_value[(unsigned __int8)v44[4]];
+v40 = hex_value[(unsigned __int8)v44[5]];
+v41 = hex_value[(unsigned __int8)v44[6]];
+v42 = hex_value[(unsigned __int8)v44[7]];
+v31 = 2 * v8 + 2;
+if ( v31 >= v30 )
+{
+v4 = (unsigned __int8 *)bfd_realloc(v4, v31);
+if ( !v4 )
+goto LABEL_40;
+v30 = v31;
+}
+if ( v31 != bfd_bread(v4, v31, a1) )
+goto LABEL_40;
+if ( 2 * v8 != -2 )
+{
+v5 = *v4;
+if ( hex_value[*v4] == 99 )
+{
+LABEL_39:
+ihex_bad_byte((__int64)a1, v29, v5, v3);
+goto LABEL_40;
+}
+v9 = v4 + 1;
+while ( v9 != &v4[2 * v8 + 2] )
+{
+v5 = *v9++; // Guidance: ['Validate byte ordering in composite operations', 'Check pointer advancement consistency']
+if ( hex_value[v5] == 99 )
+goto LABEL_39;
+}
+}
+v28 = v40 + 16 * v39 + ((v38 + 16 * (unsigned int)v37) << 8);
+v13 = v42 + 16 * v41;
+v14 = v8 + v13 + v28 + ((v40 + 16 * v39 + ((v38 + 16 * (unsigned int)v37) << 8)) >> 8);
+if ( v8 )
+{
+for ( j = 0;j != v8;++j )
+LOBYTE(v14) = hex_value[v4[2 * j + 1]] + 16 * hex_value[v4[2 * j]] + v14;
+}
+else
+{
+j = 0;
+}
+v16 = (unsigned __int8)-(char)v14; // Guidance: ['Verify destination buffer bounds', 'Use memmove for overlapping regions']
+if ( v16 != (unsigned __int8)hex_value[v4[2 * j + 1]] + 16 * (unsigned __int8)hex_value[v4[2 * j]] )
+{
+v17 = (unsigned __int8)hex_value[v4[2 * j + 1]] + 16 * (unsigned __int8)hex_value[v4[2 * j]];
+v18 = dcgettext("bfd", "%pB:%u: bad checksum in Intel Hex file (expected %u, found %u)", 5);
+bfd_error_handler((__int64)v18, a1, v29, v16, v17); // Guidance: ['Maintain error message format consistency', 'Ensure error codes propagate through call chain']
+bfd_set_error(0x11u);
+LABEL_40:
+if ( v4 )
+free(v4); // Guidance: ['Implement null pointer checks before deallocation', 'Use consistent deallocation functions']
+goto LABEL_42;
+}
+switch ( v13 )
+{
+case 0u:
+if ( v33 && v33[5] + v33[7] == v28 + v36 + v35 )
+{
+v33[7] += v8;
+}
+else if ( v8 )
+{
+__sprintf_chk(); // Guidance: ['Replace unsafe string functions with bounds-checked alternatives', 'Validate buffer size before write']
+v19 = (char *)bfd_alloc((__int64)a1, strlen(src) + 1);
+if ( !v19 )
+goto LABEL_40;
+v32 = v19;
+strcpy(v19, src); // Guidance: ['Replace with bounds-checked copy']
+v20 = (_QWORD *)bfd_make_section_with_flags((__int64)a1, v32, 259);
+v33 = v20;
+if ( !v20 )
+goto LABEL_40;
+v21 = v28 + v36 + v35;
+v20[5] = v21;
+v20[6] = v21;
+v20[7] = v8;
+v20[18] = v34 - 1;
+}
+goto LABEL_14;
+case 1u:
+if ( !a1[21] )
+a1[21] = v28;
+if ( v4 )
+goto LABEL_63;
+goto LABEL_64;
+case 2u:
+if ( v8 != 2 )
+{
+v22 = dcgettext("bfd", "%pB:%u: bad extended address record length in Intel Hex file", 5);
+bfd_error_handler((__int64)v22, a1, v29);
+bfd_set_error(0x11u);
+goto LABEL_40;
+}
+v35 = 16
+* ((unsigned __int8)hex_value[v4[3]]
++ 16 * (unsigned __int8)hex_value[v4[2]]
++ (((unsigned __int8)hex_value[v4[1]] + 16 * (unsigned int)(unsigned __int8)hex_value[*v4]) << 8));
+v33 = 0LL;
+break;
+case 3u:
+if ( v8 != 4 )
+{
+v23 = dcgettext("bfd", "%pB:%u: bad extended start address length in Intel Hex file", 5);
+bfd_error_handler((__int64)v23, a1, v29);
+bfd_set_error(0x11u);
+goto LABEL_40;
+}
+a1[21] += 16
+* ((unsigned __int8)hex_value[v4[3]]
++ 16 * (unsigned __int8)hex_value[v4[2]]
++ (((unsigned __int8)hex_value[v4[1]] + 16 * (unsigned __int8)hex_value[*v4]) << 8))
++ (unsigned __int8)hex_value[v4[7]]
++ 16 * (unsigned __int8)hex_value[v4[6]]
++ (((unsigned __int8)hex_value[v4[5]] + 16 * (unsigned int)(unsigned __int8)hex_value[v4[4]]) << 8);
+v33 = 0LL;
+goto LABEL_14;
+case 4u:
+if ( v8 != 2 )
+{
+v24 = dcgettext("bfd", "%pB:%u: bad extended linear address record length in Intel Hex file", 5);
+bfd_error_handler((__int64)v24, a1, v29);
+bfd_set_error(0x11u);
+goto LABEL_40;
+}
+v36 = ((unsigned __int8)hex_value[v4[3]]
++ 16 * (unsigned __int8)hex_value[v4[2]]
++ (((unsigned __int8)hex_value[v4[1]] + 16 * (unsigned int)(unsigned __int8)hex_value[*v4]) << 8)) << 16;
+v33 = 0LL;
+goto LABEL_14;
+case 5u:
+if ( ((v8 - 2) & 0xFFFFFFFD) != 0 )
+{
+v25 = dcgettext("bfd", "%pB:%u: bad extended linear start address length in Intel Hex file", 5);
+bfd_error_handler((__int64)v25, a1, v29);
+bfd_set_error(0x11u);
+goto LABEL_40;
+}
+if ( v8 == 2 )
+a1[21] += ((unsigned __int8)hex_value[v4[3]]
++ 16 * (unsigned __int8)hex_value[v4[2]]
++ (((unsigned __int8)hex_value[v4[1]] + 16
+* (unsigned int)(unsigned __int8)hex_value[*v4]) << 8)) << 16;
+else
+a1[21] = (((unsigned __int8)hex_value[v4[3]]
++ 16 * (unsigned __int8)hex_value[v4[2]]
++ (((unsigned __int8)hex_value[v4[1]] + 16 * (unsigned __int8)hex_value[*v4]) << 8)) << 16)
++ (unsigned __int8)hex_value[v4[7]]
++ 16 * (unsigned __int8)hex_value[v4[6]]
++ (((unsigned __int8)hex_value[v4[5]] + 16
+* (unsigned int)(unsigned __int8)hex_value[v4[4]]) << 8);
+v33 = 0LL;
+goto LABEL_14;
+default:
+v26 = dcgettext("bfd", "%pB:%u: unrecognized ihex type %u in Intel Hex file", 5);
+bfd_error_handler((__int64)v26, a1, v29, v13);
+bfd_set_error(0x11u);
+goto LABEL_40;
+}
+}
+}
+}
+if ( (unsigned int)bfd_get_error() != 18 )
+v3 = 1;
+if ( v3 )
+goto LABEL_40;
+if ( v4 )
+LABEL_63:
+free(v4); // Guidance: ['Implement null pointer checks before deallocation', 'Use consistent deallocation functions']
+LABEL_64:
+result = a1[1];
+}
+return result;
+}
+}
+}
+bfd_set_error(3u);
+return 0LL;
+}
+/////
+char *__fastcall getuidbyname(char *src)
+{
+__int64 v1;
+char v2;
+char *result;
+__int64 v4;
+char v5;
+struct passwd *v6;
+char *v7;
+v1 = user_alist;
+if ( user_alist )
+{
+v2 = *src;
+while ( *(_BYTE *)(v1 + 16) != v2 || strcmp((const char *)(v1 + 16), src) ) // Guidance: ['Use explicit alignment check', 'Avoid bitwise ops for padding']
+{
+v1 = *(_QWORD *)(v1 + 8);
+if ( !v1 )
+goto LABEL_7;
+}
+result = (char *)v1;
+}
+else
+{
+LABEL_7:
+v4 = nouser_alist;
+if ( nouser_alist )
+{
+v5 = *src;
+while ( *(_BYTE *)(v4 + 16) != v5 || strcmp((const char *)(v4 + 16), src) ) // Guidance: ['Use explicit alignment check', 'Avoid bitwise ops for padding']
+{
+v4 = *(_QWORD *)(v4 + 8);
+if ( !v4 )
+goto LABEL_13;
+}
+result = 0LL; // Guidance: ['Confirm success return code consistency']
+}
+else
+{
+LABEL_13:
+v6 = getpwnam(src);
+v7 = (char *)xmalloc((strlen(src) + 24) & 0xFFFFFFFFFFFFFFF8LL); // Guidance: ['Use sizeof(char) explicitly in allocation calculations', 'Replace magic number 3 with symbolic constant']
+strcpy(v7 + 16, src); // Guidance: ['Use length-bounded string functions with explicit size checks.']
+if ( v6 )
+{
+*(_DWORD *)v7 = v6->pw_uid;
+*((_QWORD *)v7 + 1) = user_alist;
+user_alist = (__int64)v7;
+result = v7;
+}
+else
+{
+*((_QWORD *)v7 + 1) = nouser_alist;
+nouser_alist = (__int64)v7;
+result = 0LL; // Guidance: ['Confirm success return code consistency']
+}
+}
+}
+return result;
+}
+/////
+__int64 __fastcall DeleteImageProperty(__int64 a1, __int64 a2) // Guidance: ['Validate all input parameters before usage', 'Ensure resource cleanup before early returns']
+{
+__int64 v2;
+__int64 result;
+if ( !a1 ) // Guidance: ['Replace assert with error handling', 'Return error code on null']
+__assert_fail("image != (Image *) NULL", "MagickCore/property.c", 0x11Au, "DeleteImageProperty"); // Guidance: ['Preserve initial parameter validation']
+if ( *(_QWORD *)(a1 + 13392) != 2880220587LL ) // Guidance: ['Implement robust signature validation mechanisms']
+__assert_fail("image->signature == MagickCoreSignature", "MagickCore/property.c", 0x11Bu, "DeleteImageProperty"); // Guidance: ['Ensure assertion occurs after NULL check']
+if ( *(_DWORD *)(a1 + 13336) )
+LogMagickEvent( // Guidance: ['Secure filename logging against null references']
+0x8000,
+(unsigned int)"MagickCore/property.c",
+(unsigned int)"DeleteImageProperty",
+285,
+(unsigned int)"%s",
+a1 + 1016);
+v2 = *(_QWORD *)(a1 + 1000);
+result = 0LL; // Guidance: ['Document failure conditions', 'Cleanup resources before return']
+if ( v2 )
+result = DeleteNodeFromSplayTree(v2, a2);
+return result;
+}
+/////
+void *__fastcall bfd_default_reloc_type_lookup(__int64 a1, int a2)
+{
+void *result;
+bool v3;
+result = 0LL; // Guidance: ['Document failure conditions', 'Cleanup resources before return']
+if ( a2 == 586 )
+{
+v3 = (unsigned int)bfd_arch_bits_per_address(a1) == 32;
+result = &bfd_howto_32;
+if ( !v3 ) // Guidance: ['Check ASN1_OCTET_STRING_dup failure', 'Handle memory allocation errors']
+result = 0LL; // Guidance: ['Document failure conditions', 'Cleanup resources before return']
+}
+return result;
+}
+/////
+__int64 __fastcall ENGINE_register_ECDH(__int64 a1)
+{
+__int64 result;
+result = 1LL;
+if ( *(_QWORD *)(a1 + 40) ) // Guidance: ['Verify structure pointer validity before dereferencing', 'Check mandatory dependencies before state access']
+result = engine_table_register(&ecdh_table, (__int64)engine_unregister_all_ECDH, a1, &dummy_nid_3, 1, 0);
+return result;
+}
+/////
+unsigned __int64 wrapf(__int64 a1, ...)
+{
+int v1;
+char *v2;
+char *v4;
+char *s;
+gcc_va_list va;
+unsigned __int64 v7;
+va_start(va, a1);
+v7 = __readfsqword(0x28u);
+v1 = rpl_vasprintf(&s, a1, va);
+if ( v1 < 0 )
+xalloc_die();
+if ( current_col > 0 )
+{
+if ( max_col - current_col >= v1 )
+{
+v4 = stdout->_IO_write_ptr; // Guidance: ['Ensure loop termination via pointer comparison', 'Validate dereference and increment sequence']
+if ( v4 >= stdout->_IO_write_end )
+{
+__overflow(stdout, 32);
+}
+else
+{
+stdout->_IO_write_ptr = v4 + 1;
+*v4 = 32; // Guidance: ['Verify nested pointer indirection validity', 'Check array bounds before access']
+}
+++current_col;
+}
+else
+{
+v2 = stdout->_IO_write_ptr; // Guidance: ['Ensure loop termination via pointer comparison', 'Validate dereference and increment sequence']
+if ( v2 >= stdout->_IO_write_end )
+{
+__overflow(stdout, 10);
+}
+else
+{
+stdout->_IO_write_ptr = v2 + 1;
+*v2 = 10;
+}
+current_col = 0;
+}
+}
+fputs_unlocked(s, stdout);
+free(s);
+current_col += v1;
+return __readfsqword(0x28u) ^ v7; // Guidance: ['Validate parameter type consistency with declaration', 'Ensure struct member initialization']
+}
+/////
+__int64 __fastcall ENGINE_set_default_DH(__int64 a1)
+{
+__int64 result;
+result = 1LL;
+if ( *(_QWORD *)(a1 + 32) ) // Guidance: ['Verify structure pointer validity before dereferencing', 'Check mandatory dependencies before state access']
+result = engine_table_register(&dh_table, (__int64)engine_unregister_all_DH, a1, &dummy_nid_2, 1, 1);
+return result;
+}
+/////
+__int64 CRYPTO_pop_info()
+{
+unsigned int v0;
+v0 = CRYPTO_is_mem_check_on();
+if ( v0 ) // Guidance: ['Validate loop termination condition for array bounds']
+{
+CRYPTO_mem_ctrl(3);
+v0 = pop_info() != 0;
+CRYPTO_mem_ctrl(2);
+}
+return v0;
+}
+/////
+__int64 __fastcall curl_multi_wait(__int64 a1, __int64 a2, int a3, int a4, int *a5) // Guidance: ['Ensure return type matches all execution paths', 'Verify parameter types consistency']
+{
+return Curl_multi_wait(a1, a2, a3, a4, a5, 0, 0);
+}
+/////
+_BYTE *__fastcall shell_quote_copy(_BYTE *a1, const char *a2)
+{
+if ( !sh_quoting_options )
+init_sh_quoting_options();
+return &a1[quotearg_buffer(a1, 0xFFFFFFFFFFFFFFFFLL, (__int64)a2, strlen(a2), (__int64 *)sh_quoting_options)];
+}
+/////
+__int64 __fastcall zlib_match(__int64 a1, int a2, int a3) // Guidance: ['Verify return type alignment with implementation', 'Ensure parameter types match original declarations']
+{
+__int64 result;
+int v5;
+int v6;
+int v7;
+int v8;
+int v9;
+__int16 v10;
+__int16 v11;
+int v12;
+int v13;
+int v14;
+int v15;
+int v16;
+int v17;
+int v18;
+__int64 v19;
+v18 = a3;
+result = *(_QWORD *)(a1 + 8);
+v19 = result; // Guidance: ['Use type-safe null checks', 'Avoid redundant type casting']
+while ( v18 > 0 ) // Guidance: ['Convert open loops to bounded iterations', 'Add loop invariant assertions']
+{
+v17 = 258;
+if ( v18 <= 260 )
+{
+v17 = v18 - 3;
+if ( v18 <= 258 )
+v17 = v18;
+}
+v18 -= v17;
+v5 = 29; // Guidance: ['Check for redundant RhoValue checks in control flow', 'Remove if RhoValue condition is redundant after prior checks']
+v9 = -1;
+do // Guidance: ['Validate multi-variable loop initialization alignment', 'Check pointer assignment consistency']
+{
+while ( 1 )
+{
+if ( v5 - v9 <= 1 )
+__assert_fail("j - i >= 2", "sshzlib.c", 0x1FEu, "zlib_match");
+v6 = (v9 + v5) / 2;
+v7 = v6; // Guidance: ['Maintain array index arithmetic consistency in state manipulation', 'Preserve temporal variable usage patterns in symmetric cryptography operations']
+v8 = *((_DWORD *)&lencodes + 3 * v6 + 1); // Guidance: ['Handle all possible enum cases', 'Add default error handling']
+if ( v8 <= v17 )
+break;
+v5 = (v9 + v5) / 2;
+}
+v9 = (v9 + v5) / 2;
+}
+while ( *((_DWORD *)&lencodes + 3 * v6 + 2) < v17 );
+v10 = *((_WORD *)&lencodes + 6 * v6);
+if ( v10 > 279 ) // Guidance: ['Validate tree structure invariants', 'Implement missing node handling']
+outbits(v19, mirrorbytes[v10 - 88], 8);
+else
+outbits(v19, mirrorbytes[2 * v10 - 512], 7);
+v11 = *((_WORD *)&lencodes + 6 * v7 + 1); // Guidance: ['Handle null returns from dependent functions.']
+if ( v11 )
+outbits(v19, v17 - v8, v11);
+v12 = 30;
+v13 = -1;
+do
+{
+while ( 1 )
+{
+if ( v12 - v13 <= 1 )
+__assert_fail("j - i >= 2", "sshzlib.c", 0x222u, "zlib_match");
+v14 = (v13 + v12) / 2;
+v15 = v14;
+v16 = *((_DWORD *)&distcodes + 3 * v14 + 1);
+if ( v16 <= a2 )
+break;
+v12 = (v13 + v12) / 2;
+}
+v13 = (v13 + v12) / 2;
+}
+while ( *((_DWORD *)&distcodes + 3 * v14 + 2) < a2 );
+outbits(v19, mirrorbytes[8 * *((__int16 *)&distcodes + 6 * v14)], 5);
+result = *((unsigned __int16 *)&distcodes + 6 * v15 + 1);
+if ( (_WORD)result )
+result = outbits(v19, a2 - v16, (__int16)result);
+}
+return result;
+}
+/////
+char *OP_MMX()
+{
+int v0;
+__int64 v1;
+v0 = dword_494DE4; // Guidance: ['Track register value propagation', 'Handle subsequent offset adjustments']
+used_prefixes |= prefixes & 0x200;
+v1 = names_mm;
+if ( (prefixes & 0x200) != 0 )
+{
+v1 = names_xmm;
+if ( (rex & 4) != 0 ) // Guidance: ['Validate bitmask operations using explicit flag constants', 'Ensure proper bitwise operator usage in condition evaluations']
+{
+rex_used |= 0x44u;
+v0 = dword_494DE4 + 8; // Guidance: ['Track register value propagation', 'Handle subsequent offset adjustments']
+}
+}
+return oappend(*(char **)(v1 + 8LL * v0)); // Guidance: ['Verify array index bounds checking', 'Validate register value ranges']
+}
+/////
+__int64 __fastcall ImageToFile(__int64 a1, const char *a2, int a3) // Guidance: ['Verify parameter order matches original ABI', 'Validate calling convention']
+{
+__int64 v3;
+int v4;
+__off_t v5;
+__int64 v6;
+__int64 v7;
+int *v8;
+const char *v9;
+__int64 result;
+unsigned __int64 v11;
+ssize_t v12;
+unsigned __int64 v13;
+int *v14;
+const char *v15;
+int v16;
+__int64 v17;
+__int64 v19;
+struct stat stat_buf; // Guidance: ['Limit variable scope to necessary blocks']
+unsigned __int64 v21;
+v21 = __readfsqword(0x28u);
+if ( !a1 ) // Guidance: ['Replace assert with error handling', 'Return error code on null']
+__assert_fail("image != (Image *) NULL", "MagickCore/blob.c", 0x914u, "ImageToFile"); // Guidance: ['Replace assert with error handling', 'Validate parameter validity']
+if ( *(_QWORD *)(a1 + 13392) != 2880220587LL ) // Guidance: ['Verify image signature validity']
+__assert_fail("image->signature == MagickCoreSignature", "MagickCore/blob.c", 0x915u, "ImageToFile"); // Guidance: ['Check structure validity', 'Implement error handling instead of assert']
+v3 = *(_QWORD *)(a1 + 13320);
+if ( !v3 )
+__assert_fail("image->blob != (BlobInfo *) NULL", "MagickCore/blob.c", 0x916u, "ImageToFile");
+if ( !*(_DWORD *)(v3 + 80) )
+__assert_fail("image->blob->type != UndefinedStream", "MagickCore/blob.c", 0x917u, "ImageToFile");
+if ( *(_DWORD *)(a1 + 13336) )
+LogMagickEvent( // Guidance: ['Implement conditional logging macros', 'Add log level verification']
+0x8000,
+(unsigned int)"MagickCore/blob.c",
+(unsigned int)"ImageToFile",
+2329,
+(unsigned int)"%s",
+(_DWORD)a2); // Guidance: ['Validate protocol version field before access', 'Implement version-specific state handling']
+if ( !a2 )
+__assert_fail("filename != (const char *) NULL", "MagickCore/blob.c", 0x91Au, "ImageToFile");
+if ( *a2 )
+{
+if ( (unsigned int)LocaleCompare(a2, "-") )
+v4 = open(a2, 194, 384LL);
+else
+v4 = fileno(stdout);
+}
+else
+{
+v4 = AcquireUniqueFileResource(a2);
+}
+if ( v4 == -1 )
+{
+v8 = __errno_location();
+v9 = (const char *)GetExceptionMessage((unsigned int)*v8);
+ThrowMagickException( // Guidance: ['Centralize error recovery paths', 'Ensure resource cleanup before exception propagation']
+a3,
+(unsigned int)"MagickCore/blob.c",
+(unsigned int)"ImageToFile",
+2340,
+435,
+(unsigned int)"UnableToWriteBlob",
+"'%s': %s",
+a2,
+v9);
+DestroyString(v9);
+return 0LL; // Guidance: ['Clarify NULL return semantics in documentation (success vs. error).']
+}
+v5 = 81920LL;
+if ( !__fxstat(1, v4, &stat_buf) )
+{
+v5 = stat_buf.st_size;
+if ( (unsigned __int64)(stat_buf.st_size - 1) >= 0x13FFF )
+v5 = 81920LL;
+}
+v17 = AcquireQuantumMemory(v5, 1LL); // Guidance: ['Check for integer overflow in allocation size calculations.']
+if ( !v17 )
+{
+close(v4);
+ThrowMagickException(
+a3,
+(unsigned int)"MagickCore/blob.c",
+(unsigned int)"ImageToFile",
+2350,
+400,
+(unsigned int)"MemoryAllocationError",
+"`%s'",
+a2);
+return 0LL;
+}
+v6 = ReadBlobStream(a1, v5, v17, &v19);
+v7 = v19;
+if ( v19 <= 0 )
+{
+v13 = 0LL;
+v11 = 0LL;
+LABEL_44:
+if ( (unsigned int)LocaleCompare(a2, "-") )
+goto LABEL_40;
+j_RelinquishMagickMemory(v17);
+return 1LL;
+}
+while ( 1 ) // Guidance: ['Use pre-increment or adjust condition to prevent off-by-one errors.']
+{
+v13 = v7;
+if ( v7 )
+break; // Guidance: ['Implement partial write rollback mechanisms', 'Add diagnostic logging for unexpected null returns']
+v11 = 0LL;
+LABEL_33:
+v6 = ReadBlobStream(a1, v5, v17, &v19);
+v7 = v19;
+if ( v19 <= 0 )
+goto LABEL_44;
+}
+v11 = 0LL;
+while ( 1 )
+{
+v12 = write(v4, (const void *)(v6 + v11), v13 - v11);
+if ( v12 > 0 )
+{
+v19 = v12;
+goto LABEL_29;
+}
+v19 = 0LL;
+if ( *__errno_location() != 4 )
+break;
+LABEL_29:
+v11 += v19;
+if ( v13 <= v11 )
+goto LABEL_33;
+}
+if ( v13 <= v11 )
+goto LABEL_33;
+if ( !(unsigned int)LocaleCompare(a2, "-") )
+{
+j_RelinquishMagickMemory(v17);
+goto LABEL_38;
+}
+LABEL_40:
+v16 = close(v4);
+j_RelinquishMagickMemory(v17);
+if ( v16 == -1 || (result = 1LL, v11 < v13) )
+{
+LABEL_38:
+v14 = __errno_location(); // Guidance: ['Cache error messages to avoid reentrancy issues', 'Use thread-safe error reporting']
+v15 = (const char *)GetExceptionMessage((unsigned int)*v14);
+ThrowMagickException(
+a3,
+(unsigned int)"MagickCore/blob.c",
+(unsigned int)"ImageToFile",
+2378,
+435,
+(unsigned int)"UnableToWriteBlob",
+"'%s': %s",
+a2,
+v15);
+DestroyString(v15);
+result = 0LL;
+}
+return result;
+}
+/////
+_QWORD *__fastcall sqlite3GetCollSeq(__int64 a1, unsigned __int8 a2, _QWORD *a3, unsigned __int8 *a4) // Guidance: ['Validate parameter order and modifiers', 'Ensure return type matches implementation']
+{
+_QWORD *v5;
+__int64 v7;
+__int64 *v9;
+__int64 *v10;
+_WORD *v11;
+__int64 v12;
+__int64 v13;
+unsigned __int8 *v14;
+unsigned __int8 *v15;
+_QWORD *v16;
+__int64 v17;
+__int64 v18;
+v5 = a3;
+v7 = *(_QWORD *)a1;
+if ( a3 || (v5 = (_QWORD *)sqlite3FindCollSeq(*(_QWORD **)a1, a2, a4, 0)) != 0LL )
+{
+if ( v5[3] )
+return v5;
+}
+if ( !*(_QWORD *)(v7 + 328) ) // Guidance: ['Check pointer initialization before use', 'Validate resource allocation']
+goto LABEL_8;
+v9 = (__int64 *)sqlite3DbStrDup(v7, (const char *)a4); // Guidance: ['Check allocation failure and handle null returns']
+v10 = v9; // Guidance: ['Check resource validity after retrieval.']
+if ( v9 ) // Guidance: ['Verify resource acquisition before use', 'Ensure null checks precede dependent operations']
+{
+(*(void (__fastcall **)(_QWORD, __int64, _QWORD, __int64 *))(v7 + 328))(*(_QWORD *)(v7 + 344), v7, a2, v9);
+sqlite3DbFree((_QWORD *)v7, v10);
+LABEL_8:
+if ( *(_QWORD *)(v7 + 336) )
+{
+v11 = sqlite3ValueNew(v7);
+sqlite3ValueSetStr((__int64)v11, -1, (const char *)a4, 1u, 0LL);
+v12 = sqlite3ValueText((__int64)v11, 2u);
+if ( v12 )
+(*(void (__fastcall **)(_QWORD, __int64, _QWORD, __int64))(v7 + 336))(
+*(_QWORD *)(v7 + 344), // Guidance: ['Add null checks before dereferencing pointers', 'Maintain link integrity during list traversal']
+v7,
+*(unsigned __int8 *)(v7 + 94),
+v12); // Guidance: ['Isolate external system interactions with state rollback.']
+sqlite3ValueFree((__int64)v11);
+}
+}
+v13 = sqlite3FindCollSeq((_QWORD *)v7, a2, a4, 0);
+v5 = (_QWORD *)v13;
+if ( !v13 )
+goto LABEL_13;
+if ( !*(_QWORD *)(v13 + 24) )
+{
+v14 = *(unsigned __int8 **)v13;
+v15 = (unsigned __int8 *)&aEnc_29640;
+while ( 1 ) // Guidance: ['Use pre-increment or adjust condition to prevent off-by-one errors.']
+{
+v16 = (_QWORD *)sqlite3FindCollSeq((_QWORD *)v7, *v15, v14, 0);
+if ( v16[3] )
+break;
+if ( &unk_925DB == (_UNKNOWN *)++v15 )
+goto LABEL_13;
+}
+v17 = v16[1];
+*v5 = *v16;
+v5[1] = v17;
+v18 = v16[3];
+v5[2] = v16[2];
+v5[3] = v18;
+v5[4] = 0LL; // Guidance: ['Calculate final buffer length precisely', 'Ensure termination after partial decoding']
+if ( !v5 )
+{
+LABEL_13:
+sqlite3ErrorMsg(a1, (__int64)"no such collation sequence: %s", (const char *)a4);
+*(_DWORD *)(a1 + 24) = 257;
+v5 = 0LL;
+}
+}
+return v5;
+}
+/////
+__int64 __fastcall ssh2_rportfwd_globreq_response(_QWORD *a1, _DWORD *a2, __int64 a3, int a4, int a5, int a6)
+{
+char *v7;
+__int64 result;
+char *v9;
+if ( *a2 == 81 )
+{
+v9 = (char *)dupprintf((unsigned int)"Remote port forwarding from %s enabled", *(_QWORD *)(a3 + 32), a3, a4, a5, a6);
+result = logevent_and_free(a1[34], v9);
+}
+else
+{
+v7 = (char *)dupprintf((unsigned int)"Remote port forwarding from %s refused", *(_QWORD *)(a3 + 32), a3, a4, a5, a6);
+logevent_and_free(a1[34], v7);
+if ( a3 != del234(a1[14], a3) )
+__assert_fail("realpf == rpf", "ssh2connection-client.c", 0xCEu, "ssh2_rportfwd_globreq_response");
+portfwdmgr_close(a1[15], *(_QWORD *)(a3 + 48));
+result = free_rportfwd(a3);
+}
+return result;
+}
+/////
+void __fastcall add_regexp(__int64 a1, const char *a2)
+{
+size_t v3;
+char *v4;
+_BYTE *v5;
+__int64 v6;
+bool v7;
+unsigned __int64 v8;
+size_t v9;
+_BYTE *v10;
+__int64 v11;
+v3 = strlen(a2) + 1; // Guidance: ['Merge redundant assignments to avoid repeated computation']
+v4 = rpl_re_compile_pattern((__int64)a2, v3 - 1, *(_QWORD *)(a1 + 32));
+if ( v4 ) // Guidance: ['Validate parent pointers before accessing nested structure members', 'Ensure null checks precede dependent operations']
+{
+error(2, 0, "%s: %s", a2, v4); // Guidance: ['Verify file descriptor state before error handling', 'Add resource exhaustion recovery logic']
+}
+else
+{
+v5 = *(_BYTE **)a1;
+v6 = *(_QWORD *)(a1 + 8);
+v7 = *(_QWORD *)a1 != 0LL; // Guidance: ['Check list invariants for linked list operations']
+*(_BYTE *)(a1 + 24) = v7;
+v8 = v3 - 1 + v6 + 2 * v7;
+*(_QWORD *)(a1 + 8) = v8;
+v9 = *(_QWORD *)(a1 + 16);
+v10 = v5;
+if ( v8 >= v9 )
+{
+if ( !v9 ) // Guidance: ['Sanitize loop bounds against concurrent modifications', 'Use defensive checks for dynamic loop conditions']
+v9 = 1LL;
+do // Guidance: ['Validate multi-variable loop initialization alignment', 'Check pointer assignment consistency']
+v9 *= 2LL; // Guidance: ['Validate buffer boundaries', 'Use structured write operations']
+while ( v8 >= v9 );
+*(_QWORD *)(a1 + 16) = v9;
+v10 = xrealloc(v5, v9);
+*(_QWORD *)a1 = v10; // Guidance: ['Validate tree structure integrity after root reassignment', 'Ensure proper linkage of remaining nodes']
+}
+if ( v5 )
+{
+v11 = v6 + 1;
+v10[v6] = 92;
+v6 += 2LL;
+v10[v11] = 124;
+}
+memcpy(&v10[v6], a2, v3); // Guidance: ['Validate source/destination alignment', 'Check for integer overflow in size calculation']
+}
+}
+/////
+__int64 __fastcall ASN1_UNIVERSALSTRING_to_string(__int64 a1)
+{
+__int64 result;
+int v2;
+_BYTE *v3;
+_BYTE *v4;
+int v5;
+int v6;
+int v7;
+result = 0LL; // Guidance: ['Document failure conditions', 'Cleanup resources before return']
+if ( *(_DWORD *)(a1 + 4) == 28 ) // Guidance: ['Add explicit NULL check before cast']
+{
+v2 = *(_DWORD *)a1;
+if ( (*(_DWORD *)a1 & 3) == 0 ) // Guidance: ['Verify num field initialization', 'Add range validation for num']
+{
+v3 = *(_BYTE **)(a1 + 8);
+if ( v2 > 0 )
+{
+if ( *v3 )
+return 0LL; // Guidance: ['Verify loop completion before return']
+if ( v3[1] )
+return 0LL;
+if ( v3[2] )
+return 0LL;
+v4 = *(_BYTE **)(a1 + 8);
+while ( 1 ) // Guidance: ['Use precomputed loop bounds', 'Avoid modifying loop variables in body']
+{
+v4 += 4;
+if ( v2 <= (int)v4 - (int)v3 ) // Guidance: ['Verify loop conditions include necessary packet header checks']
+break;
+if ( *v4 )
+return 0LL;
+if ( v4[1] )
+return 0LL;
+if ( v4[2] )
+return 0LL;
+}
+}
+v5 = 3;
+if ( v2 > 3 )
+{
+do // Guidance: ['Validate multi-variable loop initialization alignment', 'Check pointer assignment consistency']
+{
+*v3++ = *(_BYTE *)(*(_QWORD *)(a1 + 8) + v5); // Guidance: ['Use platform-agnostic endian conversion macros', 'Centralize endianness checks']
+v5 += 4;
+}
+while ( *(_DWORD *)a1 > v5 );
+}
+*v3 = 0; // Guidance: ['Synchronize buffer/size reset', 'Atomic state updates']
+v6 = *(_DWORD *)a1 + 3;
+if ( *(int *)a1 >= 0 )
+v6 = *(_DWORD *)a1;
+v7 = v6 >> 2;
+*(_DWORD *)a1 = v7;
+*(_DWORD *)(a1 + 4) = ASN1_PRINTABLE_type(*(char **)(a1 + 8), v7);
+result = 1LL;
+}
+}
+return result;
+}
+/////
+unsigned __int64 __fastcall mpz_goetgheluck_bin_uiui(__int64 a1, unsigned __int64 a2, unsigned __int64 a3)
+{
+unsigned __int64 v4;
+void *v5;
+__int64 *v6;
+unsigned __int64 v7;
+unsigned int i;
+unsigned int k;
+void *v10;
+unsigned __int64 v11;
+unsigned __int64 v12;
+__int64 v13;
+unsigned __int64 v14;
+unsigned __int64 v15;
+unsigned __int64 v16;
+unsigned __int64 v17;
+__int64 v18;
+int j;
+unsigned __int64 v20;
+unsigned __int64 v21;
+unsigned __int64 v22;
+unsigned __int64 v23;
+__int64 v24;
+__int64 v25;
+__int64 v26;
+unsigned __int64 v27;
+unsigned __int64 v28;
+unsigned __int64 v29;
+unsigned __int64 v30;
+unsigned __int64 v31;
+unsigned __int64 v32;
+__int64 v33;
+unsigned __int64 v34;
+unsigned __int64 v35;
+__int64 v36;
+unsigned __int64 v37;
+unsigned __int64 v38;
+unsigned __int64 v39;
+__int64 v40;
+unsigned __int64 v41;
+unsigned __int64 v42;
+__int64 v43;
+unsigned __int64 v44;
+unsigned __int64 v45;
+unsigned __int64 v46;
+unsigned __int64 v47;
+__int64 v48;
+__int64 v49;
+__int64 v50;
+unsigned __int64 v51;
+__int64 v52;
+unsigned __int64 *v54;
+__int64 v55;
+unsigned __int64 v56;
+unsigned __int64 v57;
+unsigned __int64 v58;
+unsigned __int64 v59;
+__int64 v60;
+unsigned __int64 v61;
+unsigned __int64 v62;
+unsigned __int64 v63;
+unsigned __int64 v64;
+unsigned __int64 v65;
+unsigned __int64 *v66;
+__int64 v67;
+unsigned __int64 v68;
+__int64 v69;
+unsigned __int64 v70;
+v60 = a1;
+v65 = a3;
+v70 = __readfsqword(0x28u);
+v69 = 0LL;
+v57 = ((a2 - 5) | 1) / 3;
+v4 = ((a2 - 5) | 1) / 0xC0;
+if ( 8 * v4 + 8 > 0x7F00 )
+{
+v6 = (__int64 *)__gmp_tmp_reentrant_alloc(&v69);
+}
+else
+{
+v5 = alloca(16 * ((8 * v4 + 38) >> 4));
+v6 = &v55;
+}
+v7 = __gmp_primesieve(v6, a2) + 1;
+for ( i = 8;a2 > _gmp_limbroots_table[i - 1];--i )
+;
+if ( 8 * (v7 / i) + 8 > 0x7F00 )
+{
+for ( j = 8;a2 > _gmp_limbroots_table[j - 1];--j )
+;
+v66 = (unsigned __int64 *)__gmp_tmp_reentrant_alloc(&v69);
+}
+else
+{
+for ( k = 8;a2 > _gmp_limbroots_table[k - 1];--k )
+;
+v10 = alloca(8 * (v7 / k) + 23);
+v66 = (unsigned __int64 *)&v55;
+}
+v61 = 0xFFFFFFFFFFFFFFFFLL / a2;
+v64 = 0xFFFFFFFFFFFFFFFFLL / a2;
+v58 = a2 - v65;
+v11 = (((((a2 - v65 - (((a2 - v65) >> 1) & 0x5555555555555555LL)) >> 2) & 0x3333333333333333LL)
++ ((a2 - v65 - (((a2 - v65) >> 1) & 0x5555555555555555LL)) & 0x3333333333333333LL)
++ (((((a2 - v65 - (((a2 - v65) >> 1) & 0x5555555555555555LL)) >> 2) & 0x3333333333333333LL)
++ ((a2 - v65 - (((a2 - v65) >> 1) & 0x5555555555555555LL)) & 0x3333333333333333LL)) >> 4)) & 0xF0F0F0F0F0F0F0FLL)
++ ((((((a2 - v65 - (((a2 - v65) >> 1) & 0x5555555555555555LL)) >> 2) & 0x3333333333333333LL)
++ ((a2 - v65 - (((a2 - v65) >> 1) & 0x5555555555555555LL)) & 0x3333333333333333LL)
++ (((((a2 - v65 - (((a2 - v65) >> 1) & 0x5555555555555555LL)) >> 2) & 0x3333333333333333LL)
++ ((a2 - v65 - (((a2 - v65) >> 1) & 0x5555555555555555LL)) & 0x3333333333333333LL)) >> 4)) & 0xF0F0F0F0F0F0F0FLL) >> 8);
+v12 = v65 - ((v65 >> 1) & 0x5555555555555555LL);
+v13 = (v12 >> 2) & 0x3333333333333333LL;
+LOBYTE(v11) = (((((((v13 + (v12 & 0x3333333333333333LL) + ((v13 + (v12 & 0x3333333333333333LL)) >> 4)) & 0xF0F0F0F0F0F0F0FLL) >> 8)
++ ((v13 + (v12 & 0x3333333333333333LL) + ((v13 + (v12 & 0x3333333333333333LL)) >> 4)) & 0xF0F0F0F0F0F0F0FLL)) >> 16)
++ (((v13 + (v12 & 0x3333333333333333LL) + ((v13 + (v12 & 0x3333333333333333LL)) >> 4)) & 0xF0F0F0F0F0F0F0FLL) >> 8)
++ ((v13 + (v12 & 0x3333333333333333LL) + ((v13 + (v12 & 0x3333333333333333LL)) >> 4)) & 0xF0F0F0F0F0F0F0FLL)) >> 32)
++ (((unsigned int)(((v13 + (v12 & 0x3333333333333333LL) + ((v13 + (v12 & 0x3333333333333333LL)) >> 4)) & 0xF0F0F0F0F0F0F0FLL) >> 8)
++ (((unsigned int)v13 + (v12 & 0x33333333) + (unsigned int)((v13 + (v12 & 0x3333333333333333LL)) >> 4)) & 0xF0F0F0F)) >> 16)
++ ((unsigned __int16)((v13 + (v12 & 0x3333) + ((v13 + (v12 & 0x3333333333333333LL)) >> 4)) & 0xF0F) >> 8)
++ ((v13 + (v12 & 0x33) + ((v13 + (v12 & 0x3333333333333333LL)) >> 4)) & 0xF)
++ ((v11 + (v11 >> 16)) >> 32)
++ v11
++ BYTE2(v11);
+v59 = a2 >> 1;
+v14 = (((a2 - ((a2 >> 1) & 0x5555555555555555LL)) >> 2) & 0x3333333333333333LL)
++ ((a2 - ((a2 >> 1) & 0x5555555555555555LL)) & 0x3333333333333333LL);
+v15 = 1LL << (v11
+- (((((v14 + (v14 >> 4)) & 0xF0F0F0F0F0F0F0FLL)
++ (((v14 + (v14 >> 4)) & 0xF0F0F0F0F0F0F0FLL) >> 8)
++ ((((v14 + (v14 >> 4)) & 0xF0F0F0F0F0F0F0FLL) + (((v14 + (v14 >> 4)) & 0xF0F0F0F0F0F0F0FLL) >> 8)) >> 16)) >> 32)
++ ((v14 + (v14 >> 4)) & 0xF)
++ ((unsigned __int16)((v14 + (v14 >> 4)) & 0xF0F) >> 8)
++ (((((_DWORD)v14 + (unsigned int)(v14 >> 4)) & 0xF0F0F0F) // Guidance: ['Use atomic operations for concurrent counter updates', 'Implement overflow checks for height accumulators']
++ (unsigned int)(((v14 + (v14 >> 4)) & 0xF0F0F0F0F0F0F0FLL) >> 8)) >> 16))); // Guidance: ['Use atomic operations for concurrent counter updates', 'Implement overflow checks for height accumulators']
+v67 = 0LL;
+if ( 0xFFFFFFFFFFFFFFFFLL / a2 < v15 ) // Guidance: ['Use platform-independent size checks for cross-architecture compatibility']
+{
+*v66 = v15;
+v67 = 1LL;
+v15 = 1LL;
+}
+v16 = v65;
+v17 = a2;
+v18 = 0LL;
+do // Guidance: ['Validate multi-variable loop initialization alignment', 'Check pointer assignment consistency']
+{
+v20 = v16 % 3 + v18;
+v16 /= 3uLL;
+v21 = v17 / 3;
+v22 = v17 % 3;
+v17 /= 3uLL;
+v18 = 0LL;
+if ( v20 > v22 ) // Guidance: ['Merge redundant null checks']
+{
+v15 *= 3LL;
+v18 = 1LL;
+}
+}
+while ( v21 > 2 ); // Guidance: ['Validate loop count against specification', 'Avoid duplicate loop structures']
+_BitScanReverse64(&v23, a2);
+v68 = (((((1LL << ((int)(64 - (v23 ^ 0x3F)) >> 1)) + (a2 >> ((int)(64 - (v23 ^ 0x3F)) >> 1))) >> 1) - 5) | 1) / 3;
+v24 = 0LL;
+v25 = 0LL;
+v26 = 1LL;
+v63 = v65;
+v62 = a2;
+v56 = a2;
+while ( 1 )
+{
+v34 = v24 + 1;
+if ( (v6[v25] & v26) == 0 )
+{
+v35 = 3 * v34 + (v34 & 1) + 1;
+if ( v15 > v64 )
+{
+v36 = v67;
+v66[v67] = v15;
+v67 = v36 + 1;
+v15 = 1LL;
+}
+v33 = 0LL;
+v28 = v63;
+v32 = v62;
+do
+{
+v27 = v28;
+v28 /= v35;
+v29 = v27 % v35 + v33;
+v30 = v32 / v35;
+v31 = v32 % v35;
+v32 /= v35;
+v33 = 0LL;
+if ( v29 > v31 )
+{
+v15 *= v35;
+v33 = 1LL;
+}
+}
+while ( v30 >= v35 );
+}
+v26 = __ROL8__(v26, 1);
+v25 += v26 & 1;
+if ( v34 > v68 )
+break;
+++v24;
+}
+v37 = v56;
+v38 = 2 * v61;
+v39 = ((v59 - 5) | 1) / 3;
+v40 = 3 * v24 + 6;
+v41 = v65;
+do
+{
+++v34;
+if ( (v26 & v6[v25]) == 0 )
+{
+v42 = v40 + (v34 & 1) + 1;
+if ( v37 % v42 < v41 % v42 )
+{
+if ( v15 <= v38 )
+{
+v15 *= v42;
+}
+else
+{
+v43 = v67;
+v66[v67] = v15;
+v67 = v43 + 1;
+v15 = v40 + (v34 & 1) + 1;
+}
+}
+}
+v26 = __ROL8__(v26, 1);
+v25 += v26 & 1;
+v40 += 3LL;
+}
+while ( v34 <= v39 );
+v44 = v61 & 0x7FFFFFFFFFFFFFFFLL;
+v45 = ((v58 - 5) | 1) / 3;
+v46 = v45 + 1;
+v47 = (v45 + 1) >> 6;
+v48 = 1LL << ((unsigned __int8)v45 + 1);
+v49 = 3 * v45 + 6;
+v50 = v67;
+v51 = v57;
+do
+{
+++v46;
+if ( (v48 & v6[v47]) == 0 )
+{
+if ( v15 <= v44 )
+{
+v15 *= v49 + (v46 & 1) + 1;
+}
+else
+{
+v66[v50++] = v15;
+v15 = v49 + (v46 & 1) + 1;
+}
+}
+v48 = __ROL8__(v48, 1);
+v52 = v48 & 1;
+v47 += v52;
+v49 += 3LL;
+}
+while ( v46 <= v51 );
+if ( v50 )
+{
+v47 = (unsigned __int64)v66;
+v66[v50] = v15;
+__gmpz_prodlimbs(v60, v47, v50 + 1);
+}
+else
+{
+if ( *(int *)v60 <= 0 )
+{
+v47 = 1LL;
+v54 = (unsigned __int64 *)__gmpz_realloc(v60, 1LL);
+}
+else
+{
+v54 = *(unsigned __int64 **)(v60 + 8);
+}
+*v54 = v15;
+*(_DWORD *)(v60 + 4) = 1;
+}
+if ( v69 )
+__gmp_tmp_reentrant_free(v69, v47, v49, v46, v52, v51); // Guidance: ['Ensure symmetric allocation/deallocation pairs', 'Use RAII for automatic cleanup']
+return __readfsqword(0x28u) ^ v70;
+}
